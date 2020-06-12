@@ -7,7 +7,7 @@ A Python application for running Wizard of Oz studies with a voice-based  user i
 ## Dependencies
 NottReal requires Python 3 and some dependencies, run `pip3` in the root directory:
 
-	 pip install -r requirements.txt
+	 pip3 install -r requirements.txt
 
 ## Running
 Run the code by calling `python3 nottreal.py`, with the various options accessible with `-h` option. Summarily:

@@ -26,11 +26,11 @@ setup(
     python_requires='>=3.5, <4',
     install_requires=['numpy','python-gettext', 'pyaudio', 'PySide2','sounddevice'],
     package_data={
-        'sample': ['cfg_dist/categories.tsv',
-            'cfg_dist/log.tsv',
-            'cfg_dist/loading.tsv',
-            'cfg_dist/messages.tsv',
-            'cfg_dist/settings.cfg']
+        'sample': ['.cfg_dist/categories.tsv',
+            '.cfg_dist/log.tsv',
+            '.cfg_dist/loading.tsv',
+            '.cfg_dist/messages.tsv',
+            '.cfg_dist/settings.cfg']
     },
     entry_points={
         'console_scripts': [
