@@ -1,0 +1,5 @@
+numpy>=1.16.5 
+python-gettext>=3.0
+PyAudio>=0.2.11
+PySide2>=5.12
+sounddevice>=0.3.15
