@@ -1,6 +1,6 @@
 
 from ..utils.log import Logger
-from ..models.m_mvc import VUIState
+from ..models.m_mvc import VUIState, WizardOption
 from .v_output_abstract import AbstractOutputView
 
 from PySide2.QtWidgets import (QGridLayout, QGraphicsOpacityEffect, QLabel, QScrollArea, QSizePolicy, QWidget)

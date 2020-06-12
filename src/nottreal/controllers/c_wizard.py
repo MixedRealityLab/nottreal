@@ -20,6 +20,8 @@ class WizardController(AbstractController):
         Called when the framework is established and the controller can
         start controlling.
         """
+        self.nottreal.view.wizard_window.init_ui()
+        
         self._clear_slots_on_tab_change = False
         self.register_option(
             label=_('Clear slot tracking on tab change'),

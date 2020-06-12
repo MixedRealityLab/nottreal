@@ -36,6 +36,12 @@ class Gui:
             AbstractOutputView,
             'views.')      
 
+        self.wizard_window = WizardWindow(
+            self.nottreal,
+            self.args,
+            self.data,
+            self.config)
+            
         self.output = {}
         for name, cls in classes.items():
             try:
@@ -57,35 +63,8 @@ class Gui:
                  Logger.error(__name__, (
                  '"%s" has invalid constructor arguments' % (name)))
 
-        self.wizard_window = WizardWindow(
-            self.nottreal,
-            self.args,
-            self.data,
-            self.config)
-
-    def output_views(self, args, data, config):
-        """
-        Get the MVUI window (or initialise it if it doesn't exist)
         
-        Argument:
-            args {[str]} -- CLI arguments
-            data {TSVModel} -- Data from static data files
-            config {ConfigModel} -- Data from static configuration files
-        
-        Returns:
-            {WizardWindow}
-        """
-        try:
-            return self._mvui_window
-        except AttributeError:
-            self._mvui_window = MVUIWindow(
-                self._nottreal,
-                args,
-                data,
-                config)
-            return self._mvui_window
-        
-    def runLoop(self):
+    def run_loop(self):
         """Show the GUI application by starting the UI loop"""
         self._qtapp.exec_()
         

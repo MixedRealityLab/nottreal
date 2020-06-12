@@ -78,7 +78,7 @@ class App:
             Logger.critical(__name__, 'Output window controller not found')
             return
         
-        self.view.runLoop()
+        self.view.run_loop()
 
         Logger.debug(__name__, 'Exiting the GUI application')
 

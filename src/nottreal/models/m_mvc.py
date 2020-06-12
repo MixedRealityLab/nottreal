@@ -5,15 +5,17 @@ class WizardOption:
 
     Variables:
         CHECKBOX {int} -- Identifier for an option that's a checkbox
+        DROPDOWN {int} -- Identifier for an option that's a dropdown
     """
-    CHECKBOX = 0
+    CHECKBOX, DROPDOWN = range(2)
 
     def __init__(self,
         label,
         method,
         type = 0,
         default = False,
-        added = False):
+        added = False,
+        values = {}):
         """
         Create a runtime Wizard option
         
@@ -25,6 +27,7 @@ class WizardOption:
             type {int} -- The type of option (default: {self.CHECKBOX})
             default {bool} -- Default value (default: {False})
             added {bool} -- Has been added to the UI (default: {False})
+            values {dict} -- Possible values
         """
         self.label = label
         self.method = method

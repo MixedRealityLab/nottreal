@@ -39,10 +39,10 @@ class WizardWindow(QMainWindow):
         # shortcuts
         self.router = nottreal.router 
         
-        Logger.debug(__name__, 'Initialising the Wizard window')
-        
         super(WizardWindow, self).__init__()
         self.setWindowTitle(nottreal.appname)
+
+        Logger.debug(__name__, 'Initialising the Wizard window')
         
         # Window layout
         layout = QGridLayout()
@@ -51,8 +51,6 @@ class WizardWindow(QMainWindow):
         window_main = QWidget()
         window_main.setLayout(layout)
         self.setCentralWidget(window_main)
-        
-        self._create_menu()
 
         # add prepared messages
         self.prepared_msgs = PreparedMessagesWidget(self, data.cats)
@@ -94,7 +92,13 @@ class WizardWindow(QMainWindow):
         layout.setRowStretch(4, 1)
         
         self.setGeometry(0, 0, 800, 600)
-        
+
+    def init_ui(self):
+        """
+        Called by the controller when the UI should be finalised and made
+        ready to show
+        """
+        self._create_menu()
         Logger.info(__name__, 'Wizard window ready')
 
     def _create_menu(self): 
