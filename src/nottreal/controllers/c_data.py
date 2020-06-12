@@ -6,13 +6,14 @@ from datetime import datetime
 
 import os
 
+
 class DataRecorderController(AbstractController):
     """
     Class to record messages sent to the user
-    
+
     Extends:
         AbstractController
-    
+
     Variables:
         TIMESTAMP_FORMAT {str} -- Timestamp for files and inside the log
         FILE_PREFIX {str} -- Filename prefix
@@ -25,7 +26,7 @@ class DataRecorderController(AbstractController):
     def __init__(self, nottreal, args):
         """
         Controller to record messages sent to the users
-        
+
         Arguments:
             nottreal {App} -- Application instance
             args {[str]} -- Application arguments
@@ -66,7 +67,7 @@ class DataRecorderController(AbstractController):
     def respond_to(self):
         """
         This class will handle 'data' commands only.
-        
+
         Returns:
             str -- Label for this controller
         """
@@ -75,7 +76,7 @@ class DataRecorderController(AbstractController):
     def custom_event(self, id, text):
         """
         Record a custom event to the log
-        
+
         Arguments:
             text {str} -- Text spoken
         """
@@ -93,7 +94,7 @@ class DataRecorderController(AbstractController):
     def raw_text(self, text):
         """
         Record some text being spoken to the data log
-        
+
         Arguments:
             text {str} -- Text spoken
         """
@@ -108,7 +109,7 @@ class DataRecorderController(AbstractController):
         """
         Record some text being spoken to the data log that was from a
         prepared message
-        
+
         Arguments:
             text {str} -- Text spoken
             cat {int} -- Category ID of the prepared message
@@ -121,4 +122,3 @@ class DataRecorderController(AbstractController):
                 '%s\t%s\t%s\t%s\t%s' % (timestamp, cat, id, slots, text),
                 file=self._file,
                 flush=True)
-        

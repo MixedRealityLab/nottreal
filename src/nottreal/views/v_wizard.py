@@ -3,28 +3,30 @@ from ..utils.log import Logger
 from ..models.m_mvc import WizardOption
 
 from collections import OrderedDict, deque
-from PySide2.QtWidgets import (QAbstractItemView, QAction, QApplication, QCheckBox, QComboBox, 
-                                QDialogButtonBox, QGridLayout, QGroupBox, 
-                                QHBoxLayout, QLabel, QMainWindow, 
-                                QPlainTextEdit, QPushButton, QStyleFactory,
-                                QVBoxLayout, QTabWidget, QTreeView, QWidget)
+from PySide2.QtWidgets import (QAbstractItemView, QAction, QApplication,
+                               QCheckBox, QComboBox, QDialogButtonBox,
+                               QGridLayout, QGroupBox, QHBoxLayout, QLabel,
+                               QMainWindow, QPlainTextEdit, QPushButton,
+                               QStyleFactory, QVBoxLayout, QTabWidget,
+                               QTreeView, QWidget)
 from PySide2.QtGui import (QIcon, QTextCursor, QStandardItemModel, QPalette)
 from PySide2.QtCore import (Qt, QItemSelection, QItemSelectionModel, QTimer,
                             Slot)
 
-import sys, re
+import re
+
 
 class WizardWindow(QMainWindow):
     """
     The main window of the application (i.e. the Wizard's control panel)
-    
+
     Extends:
         QMainWindow
     """
     def __init__(self, nottreal, args, data, config):
         """
         The Window for controlling the VUI
-        
+
         Arguments:
             nottreal {App} -- Main NottReal class
             args {[str]} -- CLI arguments
@@ -35,19 +37,19 @@ class WizardWindow(QMainWindow):
         self.args = args
         self.data = data
         self.config = config
-        
+
         # shortcuts
-        self.router = nottreal.router 
-        
+        self.router = nottreal.router
+
         super(WizardWindow, self).__init__()
         self.setWindowTitle(nottreal.appname)
 
         Logger.debug(__name__, 'Initialising the Wizard window')
-        
+
         # Window layout
         layout = QGridLayout()
         layout.setVerticalSpacing(0)
-        
+
         window_main = QWidget()
         window_main.setLayout(layout)
         self.setCentralWidget(window_main)
@@ -56,29 +58,28 @@ class WizardWindow(QMainWindow):
         self.prepared_msgs = PreparedMessagesWidget(self, data.cats)
         layout.addWidget(self.prepared_msgs, 0, 0)
         layout.setRowStretch(0, 3)
-        
+
         # add slot history and message queue
         row2widget = QGroupBox()
         row2layout = QHBoxLayout()
-        
+
         row2widget.setContentsMargins(0, 5, 0, 0)
-        
+
         self.slot_history = SlotHistoryWidget(row2widget)
         row2layout.addWidget(self.slot_history)
-        
+
         self.msg_queue = MessageQueueWidget(row2widget)
         row2layout.addWidget(self.msg_queue)
         row2widget.setLayout(row2layout)
-        
+
         layout.addWidget(row2widget, 1, 0)
         layout.setRowStretch(1, 2)
-        
+
         # add the command area
         self.command = CommandWidget(
             self,
             data.log_msgs,
-            data.loading_msgs
-        )
+            data.loading_msgs)
         layout.addWidget(self.command, 2, 0)
         layout.setRowStretch(2, 1)
 
@@ -86,12 +87,12 @@ class WizardWindow(QMainWindow):
         self.options = OptionsWidget(self, {})
         layout.addWidget(self.options, 3, 0)
         layout.setRowStretch(3, 0)
-        
+
         # add the message history
         self.msg_history = MessageHistoryWidget(self)
         layout.addWidget(self.msg_history, 4, 0)
         layout.setRowStretch(4, 1)
-        
+
         self.setGeometry(0, 0, 800, 600)
 
     def init_ui(self):
@@ -102,7 +103,7 @@ class WizardWindow(QMainWindow):
         self._create_menu()
         Logger.info(__name__, 'Wizard window ready')
 
-    def _create_menu(self): 
+    def _create_menu(self):
         """
         Create the menu
         """
@@ -136,13 +137,12 @@ class WizardWindow(QMainWindow):
 
         interrupt_voice_button = QAction(
             _('Interrupt current voice output'),
-            self
-        )
+            self)
+
         interrupt_voice_button.setData('interrupt_output')
-        interrupt_voice_button.setShortcuts(['Meta+C','Ctrl+C'])
+        interrupt_voice_button.setShortcuts(['Meta+C', 'Ctrl+C'])
         interrupt_voice_button.setStatusTip(
-            _('Interrupt the current output and optionally clear the queue')
-        )
+            _('Interrupt the current output and optionally clear the queue'))
         interrupt_voice_button.triggered.connect(self._on_menu_item_selected)
         wizard_menu.addAction(interrupt_voice_button)
 
@@ -154,8 +154,7 @@ class WizardWindow(QMainWindow):
             show_output_button = QAction(_('Show/hide %s window' % name), self)
             show_output_button.setData('show_output_button_%s' % suffix)
             show_output_button.setStatusTip(
-                _('Toggle the visibility of the %s window') % name
-            )
+                _('Toggle the visibility of the %s window') % name)
             show_output_button.triggered.connect(self._on_menu_item_selected)
             if first:
                 show_output_button.setShortcut('Ctrl+W')
@@ -164,8 +163,7 @@ class WizardWindow(QMainWindow):
             max_output_button = QAction(_('Maximise %s window') % name, self)
             max_output_button.setData('max_output_button_%s' % suffix)
             max_output_button.setStatusTip(
-                _('Toggle the maximisation of the %s window') % name
-            )
+                _('Toggle the maximisation of the %s window') % name)
             max_output_button.triggered.connect(self._on_menu_item_selected)
             if first:
                 max_output_button.setShortcut('Ctrl+Shift+F')
@@ -178,8 +176,7 @@ class WizardWindow(QMainWindow):
         resting_orb_button.setData('resting_orb_button')
         resting_orb_button.setShortcut('Ctrl+R')
         resting_orb_button.setStatusTip(
-            _('Show the user that the Wizard is resting')
-        )
+            _('Show the user that the Wizard is resting'))
         resting_orb_button.triggered.connect(self._on_menu_item_selected)
         output_menu.addAction(resting_orb_button)
 
@@ -187,8 +184,7 @@ class WizardWindow(QMainWindow):
         computing_orb_button.setData('computing_orb_button')
         computing_orb_button.setShortcut('Ctrl+B')
         computing_orb_button.setStatusTip(
-            _('Show the user that the Wizard is computing')
-        )
+            _('Show the user that the Wizard is computing'))
         computing_orb_button.triggered.connect(self._on_menu_item_selected)
         output_menu.addAction(computing_orb_button)
 
@@ -196,8 +192,7 @@ class WizardWindow(QMainWindow):
         listening_orb_button.setData('listening_orb_button')
         listening_orb_button.setShortcut('Ctrl+L')
         listening_orb_button.setStatusTip(
-            _('Show the user that the Wizard is listening')
-        )
+            _('Show the user that the Wizard is listening'))
         listening_orb_button.triggered.connect(self._on_menu_item_selected)
         output_menu.addAction(listening_orb_button)
 
@@ -227,27 +222,34 @@ class WizardWindow(QMainWindow):
         else:
             for output in self.nottreal.view.output.items():
                 suffix = output[0]
-            
+
                 if data == ('show_output_button_%s' % suffix):
                     self.router('output', 'toggle_show', output=suffix)
                     return
                 elif data == ('max_output_button_%s' % suffix):
                     self.router('output', 'toggle_maximise', output=suffix)
                     return
-                    
+
         Logger.critical(__name__, 'Unknown menu item selected')
 
     def closeEvent(self, event):
-        self.router('app', 'quit');
+        """
+        A close event triggered by the user and sent via PySide2
+
+        Arguments:
+            event {QCloseEvent} -- Event from PySide2
+        """
+        self.router('app', 'quit')
         event.accept()
-        
+
+
 class PreparedMessagesWidget(QTabWidget):
     """
     Tabbed view of prepared messages
-    
+
     Extends:
         {QTabWidget}
-    
+
     Variables:
         DOUBLE_CLICK_TIMER {int} -- Two clicks in this many ms is
             a double click
@@ -256,19 +258,19 @@ class PreparedMessagesWidget(QTabWidget):
     """
     DOUBLE_CLICK_TIMER = 450
     ID, LABEL, TEXT = range(3)
-    
+
     def __init__(self, parent, cats):
         """
         Create the tabs and lists of prepared messages.
 
-        Arguments   
+        Arguments
             parent {QWidget} -- Parent widget
             cats {dict(str,str)} -- Categories and their messages
         """
         super(PreparedMessagesWidget, self).__init__(parent)
 
         self.parent = parent
-        
+
         self.selected_msg = None
 
         self._cats = cats
@@ -316,34 +318,34 @@ class PreparedMessagesWidget(QTabWidget):
             self.addTab(widget, cat['label'])
 
         self.currentChanged.connect(self._on_tab_change)
-        self.resize(300,200)
-    
+        self.resize(300, 200)
+
     def selected_tab_label(self):
         """
         Get the label of the currently selected tab
-        
+
         Returns:
             {str}
         """
         return self.tabText(self.currentIndex())
-    
+
     def adjust_selected_tab(self, adjustment):
         """
         Change the currently selected tab by the value of {adjustment}
-        
+
         Arguments:
             adjustment {int} -- A positive or negative integer
         """
         num_tabs = len(self._msgs_widgets)
         curr_tab = self.currentIndex()
         new_tab = (curr_tab+adjustment) % num_tabs
-        
+
         self.setCurrentIndex(new_tab)
 
     def _speak_msg(self, msg_id):
         """
         Speak a message with the text from a prepared message.
-        
+
         Arguments:
             msg_id {str} -- Message ID
         """
@@ -356,7 +358,7 @@ class PreparedMessagesWidget(QTabWidget):
     def _fill_msg(self, msg_id):
         """
         Fill the text box with the text from a prepared message.
-        
+
         Arguments:
             msg_id {str} -- Message ID
         """
@@ -368,7 +370,7 @@ class PreparedMessagesWidget(QTabWidget):
 
     def _set_msgs(self, model, msgs):
         """Set the messages for a particular model
-        
+
         Arguments:
             model {QStandardItemModel} -- Model of prepared messages
             msgs {dict} -- Messages with `id`, `label`, & `text` values
@@ -382,11 +384,11 @@ class PreparedMessagesWidget(QTabWidget):
     def _get_selected_msg(self, treeview):
         """
         Get the ID of the currently selected message in a treeview
-        
+
         Arguments:
             treeview {QTreeVIew} -- List widget that shows all
                 prepared messages
-        
+
         Returns:
             {str} -- Message ID
         """
@@ -398,11 +400,10 @@ class PreparedMessagesWidget(QTabWidget):
         index = model.index(
             selected_index.row(),
             self.ID,
-            selected_index.parent()
-        )
+            selected_index.parent())
 
         return model.itemData(index)[0]
-    
+
     @Slot()
     def _on_tab_change(self):
         """Identify the tab to notify other areas of the application"""
@@ -417,8 +418,7 @@ class PreparedMessagesWidget(QTabWidget):
             selection_model.clear()
             selection_model.setCurrentIndex(
                 model.index(0, 0),
-                QItemSelectionModel.Select|QItemSelectionModel.Rows
-            )
+                QItemSelectionModel.Select | QItemSelectionModel.Rows)
 
         self.parent.router('wizard', 'tab_changed', new_tab=cat_id)
 
@@ -426,7 +426,7 @@ class PreparedMessagesWidget(QTabWidget):
     def _on_msg_click(self):
         """
         Slot called when a message is clicked in the list view
-        
+
         Double clicks are proxied through a timer to prevent the click
         slot and the double click slot firing
 
@@ -440,14 +440,14 @@ class PreparedMessagesWidget(QTabWidget):
                 msg_id = self._get_selected_msg(self.sender())
 
             self._fill_msg(msg_id)
-        except:
+        except IndexError:
             Log.error(__name__, 'Message unclicked?')
 
     @Slot()
     def _on_msg_doubleclick(self):
         """
         Slot called when a message is double clicked in the list view
-        
+
         Decorators:
             {Slot}
         """
@@ -477,13 +477,13 @@ class PreparedMessagesWidget(QTabWidget):
     @Slot()
     def _on_msg_key_release(self, event):
         """
-        Handle key releases on the message list, to catch the return 
+        Handle key releases on the message list, to catch the return
         key being pressed. Enter is the same as clicking, Ctrl+Eenter
         (cmd on a Mac) is the same as double clicking.
 
         Decorators:
             {Slot}
-        
+
         Arguments:
             event {KeyEvent} -- Event triggered by the key release
         """
@@ -498,48 +498,47 @@ class PreparedMessagesWidget(QTabWidget):
                 self._fill_msg(msg_id)
         else:
             event.accept()
-            
+
+
 class SlotHistoryWidget(QTreeView):
     """
     A list of previously filled slots in a treeview widget
-    
+
     Extends:
         {QTreeView}
-    
+
     Variables:
         SLOT_NAME, SLOT_VALUE {int} -- Column IDs for the slot history
     """
     SLOT_NAME, SLOT_VALUE = range(2)
-    
+
     def __init__(self, parent):
         """Create the list for queued messages
 
-        Arguments   
+        Arguments
             parent {QWidget} -- Parent widget
         """
         super(SlotHistoryWidget, self).__init__(parent)
 
         self.parent = parent
-        
+
         self.setRootIsDecorated(False)
         self.setAlternatingRowColors(True)
-          
+
         self.model = QStandardItemModel(0, 2, self)
         self.model.setHeaderData(
             self.SLOT_NAME,
             Qt.Horizontal,
-            _('Slot')
-        )
+            _('Slot'))
         self.model.setHeaderData(
             self.SLOT_VALUE,
             Qt.Horizontal,
-            _('Previously entered value')
-        )
+            _('Previously entered value'))
 
         self.setModel(self.model)
         self.setSelectionMode(QAbstractItemView.NoSelection)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        
+
     def add(self, name, value):
         """
         Add an item to the list of used slots
@@ -551,23 +550,24 @@ class SlotHistoryWidget(QTreeView):
         self.model.insertRow(0)
         self.model.setData(self.model.index(0, self.SLOT_NAME), name)
         self.model.setData(self.model.index(0, self.SLOT_VALUE), value)
-            
+
+
 class MessageQueueWidget(QTreeView):
     """
     A list of queued messages in a treeview widget
-    
+
     Extends:
         QTreeView
-    
+
     Variables:
         UPCOMING_MESSAGE {int} -- Column ID for the queue
     """
     QUEUED_MESSAGE = 0
-    
+
     def __init__(self, parent):
         """Create the list for queued messages
 
-        Arguments   
+        Arguments
             parent {QWidget} -- Parent widget
         """
         super(MessageQueueWidget, self).__init__(parent)
@@ -575,21 +575,20 @@ class MessageQueueWidget(QTreeView):
         self.parent = parent
 
         self._queued_messages = deque()
-        
+
         self.setRootIsDecorated(False)
         self.setAlternatingRowColors(True)
-          
+
         self.model = QStandardItemModel(0, 1, self)
         self.model.setHeaderData(
             self.QUEUED_MESSAGE,
             Qt.Horizontal,
-            _('Queued message')
-        )
+            _('Queued message'))
 
         self.setModel(self.model)
         self.setSelectionMode(QAbstractItemView.NoSelection)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        
+
     def add(self, text):
         """
         Add an item to the top of the model of the message queue
@@ -622,14 +621,15 @@ class MessageQueueWidget(QTreeView):
             del self._queued_messages[idx]
         except ValueError:
             pass
-        
+
+
 class CommandWidget(QGroupBox):
     """
     Primary command area that includes the text box
-    
+
     Extends:
         {QGroupBox}
-    
+
     Variables:
         RE_TEXT_SLOT {str} -- Regex matching slots in text
         RE_TEXT_SLOT_REPL {str} -- Symbol that denotes this
@@ -641,26 +641,26 @@ class CommandWidget(QGroupBox):
     RE_TEXT_SLOT = '\[([\w /\*\$|]*)\]'
     RE_TEXT_SLOT_REPL = '*'
     RE_TEXT_SLOT_ENDREPL = '$'
-    
+
     def __init__(self, parent, log_msgs, loading_msgs):
         """
         Create the area to type text and submit it to the voice
         subsystem
 
-        Arguments   
+        Arguments
             parent {QWidget} -- Parent widget
-            log_msgs {dict} -- Configured log messages 
+            log_msgs {dict} -- Configured log messages
             loading_msgs {dict} -- Configured loading messages
         """
         super(CommandWidget, self).__init__(parent)
 
         self.parent = parent
-        
+
         self._reset_slot_tracking()
         self.clear_saved_slots()
-        
+
         self.setContentsMargins(0, 5, 0, 0)
-        
+
         layout = QVBoxLayout()
         layout.setSpacing(0)
         self.setLayout(layout)
@@ -674,21 +674,20 @@ class CommandWidget(QGroupBox):
         # options for log mesages
         self._combo_log_messages = QComboBox()
         self._combo_log_messages.currentIndexChanged.connect(
-            self._on_log_message
-        )
+            self._on_log_message)
         self._combo_log_messages.addItem(_('Log an event'))
+
         for key, value in log_msgs.items():
-            self._combo_log_messages.addItem(value['message'],
-            value['id'])
+            self._combo_log_messages.addItem(
+                value['message'],
+                value['id'])
 
         # options for loading messages
         self._combo_loading_messages = QComboBox()
         self._combo_loading_messages.currentIndexChanged.connect(
-            self._on_loading_message
-        )
+            self._on_loading_message)
         self._combo_loading_messages.addItem(
-            _('Send a loading message...')
-        )
+            _('Send a loading message...'))
         for key, value in loading_msgs.items():
             self._combo_loading_messages.addItem(value['message'])
 
@@ -715,24 +714,24 @@ class CommandWidget(QGroupBox):
         buttonBarLayout.addWidget(buttonBox)
 
         layout.addWidget(buttonBar)
-        
+
     def set_text(self, text):
         """
         Set the message text
-        
+
         Arguments:
             text {str} -- Text to set
         """
         self._text_speak.setPlainText(text)
-        self._text_speak.setFocus() 
-        self._select_msg_slot(from_start = True)
+        self._text_speak.setFocus()
+        self._select_msg_slot(from_start=True)
 
     def speak_text(self, text, loading=False):
         """
         Send text to the voice subsystem. if it contains slots, then
         the first slot is selected and the text will not be sent. When
         sent the textbox is cleared.
-        
+
         Arguments:
             text {str} -- Text to speak
             loading {bool} -- Is a loading message (default: False)
@@ -755,12 +754,11 @@ class CommandWidget(QGroupBox):
                 name = name.replace(self.RE_TEXT_SLOT_ENDREPL, '')
 
                 if (autoreplace or autoreplace_end) and \
-                    name in self._saved_slots:
+                        name in self._saved_slots:
                     value = self._saved_slots[name]
                     Logger.debug(
                         __name__,
-                        'Replacing slot "%s" with value "%s"' % (name, value)
-                    )
+                        'Replacing slot "%s" with value "%s"' % (name, value))
                     text = text.replace(match.group(0), value)
 
                     if autoreplace_end:
@@ -771,8 +769,7 @@ class CommandWidget(QGroupBox):
             if requires_editing:
                 Logger.debug(
                     __name__,
-                    'Message has slots that aren\'t filled ("%s")' % name
-                )
+                    'Message has slots that aren\'t filled ("%s")' % name)
                 self.set_text(text)
             else:
                 self._record_last_msg_slot()
@@ -783,8 +780,7 @@ class CommandWidget(QGroupBox):
                     cat=self.parent.prepared_msgs.selected_tab_label(),
                     id=self.parent.prepared_msgs.selected_msg,
                     slots=self._current_slots,
-                    loading=loading
-                )
+                    loading=loading)
                 self._reset_slot_tracking()
                 self._text_speak.setPlainText('')
 
@@ -814,7 +810,7 @@ class CommandWidget(QGroupBox):
         """
         text = self._text_speak.toPlainText()
         if self._cache_slot_name is not None and \
-            text.startswith(self._cache_slot_before):
+                text.startswith(self._cache_slot_before):
             slot_value = text[len(self._cache_slot_before):]
             slot_value = slot_value[:-len(self._cache_slot_after)]
             try:
@@ -832,26 +828,26 @@ class CommandWidget(QGroupBox):
                 pass
 
     def _select_msg_slot(
-        self,
-        from_start = False,
-        reverse = False,
-        loop = True):
+            self,
+            from_start=False,
+            reverse=False,
+            loop=True):
         """
-        Select the next sloteter in the prepared message. Slots are 
+        Select the next slot in the prepared message. Slots are
         encoded as text between square brackets, [like] so.
 
-        If there are no more slots, then the cursor/selection remain 
+        If there are no more slots, then the cursor/selection remain
         unchanged.
 
         Arguments:
             from_start {bool} -- Seek from start of input (True) or
-                the current position ({False}). If {reverse} is 
+                the current position ({False}). If {reverse} is
                 true, will start from the end (Default: {False})
             reverse {bool} -- Select the previous item
             loop {bool} -- If at the end, loop back to the start
 
         Returns:
-            {bool} -- True if sloteter selected, False if none exists
+            {bool} -- {True} if slot selected, {False} if none exists
         """
         text = self._text_speak.toPlainText()
         current_pos = self._text_speak.textCursor().position()
@@ -862,16 +858,14 @@ class CommandWidget(QGroupBox):
             if from_start:
                 current_pos = len(text)
                 Logger.debug(
-                    __name__, 
-                    'Seek to previous sloteter in the message from the end'
-                )
+                    __name__,
+                    'Seek to previous sloteter in the message from the end')
             else:
                 current_pos -= 1
                 Logger.debug(
-                    __name__, 
-                    'Seek to previous sloteter in the message from pos %d' \
-                        % current_pos
-                    )
+                    __name__,
+                    'Seek to previous sloteter in the message from pos %d'
+                    % current_pos)
 
             for match in re.finditer(self.RE_TEXT_SLOT, text[:current_pos]):
                 pass
@@ -902,25 +896,31 @@ class CommandWidget(QGroupBox):
                     self._cache_slot_name = \
                         match.group(0)[1:-1].replace(
                             self.RE_TEXT_SLOT_ENDREPL,
-                            ''
-                        )
+                            '')
                     self._cache_slot_autoreplace = True
 
-                after_pos = start + current_pos + len(self._cache_slot_name) + 2
-                if (self._cache_slot_autoreplace or 
-                    self._cache_slot_autoreplace_end):
+                after_pos = (
+                    start
+                    + current_pos
+                    + len(self._cache_slot_name)
+                    + 2)
+
+                if (self._cache_slot_autoreplace
+                        or self._cache_slot_autoreplace_end):
                     after_pos += 1
 
                 self._cache_slot_after = text[after_pos:]
 
                 self._text_speak.moveCursor(QTextCursor.Start)
-                for charn in range(0,start+current_pos):
+
+                for charn in range(0, start+current_pos):
                     self._text_speak.moveCursor(QTextCursor.NextCharacter)
-                for charn in range(0,end-start):
+
+                for charn in range(0, end-start):
                     self._text_speak.moveCursor(
                         QTextCursor.NextCharacter,
-                        mode=QTextCursor.KeepAnchor
-                    )
+                        mode=QTextCursor.KeepAnchor)
+
                 return True
             elif loop:
                 # only hit here if moving forward and at the end
@@ -934,8 +934,7 @@ class CommandWidget(QGroupBox):
                 self._select_msg_slot(
                     from_start=True,
                     reverse=True,
-                    loop=False
-                )
+                    loop=False)
             else:
                 return False
 
@@ -952,10 +951,10 @@ class CommandWidget(QGroupBox):
         the direction of travel.
 
         Ctrl+enter (cmd on a Mac) presses the 'Speak' button.
-        
+
         Decorators:
             Slot
-        
+
         Arguments:
             event {QKeyEvent} -- Event triggered by the key press
         """
@@ -970,9 +969,9 @@ class CommandWidget(QGroupBox):
                 self._select_msg_slot(reverse=True)
             elif self._select_msg_slot():
                 self._on_speak()
-        elif (event.key() == Qt.Key_C and 
-            ((event.modifiers() == Qt.ControlModifier) or
-            (event.modifiers() == Qt.MetaModifier))):
+        elif (event.key() == Qt.Key_C
+                and (event.modifiers() == Qt.ControlModifier
+                     or event.modifiers() == Qt.MetaModifier)):
             self.router('wizard', 'stop_speaking')
         elif event.key() == Qt.Key_Tab:
             self._select_msg_slot()
@@ -988,7 +987,7 @@ class CommandWidget(QGroupBox):
     def _on_log_message(self, num):
         """
         Log an event
-        
+
         Arguments:
             num {int} -- Selected item
 
@@ -1005,7 +1004,7 @@ class CommandWidget(QGroupBox):
     def _on_loading_message(self, num):
         """
         Loading message selected, send it as if it was spoken
-        
+
         Arguments:
             num {int} -- Selected item
 
@@ -1021,50 +1020,51 @@ class CommandWidget(QGroupBox):
     def _on_clear(self):
         """
         Clear button pressed -- just remove the text from the text box
-        
+
         Decorators:
             Slot
         """
         self._reset_slot_tracking()
         self.parent.prepared_msgs.selected_msg = None
         self._text_speak.setPlainText('')
-        
+
     @Slot()
     def _on_speak(self):
         """
-        Speak button pressed, so speak the text if there are no 
+        Speak button pressed, so speak the text if there are no
         slots in it
-        
+
         Decorators:
             Slot
         """
         text = self._text_speak.toPlainText()
         self.speak_text(text)
 
+
 class OptionsWidget(QGroupBox):
     """
     Runtime options
-    
+
     Extends:
         {QGroupBox}
-    
+
     Variables:
         OPTIONS_COLUMNS {int} -- Number of columns of options
     """
     OPTIONS_COLUMNS = 2
-    
-    def __init__(self, parent, options = {}):
+
+    def __init__(self, parent, options={}):
         """
         Create the area for runtime Wizard options
 
-        Arguments   
+        Arguments
             parent {QWidget} -- Parent widget
             options {dict} -- Runtime options
         """
         super(OptionsWidget, self).__init__(parent)
 
         self.parent = parent
-        
+
         self.setContentsMargins(10, 5, 0, 0)
 
         self.layout = QGridLayout()
@@ -1077,15 +1077,18 @@ class OptionsWidget(QGroupBox):
     def add(self, option):
         """
         Add wizard option to the manager window
-        
+
         Arguments:
             option {models.nottreal.WizardOption} -- A wizard option
         """
-        if option.type is WizardOption.CHECKBOX:
+        if option.opt_type is WizardOption.CHECKBOX:
             ui_control = QCheckBox(option.label, self)
-            ui_control.setCheckState(Qt.Checked if option.value else Qt.Unchecked)
+            ui_control.setCheckState(
+                Qt.Checked
+                if option.value
+                else Qt.Unchecked)
             ui_control.stateChanged.connect(self._option_changed)
-        elif option.type is WizardOption.DROPDOWN:
+        elif option.opt_type is WizardOption.DROPDOWN:
             ui_control = QComboBox()
             ui_control.currentIndexChanged.connect(self._option_changed)
             ui_control.setPlaceholderText(option.label)
@@ -1094,32 +1097,28 @@ class OptionsWidget(QGroupBox):
         else:
             Logger.error(
                 __name__,
-                'Unknown Wizard option type for option "%s"' % option.label
-            )
+                'Unknown Wizard option type for option "%s"' % option.label)
             return
 
-                
         if option.label not in self._options:
             row = len(self._options) // self.OPTIONS_COLUMNS
             col = len(self._options) % self.OPTIONS_COLUMNS
         else:
             row = self._options[option.label].ui_row
             col = self._options[option.label].ui_col
-            
+
         self.layout.addWidget(ui_control, row, col)
         self._options[option.label] = option
         option.ui = ui_control
         option.ui_row = row
         option.ui_col = col
         option.added = True
-        
-
 
     @Slot()
-    def _option_changed(self, value = None):
+    def _option_changed(self, value=None):
         """
         Slot when an option is changed
-        
+
         Arguments:
             value {mixed} -- Value sent by the option
         """
@@ -1133,8 +1132,7 @@ class OptionsWidget(QGroupBox):
             except KeyError:
                 Logger.error(
                     __name__,
-                    'Could not find registered option with label "%s"' % label
-                )
+                    'Could not find registered option with label "%s"' % label)
                 pass
         elif sender == 'QComboBox':
             label = self.sender().placeholderText()
@@ -1147,62 +1145,59 @@ class OptionsWidget(QGroupBox):
             except KeyError:
                 Logger.error(
                     __name__,
-                    'Could not find registered option with label "%s"' % label
-                )
+                    'Could not find registered option with label "%s"' % label)
                 pass
 
         else:
             Logger.error(
                 __name__,
-                'Unknown Wizard option value set by a "%s"' % sender
-            )
-            
-            
+                'Unknown Wizard option value set by a "%s"' % sender)
+
+
 class MessageHistoryWidget(QGroupBox):
     """
     A list of previously sent messages in a treeview widget inside a groupbox
-    
+
     Extends:
         QGroupBox
-    
+
     Variables:
         SPOKEN_MESSAGE {int} -- Column ID for the sent message
     """
     SPOKEN_MESSAGE = 0
-    
+
     def __init__(self, parent):
         """
         Create the list for sent messages
 
-        Arguments   
+        Arguments
             parent {QWidget} -- Parent widget
         """
         super(MessageHistoryWidget, self).__init__(parent)
 
         self.parent = parent
-        
+
         self.setContentsMargins(0, 5, 0, 0)
 
         self.layout = QGridLayout()
         self.setLayout(self.layout)
-        
+
         self._widget = QTreeView(self)
         self._widget.setRootIsDecorated(False)
         self._widget.setAlternatingRowColors(True)
-          
+
         self.model = QStandardItemModel(0, 1, self)
         self.model.setHeaderData(
             self.SPOKEN_MESSAGE,
             Qt.Horizontal,
-            _('Previously spoken message')
-        )
+            _('Previously spoken message'))
 
         self._widget.setModel(self.model)
         self._widget.setSelectionMode(QAbstractItemView.NoSelection)
         self._widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        
+
         self.layout.addWidget(self._widget)
-        
+
     def add(self, text):
         """
         Add an item to the top of the model of history of spoken messages
@@ -1212,4 +1207,3 @@ class MessageHistoryWidget(QGroupBox):
         """
         self.model.insertRow(0)
         self.model.setData(self.model.index(0, self.SPOKEN_MESSAGE), text)
-        

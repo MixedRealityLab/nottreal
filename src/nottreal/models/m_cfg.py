@@ -1,20 +1,20 @@
 
-from .m_abstract import AbstractModel
 from ..utils.log import Logger
 
 from collections import OrderedDict
 
-import sys, os, configparser
+import configparser
 
-class ConfigModel(AbstractModel):
+
+class ConfigModel:
     def __init__(self, args):
-        """Load data from configuration files.
-        
+        """
+        Load data from configuration files
+
         Arguments:
             args {[arg]} -- Application arguments
         """
         self.config_dir = args.config_dir
-        super().__init__(args)
 
         Logger.debug(__name__, 'Loading data from the configuration file')
 

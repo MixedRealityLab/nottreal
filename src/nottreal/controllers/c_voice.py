@@ -4,28 +4,30 @@ from .c_abstract import AbstractController
 from ..models.m_mvc import Message, VUIState
 
 from collections import deque
-from threading import Event
 from subprocess import Popen, call
 
-import abc, string, signal, threading, time, sys
+import abc
+import threading
+import time
+
 
 class VoiceController(AbstractController):
     def __init__(self, nottreal, args):
         """
         Controller to generate the voice of the Wizard.
-        
+
         Arguments:
             nottreal {App} -- Application instance
             args {[str]} -- Application arguments
         """
         super().__init__(nottreal, args)
-        
+
         self._voice = args.voice
         self._voiceInstance = None
 
     def ready(self):
         name = 'Voice%s%s' % (self._voice[0].title(), self._voice[1:])
-        
+
         try:
             self._voiceInstance = self.nottreal.controllers[name]
         except KeyError:
@@ -36,7 +38,7 @@ class VoiceController(AbstractController):
 
         Logger.info(__name__, 'Setting voice to "%s"' % name)
 
-        self.responder('voice', self._voiceInstance)        
+        self.responder('voice', self._voiceInstance)
         self.router('voice', 'init', args=self.args)
 
     def quit(self):
@@ -47,10 +49,10 @@ class VoiceController(AbstractController):
 
     def respond_to(self):
         """
-        This class will handle "voice" and "voice_root" commands. This 
-        controller will be replaced as handler of "voice" commands by the 
+        This class will handle "voice" and "voice_root" commands. This
+        controller will be replaced as handler of "voice" commands by the
         chosen subsystem.
-        
+
         Returns:
             [{str}] -- Label for this controller
         """
@@ -61,7 +63,7 @@ class VoiceController(AbstractController):
         Relinquish control over voice signals to the right subsystem.
 
         Arguments:
-            instance {AbstractController} -- Controller that has said it wants 
+            instance {AbstractController} -- Controller that has said it wants
                 to be a responder for the same signals as this controller.
         Returns:
             {bool} -- True if it's the voice subsystem we're expecting
@@ -71,7 +73,7 @@ class VoiceController(AbstractController):
     def speak(self, text):
         """
         Respond to the "speak" button being clicked.
-        
+
         Arguments:
             text {string} -- Text that should be spoken
         Return:
@@ -83,15 +85,16 @@ class VoiceController(AbstractController):
     def stop_speaking(self, clear_all=None):
         """
         Immediately cancel talking
-        
+
         Arguments:
-            clear_all {bool} -- True if any unspoken text should not be spoken 
+            clear_all {bool} -- True if any unspoken text should not be spoken
                 also, UI configured element if None (Default {None}}
         Return:
             {bool} -- False
         """
         Logger.error(__name__, 'No voice instantiated!')
         return False
+
 
 class AbstractVoiceController(AbstractController):
     """
@@ -103,7 +106,7 @@ class AbstractVoiceController(AbstractController):
     def __init__(self, nottreal, args):
         """
         Base voice class that does nothing.
-        
+
         Arguments:
             nottreal {} -- Application instance
             args {[str]} -- Application arguments
@@ -117,10 +120,10 @@ class AbstractVoiceController(AbstractController):
     def init(self, args):
         """
         Initialise this voice subsystem.
-        
+
         Decorators:
             abc.abstractmethod
-        
+
         Arguments:
             args {[str]} -- Arguments passed through for the voice subsystem.
         """
@@ -140,20 +143,20 @@ class AbstractVoiceController(AbstractController):
 
     @abc.abstractmethod
     def speak(self,
-        text,
-        cat = None,
-        id = None,
-        slots = None,
-        loading = False):
+              text,
+              cat=None,
+              id=None,
+              slots=None,
+              loading=False):
         """
         Produce a particular utterance.
 
         Decorators:
             abc.abstractmethod
-        
+
         Arguments:
             text {str} -- Text to say
-        
+
         Keyword Arguments:
             cat {str} -- Category ID if a prepared message
             id {str} -- Prepared message ID if a prepared message
@@ -162,36 +165,11 @@ class AbstractVoiceController(AbstractController):
         """
         self._produce_voice(text, text, cat, id, slots)
 
-    def append_text(self):
-        """
-        Determine whether we should append the next messages instead of
-         replacing them.
-        
-        Returns:
-            {bool} -- {True} to append text to the wizard
-        """
-        return self.append_text
-
-    def _set_append_text(self, new_value):
-        """
-        Set whether we should append the next messages instead of
-         replacing them.
-        
-        Arguments:
-            new_value {bool} -- New checked status
-        """
-        if new_value:
-            Logger.debug(__name__, 'Will append text to existing dialogue')
-        else:
-            Logger.debug(__name__, 'Will not append text to existing dialogue')
-
-        self.append_text = new_value
-
     def _set_auto_listening(self, new_value):
         """
-        After speaking, should the UI default to the NOTHING state (False) or 
+        After speaking, should the UI default to the NOTHING state (False) or
         the LISTENING state (True).
-        
+
         Arguments:
             new_value {bool} -- New checked status
         """
@@ -204,29 +182,29 @@ class AbstractVoiceController(AbstractController):
 
     @abc.abstractmethod
     def _produce_voice(self,
-        text,
-        prepared_text,
-        cat = None,
-        id = None,
-        slots = None):
+                       text,
+                       prepared_text,
+                       cat=None,
+                       id=None,
+                       slots=None):
         """
-        Call the voice subsystem to produce the voice. This will be 
+        Call the voice subsystem to produce the voice. This will be
         called from the separate thread.
 
         You should block on this thread until the voice is spoken.
 
-        Calls the method `send_to_recorder` to send the data to 
-        the recorder. If overriding this, you should to the same 
+        Calls the method `send_to_recorder` to send the data to
+        the recorder. If overriding this, you should to the same
         too!
-        
+
         Decorators:
             abc.abstractmethod
-        
+
         Arguments:
             text {str} -- Raw text from the top of the queue
-            prepared_text {str} -- Text from the top of the queue 
+            prepared_text {str} -- Text from the top of the queue
                 that has been prepared by #prepare_text()
-        
+
         Keyword Arguments:
             cat {str} -- Category ID if a prepared message
             id {str} -- Prepared message ID if a prepared message
@@ -234,10 +212,10 @@ class AbstractVoiceController(AbstractController):
         """
         self.send_to_recorder(text, cat, id, slots)
 
-    def send_to_recorder(self, text, cat = None, id = None, slots = None):
+    def send_to_recorder(self, text, cat=None, id=None, slots=None):
         """
         Send data to the data recorder.
-        
+
         Arguments:
             text {str} -- Text from the top of the queue
 
@@ -260,10 +238,10 @@ class AbstractVoiceController(AbstractController):
     def stop_speaking(self, clear_all=None):
         """
         Immediately cancel talking
-        
+
         Keyword Arguments:
             clear_all {bool} -- True if any unspoken text should
-                not be spoken  also, UI configured element if 
+                not be spoken  also, UI configured element if
                 {None} (Default {None}})
         Return:
             {bool} -- False
@@ -272,6 +250,7 @@ class AbstractVoiceController(AbstractController):
             __name__,
             'Cannot cancel output on non-thread voice controller')
         return False
+
 
 class ThreadedBaseVoice(AbstractVoiceController):
     """
@@ -282,14 +261,14 @@ class ThreadedBaseVoice(AbstractVoiceController):
         AbstractVoiceController
     """
 
-    def __init__(self, nottreal, args, blocking = True):
+    def __init__(self, nottreal, args, blocking=True):
         """
         Create the thread that sends commands to the voice subsystem
 
         Arguments:
             nottreal {App} -- Application instance
             args {[str]} -- Application arguments
-        
+
         Keyword Arguments:
             blocking {bool} -- Thread blocked during talking
         """
@@ -301,7 +280,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
     def init(self, args):
         """
         Create the voice thread to handle the voice subsystem
-        
+
         Arguments:
             args {[str]} -- Arguments for the voice subsystem
                 initiation
@@ -309,9 +288,9 @@ class ThreadedBaseVoice(AbstractVoiceController):
         super().init(args)
 
         self._sleep_between_queue_checks = .3
-        self._interrupt = Event()
+        self._interrupt = threading.Event()
         self._stop_voice_loop = False
-        self._text_queue = deque() 
+        self._text_queue = deque()
 
         self.append_override = Message.NO_OVERRIDE
         self._dont_append_cat_change = True
@@ -334,9 +313,9 @@ class ThreadedBaseVoice(AbstractVoiceController):
 
     def _set_dont_append_cat_change(self, value):
         """
-        After a category change, should the append option be set 
+        After a category change, should the append option be set
         to {False} for the first utterance,.
-        
+
         Arguments:
             value {bool} -- New checked status
         """
@@ -347,7 +326,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
     def _set_clear_queue_on_interrupt(self, value):
         """
         Clear the queue when the speech output is interrupted
-        
+
         Arguments:
             value {bool} -- New checked status
         """
@@ -358,7 +337,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
         """
         Report to the voice subsystem that the user has changed
         the category
-        
+
         Arguments:
             new_cat_id {str} -- New category ID
         """
@@ -368,11 +347,11 @@ class ThreadedBaseVoice(AbstractVoiceController):
             self.append_override = Message.NO_OVERRIDE
 
     def speak(self,
-        text,
-        cat = None,
-        id = None,
-        slots = None,
-        loading = False):
+              text,
+              cat=None,
+              id=None,
+              slots=None,
+              loading=False):
         """
         Add the message to the queue to be spoken.
 
@@ -390,7 +369,10 @@ class ThreadedBaseVoice(AbstractVoiceController):
         message = Message(
             text.strip(),
             override=self.append_override,
-            cat=cat, id=id, slots=slots, loading=loading)
+            cat=cat,
+            id=id,
+            slots=slots,
+            loading=loading)
         self._text_queue.append(message)
         self.append_override = Message.NO_OVERRIDE
         return True
@@ -408,7 +390,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
 
         Return:
             {(str, str)} -- Prepared text for the voice subsystem
-                and text to show ({None} if should not be written 
+                and text to show ({None} if should not be written
                 to screen)
         """
         text = text.replace('"', '')
@@ -416,13 +398,14 @@ class ThreadedBaseVoice(AbstractVoiceController):
 
     def _speak(self):
         """
-        Continuously process the queue of text to synthesise. Run 
+        Continuously process the queue of text to synthesise. Run
         this in a separate thread.
         """
         Logger.debug(__name__, 'Voice thread started')
-        
+
         while self._stop_voice_loop is False:
-            while not self._text_queue or (self._blocking and self._is_speaking):
+            while not self._text_queue \
+                    or (self._blocking and self._is_speaking):
                 time.sleep(self._sleep_between_queue_checks)
 
             try:
@@ -431,11 +414,6 @@ class ThreadedBaseVoice(AbstractVoiceController):
                 text = message.text
                 loading = message.loading
                 prepared_text, text_to_show = self._prepare_text(text)
-
-                # if append_override is not 0:
-                #     append = True if append_override == Message.FORCE_APPEND else False
-                # else:
-                #     append = super().append_text()
 
                 if loading:
                     self._on_start_speaking(
@@ -457,7 +435,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
                     message.cat,
                     message.id,
                     message.slots)
-                
+
                 if self._blocking:
                     self._on_stop_speaking()
 
@@ -478,10 +456,10 @@ class ThreadedBaseVoice(AbstractVoiceController):
     def stop_speaking(self, clear_all=None):
         """
         Immediately cancel talking
-        
+
         Arguments:
-            clear_all {bool} -- True if any unspoken text should 
-                not be spoken also, UI configured element 
+            clear_all {bool} -- True if any unspoken text should
+                not be spoken also, UI configured element
                 if {None} (Default {None}}
         Return:
             {bool} -- True
@@ -494,23 +472,22 @@ class ThreadedBaseVoice(AbstractVoiceController):
             self._text_queue.clear()
             Logger.debug(__name__, 'Queued text cleared')
         else:
-            Logger.debug(__name__, 'Not clearing the queued')            
+            Logger.debug(__name__, 'Not clearing the queued')
 
         self._interrupt_voice()
 
         return True
 
-    def _on_start_speaking(
-        self,
-        text=None,
-        text_to_show=None,
-        state=VUIState.SPEAKING):
+    def _on_start_speaking(self,
+                           text=None,
+                           text_to_show=None,
+                           state=VUIState.SPEAKING):
         """
         Update NottReal to denote we've started speaking
-        
+
         Keyword arguments:
             text {str} -- Text currently been spoken
-            text_to_show {str} -- Text currently been spoken 
+            text_to_show {str} -- Text currently been spoken
                 (user friendly)
             state {int} -- State of the Wizard
         """
@@ -521,14 +498,14 @@ class ThreadedBaseVoice(AbstractVoiceController):
     def _on_stop_speaking(self, state=None):
         """
         Update NottReal to denote we've finished speaking
-        
+
         Keyword arguments:
             state {int} -- State of the Wizard
         """
         self._is_speaking = False
 
-        if ((state == None and self.auto_listening) or 
-          (state == VUIState.LISTENING)):
+        if (state is None and self.auto_listening) \
+                or (state == VUIState.LISTENING):
             self.router('output', 'now_listening')
         elif state == VUIState.COMPUTING:
             self.router('output', 'now_computing')
@@ -543,9 +520,10 @@ class ThreadedBaseVoice(AbstractVoiceController):
         self._interrupt.set()
         self._interrupt.clear()
 
+
 class NonBlockingThreadedBaseVoice(ThreadedBaseVoice):
     """
-    A threaded voice controller where the voice subsystem is 
+    A threaded voice controller where the voice subsystem is
     non-blocking (i.e. it may run on separate a thread/process)
     """
     def __init__(self, nottreal, args):
@@ -556,8 +534,8 @@ class NonBlockingThreadedBaseVoice(ThreadedBaseVoice):
             nottreal {App} -- Application instance
             args {[str]} -- Application arguments
         """
-        super().__init__(nottreal, args, blocking = False)
-    
+        super().__init__(nottreal, args, blocking=False)
+
 
 class VoiceOutputToLog(ThreadedBaseVoice):
     """
@@ -569,7 +547,7 @@ class VoiceOutputToLog(ThreadedBaseVoice):
     def __init__(self, nottreal, args):
         """
         Create the thread that sends commands to the log
-        
+
         Arguments:
             nottreal {App} -- Application instance
             args {[str]} -- Application arguments
@@ -580,16 +558,17 @@ class VoiceOutputToLog(ThreadedBaseVoice):
 
     def init(self, args):
         super().init(args)
-        self.nottreal.router('wizard',
+        self.nottreal.router(
+            'wizard',
             'register_option',
             label='No waiting',
             method=self._set_no_waiting)
 
     def _set_no_waiting(self, value):
         """
-        Change the artificial waiting for the delay in the 
+        Change the artificial waiting for the delay in the
         generation of text to simulate speech.
-        
+
         Arguments:
             value {bool} -- New checked status
         """
@@ -597,20 +576,20 @@ class VoiceOutputToLog(ThreadedBaseVoice):
         self._no_waiting = value
 
     def _produce_voice(self,
-        text,
-        prepared_text,
-        cat = None,
-        id = None,
-        slots = None):
+                       text,
+                       prepared_text,
+                       cat=None,
+                       id=None,
+                       slots=None):
         """
-        Receive the text to produce, output it to the log, 
+        Receive the text to produce, output it to the log,
         and block if desired.
-        
+
         Arguments:
             text {str} -- Text from the manager window
-            prepared_text {str} -- Text from the manager 
+            prepared_text {str} -- Text from the manager
                 window (not difference to text)
-        
+
         Keyword Arguments:
             cat {str} -- Category ID if a prepared message
             id {str} -- Prepared message ID if a prepared message
@@ -623,6 +602,7 @@ class VoiceOutputToLog(ThreadedBaseVoice):
             timeout = len(text)/10
             super().wait(timeout)
 
+
 class VoiceShellCmd(ThreadedBaseVoice):
     """
     Call a command via the shell to generate the voice.
@@ -633,7 +613,7 @@ class VoiceShellCmd(ThreadedBaseVoice):
     def __init__(self, nottreal, args):
         """
         Create the thread that sends commands to the external shell
-        
+
         Arguments:
             nottreal {App} -- Application instance
             args {[str]} -- Application arguments
@@ -645,9 +625,9 @@ class VoiceShellCmd(ThreadedBaseVoice):
         Load the configuration.
         """
         super().init(args)
-        
+
         self._cfg = self.nottreal.config.cfg()
-        
+
         self._command_speak = self._cfg.get(
             'VoiceShellCmd',
             'command_speak')
@@ -657,14 +637,14 @@ class VoiceShellCmd(ThreadedBaseVoice):
 
     def _prepare_text(self, text):
         """
-        Construct the command for the shell execution and 
+        Construct the command for the shell execution and
         prepare the text for display
-        
+
         Arguments:
             text {str} -- Text from the Wizard manager window
 
         Return:
-            {(str, str)} -- Command and the prepared text 
+            {(str, str)} -- Command and the prepared text
                 ({None} if should not be written to screen)
         """
         cmd_text = text.replace('"', '')
@@ -672,19 +652,19 @@ class VoiceShellCmd(ThreadedBaseVoice):
         return (self._command_speak % cmd_text, text)
 
     def _produce_voice(self,
-        text,
-        prepared_text,
-        cat = None,
-        id = None,
-        slots = None):
+                       text,
+                       prepared_text,
+                       cat=None,
+                       id=None,
+                       slots=None):
         """
-        Receive the text (which should be a command), and then 
+        Receive the text (which should be a command), and then
         call it.
-        
+
         Arguments:
             text {str} -- Text to record as being produced
             prepared_text {str} -- Command to call through a shell
-        
+
         Keyword Arguments:
             cat {str} -- Category ID if a prepared message
             id {str} -- Prepared message ID if a prepared message

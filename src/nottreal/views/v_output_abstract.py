@@ -5,20 +5,21 @@ from PySide2.QtWidgets import (QWidget)
 
 import abc
 
+
 class AbstractOutputView(QWidget):
     """
     A VUI output window, must be implemented as a {QWidget}
-    
+
     Extends:
         QWidget
     """
     def __init__(self, nottreal, args, data, config):
         """
         A window that displays output
-        
+
         Don't do anything in this method, the instance is destroyed if
         the output view is not activated
-        
+
         Arguments:
             nottreal {App} -- Main NottReal class
             args {[str]} -- CLI arguments
@@ -30,17 +31,17 @@ class AbstractOutputView(QWidget):
         self.args = args
         self.data = data
         self.config = config
-        
+
         super(AbstractOutputView, self).__init__()
 
     @abc.abstractmethod
     def init_ui(self):
         """
         Initialise the UI
-        
+
         Decorators:
             abc.abstractmethod
-        
+
         Returns:
             {bool}
         """
@@ -50,10 +51,10 @@ class AbstractOutputView(QWidget):
     def activated(self):
         """
         Return {True} if this output window should receive messages.
-        
+
         Decorators:
             abc.abstractmethod
-        
+
         Returns:
             {bool}
         """
@@ -63,24 +64,24 @@ class AbstractOutputView(QWidget):
     def get_label(self):
         """
         Return the name of the output view.
-        
+
         Decorators:
             abc.abstractmethod
-        
+
         Returns:
             {str}
         """
         pass
-    
+
     def is_visible(self):
         """
         Is the window visible?
-        
+
         Returns:
             {bool}
         """
         return self.isVisible()
-    
+
     def toggle_visibility(self):
         """
         Toggle visibility of the window
@@ -92,7 +93,7 @@ class AbstractOutputView(QWidget):
         else:
             self.show()
             Logger.info(__name__, '%s is visible' % self.get_label())
-    
+
     def toggle_fullscreen(self):
         """
         Toggle fullscreen/windowed mode
@@ -108,19 +109,18 @@ class AbstractOutputView(QWidget):
     def set_message(self, text):
         """
         A new message to show immediately
-        
+
         Arguments:
             text {str} -- Text of the message
         """
         pass
-    
+
     @abc.abstractmethod
     def set_state(self, state):
         """
         Update the displayed state of the VUI
-        
+
         Arguments:
             state {models.VUIState} -- New state of the VUI
         """
         pass
-    
