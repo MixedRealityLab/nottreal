@@ -437,7 +437,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
                     message.slots)
 
                 if self._blocking:
-                    self._on_stop_speaking()
+                    self._on_stop_speaking(loading=loading)
 
             except Exception as e:
                 Logger.critical(
@@ -495,22 +495,24 @@ class ThreadedBaseVoice(AbstractVoiceController):
         self.router('wizard', 'now_speaking', text=text)
         self.router('output', 'now_speaking', text=text_to_show, orb=state)
 
-    def _on_stop_speaking(self, state=None):
+    def _on_stop_speaking(self, state=None, loading=False):
         """
-        Update NottReal to denote we've finished speaking
+        Update NottReal to denote we've finished speaking (will request
+        the outputs to update if needed).
 
         Keyword arguments:
-            state {int} -- State of the Wizard
+            state {int} -- State of the VUI (if external to NottReal)
         """
         self._is_speaking = False
 
-        if (state is None and self.auto_listening) \
-                or (state == VUIState.LISTENING):
-            self.router('output', 'now_listening')
-        elif state == VUIState.COMPUTING:
-            self.router('output', 'now_computing')
-        else:
-            self.router('output', 'now_resting')
+        if not loading:
+            if (state is None and self.auto_listening) \
+                    or (state == VUIState.LISTENING) :
+                self.router('output', 'now_listening')
+            elif state == VUIState.COMPUTING:
+                self.router('output', 'now_computing')
+            else:
+                self.router('output', 'now_resting')
 
     def _interrupt_voice(self):
         """
