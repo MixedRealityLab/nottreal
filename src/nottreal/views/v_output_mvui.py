@@ -354,7 +354,8 @@ class Orb(QWidget):
             while self._hot_mic and self._flutter_device is None:
                 sounddevice.sleep(1000)
 
-        if self._flutter_device is None:
+        if self._flutter_device is None \
+                and self._state is VUIState.LISTENING:
             Logger.info(__name__, 'Swapping input stream for flutter')
             self._set_volume_level_loop()
 
