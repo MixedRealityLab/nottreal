@@ -638,9 +638,9 @@ class CommandWidget(QGroupBox):
         RE_TEXT_SLOT_REPL {str} -- Symbol that denotes this
             slot's value tracking should be stopped
     """
-    RE_TEXT_SLOT = '\[([\w /\*\$|]*)\]'
-    RE_TEXT_SLOT_REPL = '*'
-    RE_TEXT_SLOT_ENDREPL = '$'
+    RE_TEXT_SLOT = r'\[([\w /\*\$|]*)\]'
+    RE_TEXT_SLOT_REPL = r'*'
+    RE_TEXT_SLOT_ENDREPL = r'$'
 
     def __init__(self, parent, log_msgs, loading_msgs):
         """
@@ -678,7 +678,7 @@ class CommandWidget(QGroupBox):
         buttonBar.setLayout(buttonBarLayout)
 
         # options for log mesages
-        if not self.parent.args.output_dir is None:
+        if self.parent.args.output_dir is not None:
             self._combo_log_messages = QComboBox()
             self._combo_log_messages.currentIndexChanged.connect(
                 self._on_log_message)

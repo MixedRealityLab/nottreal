@@ -507,7 +507,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
 
         if not loading:
             if (state is None and self.auto_listening) \
-                    or (state == VUIState.LISTENING) :
+                    or (state == VUIState.LISTENING):
                 self.router('output', 'now_listening')
             elif state == VUIState.COMPUTING:
                 self.router('output', 'now_computing')

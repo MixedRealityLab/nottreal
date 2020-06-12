@@ -3,15 +3,19 @@ from .log import Logger
 from .dir import DirUtils
 from argparse import ArgumentTypeError
 
-import importlib, os, pkgutil, sys
+import importlib
+import os
+import pkgutil
+
 
 class ArgparseUtils:
 
+    @staticmethod
     def dir_contains_config(dir):
         """
         Does a directory contain the required configuration files and
         are they readable?
-        
+
         If no supplied directory is given (or the default is given), and it
         is invalid, the distribution configuration (in `.cfg-dist`) is used.
 
@@ -20,7 +24,7 @@ class ArgparseUtils:
 
         Raises:
             ArgumentTypeError -- if the user supplies the distribution config
-                directory as their choice, or if their supplied choice of 
+                directory as their choice, or if their supplied choice of
                 directory does not exist, is not readable, or is missing
                 the required files
 
@@ -30,16 +34,18 @@ class ArgparseUtils:
         if dir == '.cfg-dist':
             raise ArgumentTypeError(('You cannot use the distribution '
                                     'configuration directory'))
-        
+
         dist_dir = '.cfg-dist'
         pwd = DirUtils.pwd() + '/'
         requested_dir = pwd + dir
-        
+
         if not os.path.isdir(requested_dir):
             if dir == 'cfg' and os.path.isdir(pwd + '.cfg-dist'):
-                print('%s not found' % requested_dir,
-                    '∴ falling back to distribution configuration', sep=' ')
-                dir = dist_dir 
+                print(
+                    '%s not found' % requested_dir,
+                    '∴ falling back to distribution configuration',
+                    sep=' ')
+                dir = dist_dir
                 requested_dir = pwd + dist_dir
             else:
                 raise ArgumentTypeError((
@@ -53,6 +59,7 @@ class ArgparseUtils:
 
         return dir
 
+    @staticmethod
     def dir_is_writeable(dir):
         """
         Is a directory writeable?
@@ -62,27 +69,29 @@ class ArgparseUtils:
 
         Returns:
             {str} -- `dir` if directory is writeable
-        
+
         Raises:
             ArgumentTypeError -- If `dir` is not valid or writeable
         """
         pwd = DirUtils.pwd() + '/'
-        
+
         if dir and not os.path.isdir(pwd + dir):
             raise ArgumentTypeError(
                 ('%s is not a valid directory' % dir))
         elif dir and not os.access(dir, os.W_OK):
             raise ArgumentTypeError(
                 ('%s is not a writeable directory' % dir))
-                
+
         return dir
 
+
 class ClassUtils:
-    def load_all_subclasses(module_path, subclass, prefix = ''):
+    @staticmethod
+    def load_all_subclasses(module_path, subclass, prefix=''):
         """
         Search a directory/module for files and import classes
         that subclass (can be multi-layer) a class.
-        
+
         Arguments:
             module_path {str} -- Directory to search
             subclass {class} -- Class everthing must inherit from
@@ -93,19 +102,20 @@ class ClassUtils:
             importlib.import_module('..' + prefix + name, __package__)
 
         return ClassUtils.get_all_subclasses(subclass)
-            
+
+    @staticmethod
     def get_all_subclasses(rootclass):
         """
         Recursively get all subclasses
-        
+
         Arguments:
             rootclass {class} -- Class to look for subclasses of
-        
+
         Returns:
             [class]
         """
         subclasses = {}
-        
+
         for subclass in rootclass.__subclasses__():
             subclasses[subclass.__name__] = subclass
             subclasses.update(ClassUtils.get_all_subclasses(subclass))
