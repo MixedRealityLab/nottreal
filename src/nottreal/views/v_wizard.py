@@ -597,8 +597,9 @@ class MessageQueueWidget(QTreeView):
             text {str} -- Text to add to the queue
         """
         self._queued_messages.append(text)
-        self.model.insertRow(0)
-        self.model.setData(self.model.index(0, self.QUEUED_MESSAGE), text)
+        idx = len(self._queued_messages) - 1
+        self.model.insertRow(idx)
+        self.model.setData(self.model.index(idx, self.QUEUED_MESSAGE), text)
 
     def clear(self):
         """
@@ -616,8 +617,7 @@ class MessageQueueWidget(QTreeView):
         """
         try:
             idx = self._queued_messages.index(text)
-            idxr = len(self._queued_messages) - idx - 1
-            self.model.removeRow(idxr)
+            self.model.removeRow(idx)
             del self._queued_messages[idx]
         except ValueError:
             pass
