@@ -675,7 +675,7 @@ class CommandWidget(QGroupBox):
         self._combo_log_messages = QComboBox()
         self._combo_log_messages.currentIndexChanged.connect(
             self._on_log_message)
-        self._combo_log_messages.addItem(_('Log an event'))
+        self._combo_log_messages.setPlaceholderText(_('Log an event'))
 
         for key, value in log_msgs.items():
             self._combo_log_messages.addItem(
@@ -686,7 +686,7 @@ class CommandWidget(QGroupBox):
         self._combo_loading_messages = QComboBox()
         self._combo_loading_messages.currentIndexChanged.connect(
             self._on_loading_message)
-        self._combo_loading_messages.addItem(
+        self._combo_loading_messages.setPlaceholderText(
             _('Send a loading message...'))
         for key, value in loading_msgs.items():
             self._combo_loading_messages.addItem(value['message'])
@@ -994,11 +994,11 @@ class CommandWidget(QGroupBox):
         Decorators:
             Slot
         """
-        if num > 0:
+        if num > -1:
             id = self._combo_log_messages.currentData()
             text = self._combo_log_messages.currentText()
             self.parent.router('wizard', 'log_message', id=id, text=text)
-            self._combo_log_messages.setCurrentIndex(0)
+            self._combo_log_messages.setCurrentIndex(-1)
 
     @Slot(int)
     def _on_loading_message(self, num):
@@ -1011,10 +1011,10 @@ class CommandWidget(QGroupBox):
         Decorators:
             Slot
         """
-        if num > 0:
+        if num > -1:
             text = self._combo_loading_messages.currentText()
             self.speak_text(text, loading=True)
-            self._combo_loading_messages.setCurrentIndex(0)
+            self._combo_loading_messages.setCurrentIndex(-1)
 
     @Slot()
     def _on_clear(self):
