@@ -295,7 +295,8 @@ class Orb(QWidget):
             devices = sounddevice.query_devices()
             self._flutter_devices = {}
             for key, device in enumerate(devices):
-                self._flutter_devices[key] = device['name']
+                if device['max_input_channels'] > 0:
+                    self._flutter_devices[key] = device['name']
 
             self._set_flutter_mic_source(sounddevice.default.device[0])
 
@@ -354,7 +355,7 @@ class Orb(QWidget):
             while self._hot_mic and self._flutter_device is None:
                 sounddevice.sleep(1000)
 
-        if self._flutter_device is None \
+        if self._flutter_device is not None \
                 and self._state is VUIState.LISTENING:
             Logger.info(__name__, 'Swapping input stream for flutter')
             self._set_volume_level_loop()

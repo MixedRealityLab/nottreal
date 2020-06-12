@@ -688,7 +688,7 @@ class CommandWidget(QGroupBox):
                 self._combo_log_messages.addItem(
                     value['message'],
                     value['id'])
-        
+
             buttonBarLayout.addWidget(self._combo_log_messages)
 
         # options for loading messages
@@ -699,7 +699,7 @@ class CommandWidget(QGroupBox):
             _('Send a loading message...'))
         for key, value in loading_msgs.items():
             self._combo_loading_messages.addItem(value['message'])
-            
+
         buttonBarLayout.addWidget(self._combo_loading_messages)
 
         # clear and speak buttons
