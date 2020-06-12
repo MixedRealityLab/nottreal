@@ -35,13 +35,17 @@ class App:
 
         self.controllers = {}
         for name, cls in classes.items():
-            try:
+            if self.args.dev:
                 self.controllers[name] = cls(self, args)
                 Logger.debug(__name__, 'Loaded controller "%s"' % name)
-            except TypeError:
-                Logger.error(
-                    __name__,
-                    '"%s" has invalid constructor arguments' % (name))
+            else:
+                try:
+                    self.controllers[name] = cls(self, args)
+                    Logger.debug(__name__, 'Loaded controller "%s"' % name)
+                except TypeError:
+                    Logger.error(
+                        __name__,
+                        '"%s" has invalid constructor arguments' % (name))
 
             respond_tos = self.controllers[name].respond_to()
             if type(respond_tos) is list:

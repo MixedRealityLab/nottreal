@@ -47,7 +47,7 @@ class Gui:
 
         self.output = {}
         for name, cls in classes.items():
-            try:
+            if self.args.dev:
                 instance = cls(
                     self.nottreal,
                     self.args,
@@ -62,10 +62,26 @@ class Gui:
                     Logger.info(
                         __name__,
                         'Output view "%s" is disabled' % name)
-            except TypeError:
-                Logger.error(
-                    __name__,
-                    '"%s" has invalid constructor arguments' % name)
+            else:
+                try:
+                    instance = cls(
+                        self.nottreal,
+                        self.args,
+                        self.data,
+                        self.config)
+
+                    if instance.activated():
+                        self.output[name.lower()] = instance
+                        instance.init_ui()
+                        Logger.info(__name__, 'Loaded output view "%s"' % name)
+                    else:
+                        Logger.info(
+                            __name__,
+                            'Output view "%s" is disabled' % name)
+                except TypeError:
+                    Logger.error(
+                        __name__,
+                        '"%s" has invalid constructor arguments' % name)
 
     def run_loop(self):
         """Show the GUI application by starting the UI loop"""
