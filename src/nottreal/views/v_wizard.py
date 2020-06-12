@@ -671,16 +671,25 @@ class CommandWidget(QGroupBox):
         self._text_speak.keyPressEvent = self._on_text_key_press
         layout.addWidget(self._text_speak)
 
-        # options for log mesages
-        self._combo_log_messages = QComboBox()
-        self._combo_log_messages.currentIndexChanged.connect(
-            self._on_log_message)
-        self._combo_log_messages.setPlaceholderText(_('Log an event'))
+        # button bar
+        buttonBar = QGroupBox()
+        buttonBar.setContentsMargins(0, 5, 0, 0)
+        buttonBarLayout = QHBoxLayout()
+        buttonBar.setLayout(buttonBarLayout)
 
-        for key, value in log_msgs.items():
-            self._combo_log_messages.addItem(
-                value['message'],
-                value['id'])
+        # options for log mesages
+        if not self.parent.args.output_dir is None:
+            self._combo_log_messages = QComboBox()
+            self._combo_log_messages.currentIndexChanged.connect(
+                self._on_log_message)
+            self._combo_log_messages.setPlaceholderText(_('Log an event'))
+
+            for key, value in log_msgs.items():
+                self._combo_log_messages.addItem(
+                    value['message'],
+                    value['id'])
+        
+            buttonBarLayout.addWidget(self._combo_log_messages)
 
         # options for loading messages
         self._combo_loading_messages = QComboBox()
@@ -690,6 +699,8 @@ class CommandWidget(QGroupBox):
             _('Send a loading message...'))
         for key, value in loading_msgs.items():
             self._combo_loading_messages.addItem(value['message'])
+            
+        buttonBarLayout.addWidget(self._combo_loading_messages)
 
         # clear and speak buttons
         self._button_clear = QPushButton(_('Clear'))
@@ -699,14 +710,6 @@ class CommandWidget(QGroupBox):
         self._button_speak.clicked.connect(self._on_speak)
         self._button_speak.setDefault(True)
         self._button_speak.setAutoDefault(True)
-
-        # assemble it all
-        buttonBar = QGroupBox()
-        buttonBar.setContentsMargins(0, 5, 0, 0)
-        buttonBarLayout = QHBoxLayout()
-        buttonBar.setLayout(buttonBarLayout)
-        buttonBarLayout.addWidget(self._combo_log_messages)
-        buttonBarLayout.addWidget(self._combo_loading_messages)
 
         buttonBox = QDialogButtonBox()
         buttonBox.addButton(self._button_clear, QDialogButtonBox.HelpRole)
