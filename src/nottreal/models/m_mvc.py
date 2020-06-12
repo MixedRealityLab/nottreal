@@ -36,6 +36,7 @@ class WizardOption:
         self.value = default
         self.added = added
         self.ui = None
+        self.values = values
 
     def change(self, value):
         """

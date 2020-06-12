@@ -67,7 +67,6 @@ class MVUIWindow(AbstractOutputView):
         layout.setColumnStretch(1, 10)
         layout.setColumnStretch(2, 1)
         
-        
     def activated(self):
         return True
 
@@ -280,13 +279,39 @@ class Orb(QWidget):
         # enable fluttering?
         self._enable_flutter = cfg.getboolean('MVUI', 'orb_enable_flutter')
         if not self._enable_flutter:
-            Logger.info(__name__, 'Volume flutter is disabled');
+            Logger.info(__name__, 'Volume flutter is disabled')
+        else:
+            devices = sounddevice.query_devices()
+            self._flutter_devices = {}
+            for key, device in enumerate(devices):
+                self._flutter_devices[key] = device['name']
+            
+            self._set_flutter_mic_source(sounddevice.default.device[0])
+                
         self._flutter = 0.4
 
         # start drawing
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.update)
         self._timer.start(self.REPAINT_EVERY_MS)
+
+    def _set_flutter_mic_source(self, selected_index):
+        source = self._flutter_devices[selected_index]
+        Logger.info(__name__, 'Mic source for flutter set to "%s"' % source)
+        
+        values = dict(self._flutter_devices)
+        values[selected_index] = "** " + values[selected_index] 
+        
+        self.parent.nottreal.router(
+            'wizard',
+            'register_option',
+            label=_('Select microphone source for flutter'),
+            method=self._set_flutter_mic_source,
+            type = WizardOption.DROPDOWN,
+            default = False,
+            values = values)
+        
+        self._flutter_device = selected_index
 
     def _get_sizef(self, size, border = 0):
         """
@@ -311,16 +336,29 @@ class Orb(QWidget):
         self._flutter_variation_dir = self.FADE_IN
         
         stream = sounddevice.InputStream(
-            callback=self._set_volume_level_callback)
+                device = self._flutter_device,
+                callback=self._set_volume_level_callback
+            )
         with stream:
-            while self._hot_mic:
+            self._flutter_device = None
+            while self._hot_mic and self._flutter_device == None:
                 sounddevice.sleep(1000)
+        
+        if self._flutter_device != None:
+            Logger.info(__name__, 'Swapping input stream for flutter');
+            self._set_volume_level_loop()
 
         Logger.info(__name__, 'Stopped listening to the mic');
         
     def _set_volume_level_callback(self, indata, frames, time, status):
         volume_norm =  numpy.linalg.norm(indata)
-        self._flutter = max(min(math.sin(volume_norm + self._flutter_variation * 1.4), .8), self._flutter_variation)
+        self._flutter = max(
+                min(
+                    math.sin(volume_norm + self._flutter_variation * 1.4),
+                    .8
+                ),
+                self._flutter_variation
+            )
 
         if self._flutter_variation_dir is self.FADE_OUT:
             self._flutter_variation -= .002

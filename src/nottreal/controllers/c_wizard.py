@@ -44,7 +44,8 @@ class WizardController(AbstractController):
         label,
         method,
         type = WizardOption.CHECKBOX,
-        default = False):
+        default = False,
+        values = {}):
         """
         Create an option for the user to specify
 
@@ -57,10 +58,16 @@ class WizardController(AbstractController):
             type {int} -- The type of option 
                 (default: {WizardOption.CHECKBOX})
             default {bool} -- Default value (default: {False})
+            values {dict} -- Dictionary of values (default: {{}})
         """
-        Logger.debug(__name__,
-            'Option "%s" registered with default "%s"' % (label, default))
-        option = WizardOption(label, method, type, default)
+        Logger.debug(__name__,'Option "%s" registered' % label)
+        option = WizardOption(
+            label = label,
+            method = method,
+            type = type,
+            default = default,
+            values = values
+        )
         self.nottreal.view.wizard_window.options.add(option)
 
     def speak_text(self,
