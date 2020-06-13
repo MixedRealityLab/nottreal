@@ -101,6 +101,15 @@ class MVUIWindow(AbstractOutputView):
         """
         self.state.set(state)
 
+    def toggle_visibility(self):
+        """
+        Toggle visibility of the window
+        """
+        state = self.nottreal.controllers['WizardController'].state
+        self.set_state(state)
+
+        super().toggle_visibility()
+
 
 class MessageWidget(QScrollArea):
     """
@@ -591,21 +600,24 @@ class Orb(QWidget):
         Arguments:
             state {int} -- State from {VUIState}
         """
-        if (self._state != VUIState.LISTENING
-                and state == VUIState.LISTENING
-                and self._enable_flutter):
-            self._hot_mic = True
-            vol_thread = threading.Thread(target=self._set_volume_level_loop)
-            vol_thread.daemon = True
-            vol_thread.start()
+        if self._enable_flutter:
+            if (not self.parent.is_visible()
+                    and state == VUIState.LISTENING) or \
+                (self._state != VUIState.LISTENING
+                    and state == VUIState.LISTENING):
+                self._hot_mic = True
+                vol_thread = threading.Thread(
+                    target=self._set_volume_level_loop)
+                vol_thread.daemon = True
+                vol_thread.start()
 
         if (self._state == VUIState.LISTENING and
                 state != VUIState.LISTENING
                 and self._enable_flutter):
             self._hot_mic = False
 
-        if self._previous_state_opacity > 0:
-            self._previous_state = self._state
-            self._previous_state_opacity = -self._previous_state_opacity
+            if self._previous_state_opacity > 0:
+                self._previous_state = self._state
+                self._previous_state_opacity = -self._previous_state_opacity
 
         self._state = state

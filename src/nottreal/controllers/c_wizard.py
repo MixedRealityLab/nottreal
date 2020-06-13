@@ -16,7 +16,7 @@ class WizardController(AbstractController):
         """
         super().__init__(nottreal, args)
 
-        self._state = VUIState.COMPUTING
+        self.state = VUIState.COMPUTING
 
     def ready(self):
         """
@@ -139,9 +139,9 @@ class WizardController(AbstractController):
             text {str} -- Text that is queued to be spoken and is
                 no longer queued.
         """
-        self._state = VUIState.SPEAKING
         self.nottreal.view.wizard_window.msg_queue.remove(text)
         self.nottreal.view.wizard_window.msg_history.add(text)
+        self.change_state(VUIState.SPEAKING)
 
     def change_state(self, state):
         """
@@ -150,11 +150,13 @@ class WizardController(AbstractController):
         Arguments:
             state {int} -- New {VUIState}
         """
-        if self._state is VUIState.SPEAKING \
+        Logger.debug(__name__, 'New state: %d' % state)
+
+        if self.state is VUIState.SPEAKING \
                 and state is not VUIState.SPEAKING:
             self.router('voice', 'stop_speaking')
 
-        self._state = state
+        self.state = state
 
         if state is VUIState.NOTHING:
             self.router('output', 'now_resting')
