@@ -4,7 +4,6 @@ from ..utils.log import Logger
 from collections import OrderedDict
 
 import csv
-import sys
 
 
 class TSVModel:
@@ -77,13 +76,12 @@ class TSVModel:
         """
         if cat_id is not None:
             try:
-                index = self.cats[cat_id]['msgs']
+                self.cats[cat_id]['msgs']
             except KeyError:
                 raise KeyError('No matching category for id "%s"' % cat_id)
             cat_id_str = '"%s"' % cat_id
         else:
             cat_id_str = 'all messages'
-            index = self.msgs
 
         if msg_id is not None:
             try:

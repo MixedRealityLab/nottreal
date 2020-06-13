@@ -24,6 +24,27 @@ In addition to this, NottReal requires some Python dependencies, which can be in
  $ pip3 install -r requirements.txt
 ```
 
+### Optional voice recognition
+
+NottReal also supports voice transcription (with the outputs of this _only_ displayed in the Wizard window—nothing else happens with them). This requires the Python [SpeechRecognition](https://pypi.org/project/SpeechRecognition/) library, installed with the following additional dependency:
+
+```bash
+$ pip3 install SpeechRecognition
+```
+
+NottReal supports the following services, although note that these haven't been fully tested yet:
+
+* [Google Cloud Speech API](https://cloud.google.com/speech/)
+* [Wit.ai](https://wit.ai/)
+* [Microsoft Bing Voice Recognition](https://www.microsoft.com/cognitive-services/en-us/speech-api)
+* [Microsoft Azure Speech API](https://azure.microsoft.com/en-gb/services/cognitive-services/speech-to-text/)
+* [Amazon Lex](https://aws.amazon.com/lex/)
+* [Houndify API](https://houndify.com/)
+* [IBM Speech to Text](http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/speech-to-text.html)
+* [Tensorflow](https://www.tensorflow.org/)
+
+Configuration options can be found in the `settings.cfg`.
+
 ## Running
 
 Run the code by calling `python3 nottreal.py`, with the various options accessible with `-h` option. Summarily:
@@ -40,7 +61,7 @@ Run the code by calling `python3 nottreal.py`, with the various options accessib
 
 * Multiple output windows are supported, although only `MVUIWindow` is implemented. This window  looks a bit like a Mobile VUI). Set this to open automatically with the `-o` option, e.g.` -oMVUIWindow`.
 
-
+* Voice recognition using the `-r` option followed by the chosen library (available: `GoogleCloud`, `Witai` `Bing`, `Azure`,`Lex`,`Houndify`,`IBM`,`Tensorflow`)
 
 ## App layout and configuration
 Copy the contents of the `.cfg_dist` directory to a new directory (e.g. `cfg`).  The application doesn't load configuration files from `cfg_dist`---these are only accessed if no configuration is specified.

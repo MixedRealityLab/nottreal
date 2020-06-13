@@ -1,8 +1,6 @@
 
 from ..utils.log import Logger
 
-from collections import OrderedDict
-
 import configparser
 
 

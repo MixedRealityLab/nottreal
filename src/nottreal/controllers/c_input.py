@@ -3,6 +3,8 @@ from ..utils.log import Logger
 from ..models.m_mvc import WizardOption
 from .c_abstract import AbstractController
 
+from speech_recognition import Microphone
+
 import audioop
 import pyaudio
 import threading
@@ -34,20 +36,18 @@ class InputController(AbstractController):
             'Input',
             'sensitivity')
 
-        self._pyaudio = pyaudio.PyAudio()
+        self.source = Microphone()
+        self._pyaudio = self.source.pyaudio_module
         self._thread = None
 
-        info = self._pyaudio.get_host_api_info_by_index(0)
-        num_devices = info.get('deviceCount')
-
         self.devices = {}
-        for i in range(0, num_devices):
-            device = \
-                self._pyaudio.get_device_info_by_host_api_device_index(0, i)
-            num_inputs = device.get('maxInputChannels')
+        audio = self._pyaudio.PyAudio()
+        for i in range(audio.get_device_count()):
+            device = audio.get_device_info_by_index(i)
+            if device['maxInputChannels'] > 0:
+                self.devices[i] = device['name']
 
-            if num_inputs > 0:
-                self.devices[i] = device.get('name')
+        audio.terminate()
 
         Logger.debug(
             __name__,
@@ -65,7 +65,9 @@ class InputController(AbstractController):
 
     def ready(self):
         """Set the default input source"""
-        self.set_device(self._pyaudio.get_default_input_device_info()['index'])
+        audio = self._pyaudio.PyAudio()
+        self.set_device(audio.get_default_input_device_info()['index'])
+        audio.terminate()
 
     def set_device(self, device):
         """
@@ -149,12 +151,13 @@ class InputController(AbstractController):
         """
         Logger.info(__name__, 'Listening to the input source')
 
-        CHUNK = 2048
+        CHUNK = 1024
         FORMAT = pyaudio.paInt16
         CHANNELS = 1
         RATE = 44100
 
-        stream = self._pyaudio.open(
+        audio = self._pyaudio.PyAudio()
+        stream = audio.open(
                         input_device_index=self._swap_to_device,
                         format=FORMAT,
                         channels=CHANNELS,
@@ -177,6 +180,7 @@ class InputController(AbstractController):
         Logger.info(__name__, 'Stopped listening to the input source')
         stream.stop_stream()
         stream.close()
+        audio.terminate()
 
         if self._swap_to_device is not None:
             return self._listening_loop()

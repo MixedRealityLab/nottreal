@@ -44,56 +44,18 @@ class WizardWindow(QMainWindow):
         super(WizardWindow, self).__init__()
         self.setWindowTitle(nottreal.appname)
 
-        Logger.debug(__name__, 'Initialising the Wizard window')
+        Logger.debug(__name__, 'Initialising the Wizard window widgets')
 
-        # Window layout
-        layout = QGridLayout()
-        layout.setVerticalSpacing(0)
-
-        window_main = QWidget()
-        window_main.setLayout(layout)
-        self.setCentralWidget(window_main)
-
-        # add prepared messages
+        self.recognised_words = None
         self.prepared_msgs = PreparedMessagesWidget(self, data.cats)
-        layout.addWidget(self.prepared_msgs, 0, 0)
-        layout.setRowStretch(0, 3)
-
-        # add slot history and message queue
-        row2widget = QGroupBox()
-        row2layout = QHBoxLayout()
-
-        row2widget.setContentsMargins(0, 5, 0, 0)
-
-        self.slot_history = SlotHistoryWidget(row2widget)
-        row2layout.addWidget(self.slot_history)
-
-        self.msg_queue = MessageQueueWidget(row2widget)
-        row2layout.addWidget(self.msg_queue)
-        row2widget.setLayout(row2layout)
-
-        layout.addWidget(row2widget, 1, 0)
-        layout.setRowStretch(1, 2)
-
-        # add the command area
+        self.slot_history = SlotHistoryWidget(self)
+        self.msg_queue = MessageQueueWidget(self)
         self.command = CommandWidget(
             self,
             data.log_msgs,
             data.loading_msgs)
-        layout.addWidget(self.command, 2, 0)
-        layout.setRowStretch(2, 1)
-
-        # add the runtime options area
         self.options = OptionsWidget(self, {})
-        layout.addWidget(self.options, 3, 0)
-        layout.setRowStretch(3, 0)
-
-        # add the message history
         self.msg_history = MessageHistoryWidget(self)
-        layout.addWidget(self.msg_history, 4, 0)
-        layout.setRowStretch(4, 1)
-
-        self.setGeometry(0, 0, 800, 600)
 
     def init_ui(self):
         """
@@ -101,6 +63,47 @@ class WizardWindow(QMainWindow):
         made ready to show
         """
         self._create_menu()
+
+        layout = QGridLayout()
+        layout.setVerticalSpacing(0)
+
+        window_main = QWidget()
+        window_main.setLayout(layout)
+        self.setCentralWidget(window_main)
+
+        recognising = self.nottreal.responder('recognition').enabled()
+        if recognising:
+            self.recognised_words = RecognisedWordsWidget(self)
+
+            layout.addWidget(self.recognised_words, 0, 0)
+            layout.addWidget(self.prepared_msgs, 0, 1)
+            layout.setColumnStretch(0, 1)
+            layout.setColumnStretch(1, 3)
+        else:
+            layout.addWidget(self.prepared_msgs, 0, 0)
+
+        row2widget = QGroupBox()
+        row2widget.setContentsMargins(0, 5, 0, 0)
+
+        row2layout = QHBoxLayout()
+        row2layout.addWidget(self.msg_queue)
+        row2layout.addWidget(self.slot_history)
+
+        row2widget.setLayout(row2layout)
+
+        layout.addWidget(row2widget, 1, 0, 1, 2)
+        layout.addWidget(self.command, 2, 0, 1, 2)
+        layout.addWidget(self.options, 3, 0, 1, 2)
+        layout.addWidget(self.msg_history, 4, 0, 1, 2)
+
+        layout.setRowStretch(0, 3)
+        layout.setRowStretch(1, 2)
+        layout.setRowStretch(2, 1)
+        layout.setRowStretch(3, 0)
+        layout.setRowStretch(4, 1)
+
+        self.setGeometry(0, 0, 800, 600)
+
         Logger.info(__name__, 'Wizard window ready')
 
     def _create_menu(self):
@@ -241,6 +244,52 @@ class WizardWindow(QMainWindow):
         """
         self.router('app', 'quit')
         event.accept()
+
+
+class RecognisedWordsWidget(QTreeView):
+    """
+    A list of previously recognised words
+
+    Extends:
+        QGroupBox
+
+    Variables:
+        RECOGNISED_WORDS {int} -- Column ID for the some words
+    """
+    RECOGNISED_WORDS = 0
+
+    def __init__(self, parent):
+        """
+        Create the list for recognised words
+
+        Arguments
+            parent {QWidget} -- Parent widget
+        """
+        super(RecognisedWordsWidget, self).__init__(parent)
+
+        self.parent = parent
+
+        self.setRootIsDecorated(False)
+        self.setAlternatingRowColors(True)
+
+        self.model = QStandardItemModel(0, 1, self)
+        self.model.setHeaderData(
+            self.RECOGNISED_WORDS,
+            Qt.Horizontal,
+            'Recognised words')
+
+        self.setModel(self.model)
+        self.setSelectionMode(QAbstractItemView.NoSelection)
+        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
+    def add(self, text):
+        """
+        Add an item to the top of the model of recognised words
+        Arguments:
+            text {str} -- Text to add to the queue
+        """
+        self.model.insertRow(0)
+        self.model.setData(self.model.index(0, self.RECOGNISED_WORDS), text)
 
 
 class PreparedMessagesWidget(QTabWidget):

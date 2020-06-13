@@ -160,10 +160,13 @@ class WizardController(AbstractController):
 
         if state is VUIState.NOTHING:
             self.router('output', 'now_resting')
+            self.router('recognition', 'now_not_listening')
         elif state is VUIState.COMPUTING:
             self.router('output', 'now_computing')
+            self.router('recognition', 'now_not_listening')
         elif state is VUIState.LISTENING:
             self.router('output', 'now_listening')
+            self.router('recognition', 'now_listening')
 
     def stop_speaking(self):
         """
@@ -186,6 +189,16 @@ class WizardController(AbstractController):
         Clear the message queue
         """
         self.nottreal.view.wizard_window.msg_queue.clear()
+
+    def recognised_words(self, words):
+        """
+        Some words have been automatically recognised and should be
+        shown in the UI
+
+        Argument:
+            words {str} -- Recognised words
+        """
+        self.nottreal.view.wizard_window.recognised_words.add(words)
 
     def quit(self):
         """
