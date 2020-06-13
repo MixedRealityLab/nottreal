@@ -1,6 +1,6 @@
 
 from ..utils.log import Logger
-from ..models.m_mvc import WizardOption
+from ..models.m_mvc import VUIState, WizardOption
 
 from collections import OrderedDict, deque
 from PySide2.QtWidgets import (QAbstractItemView, QAction, QApplication,
@@ -202,13 +202,13 @@ class WizardWindow(QMainWindow):
     def _on_menu_item_selected(self):
         data = self.sender().data()
         if data == 'resting_orb_button':
-            self.router('output', 'now_resting')
+            self.router('wizard', 'change_state', state=VUIState.NOTHING)
             return
         elif data == 'computing_orb_button':
-            self.router('output', 'now_computing')
+            self.router('wizard', 'change_state', state=VUIState.COMPUTING)
             return
         elif data == 'listening_orb_button':
-            self.router('output', 'now_listening')
+            self.router('wizard', 'change_state', state=VUIState.LISTENING)
             return
         elif data == 'next_tab':
             self.prepared_msgs.adjust_selected_tab(1)
