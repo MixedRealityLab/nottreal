@@ -5,11 +5,27 @@
 A Python application for running Wizard of Oz studies with a voice-based  user interface.
 
 ## Dependencies
-NottReal requires Python 3 and some dependencies, run `pip3` in the root directory:
+You will need `python3` and `portaudio` on your computer.
 
-	 pip3 install -r requirements.txt
+### macOS
+
+If you're on macOS, install these using [Homebrew](https://brew.sh/):
+
+```bash
+$ brew install python
+$ brew install portaudio
+```
+
+### Python dependencies
+
+In addition to this, NottReal requires some Python dependencies, which can be installed by running  `pip3`  on the requirements file in the root directory:
+
+```bash
+ $ pip3 install -r requirements.txt
+```
 
 ## Running
+
 Run the code by calling `python3 nottreal.py`, with the various options accessible with `-h` option. Summarily:
 
 * Logging is controlled by using the `-l` option, with the levels `WARNING`, `DEBUG`, `ERROR`, `INFO`, `CRITICAL`
