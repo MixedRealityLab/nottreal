@@ -3,14 +3,14 @@ from ..utils.log import Logger
 from ..models.m_mvc import VUIState, WizardOption
 
 from collections import OrderedDict, deque
-from PySide2.QtWidgets import (QAbstractItemView, QAction, QApplication,
+from PySide2.QtWidgets import (QAbstractItemView, QAction,
                                QCheckBox, QComboBox, QDialogButtonBox,
-                               QGridLayout, QGroupBox, QHBoxLayout, QLabel,
+                               QGridLayout, QGroupBox, QHBoxLayout,
                                QMainWindow, QPlainTextEdit, QPushButton,
-                               QStyleFactory, QVBoxLayout, QTabWidget,
+                               QVBoxLayout, QTabWidget,
                                QTreeView, QWidget)
-from PySide2.QtGui import (QIcon, QTextCursor, QStandardItemModel, QPalette)
-from PySide2.QtCore import (Qt, QItemSelection, QItemSelectionModel, QTimer,
+from PySide2.QtGui import (QTextCursor, QStandardItemModel)
+from PySide2.QtCore import (Qt, QItemSelectionModel, QTimer,
                             Slot)
 
 import re
@@ -108,41 +108,41 @@ class WizardWindow(QMainWindow):
         Create the menu
         """
         main_menu = self.menuBar()
-        file_menu = main_menu.addMenu(_('File'))
-        wizard_menu = main_menu.addMenu(_('Wizard'))
-        output_menu = main_menu.addMenu(_('Output'))
+        file_menu = main_menu.addMenu('File')
+        wizard_menu = main_menu.addMenu('Wizard')
+        output_menu = main_menu.addMenu('Output')
 
-        exit_button = QAction(_('Quit'), self)
+        exit_button = QAction('Quit', self)
         exit_button.setMenuRole(QAction.QuitRole)
         exit_button.setShortcut('Ctrl+Q')
-        exit_button.setStatusTip(_('Quit %s' % self.nottreal.appname))
+        exit_button.setStatusTip('Quit %s' % self.nottreal.appname)
         exit_button.triggered.connect(self.close)
         file_menu.addAction(exit_button)
 
-        next_tab_button = QAction(_('Next tab'), self)
+        next_tab_button = QAction('Next tab', self)
         next_tab_button.setData('next_tab')
         next_tab_button.setShortcut('Meta+Tab')
-        next_tab_button.setStatusTip(_('Move to the next tab/category'))
+        next_tab_button.setStatusTip('Move to the next tab/category')
         next_tab_button.triggered.connect(self._on_menu_item_selected)
         wizard_menu.addAction(next_tab_button)
 
-        prev_tab_button = QAction(_('Previous tab'), self)
+        prev_tab_button = QAction('Previous tab', self)
         prev_tab_button.setData('prev_tab')
         prev_tab_button.setShortcut('Meta+Shift+Tab')
-        prev_tab_button.setStatusTip(_('Move to the previous tab/category'))
+        prev_tab_button.setStatusTip('Move to the previous tab/category')
         prev_tab_button.triggered.connect(self._on_menu_item_selected)
         wizard_menu.addAction(prev_tab_button)
 
         wizard_menu.addSeparator()
 
         interrupt_voice_button = QAction(
-            _('Interrupt current voice output'),
+            'Interrupt current voice output',
             self)
 
         interrupt_voice_button.setData('interrupt_output')
         interrupt_voice_button.setShortcuts(['Meta+C', 'Ctrl+C'])
         interrupt_voice_button.setStatusTip(
-            _('Interrupt the current output and optionally clear the queue'))
+            'Interrupt the current output and optionally clear the queue')
         interrupt_voice_button.triggered.connect(self._on_menu_item_selected)
         wizard_menu.addAction(interrupt_voice_button)
 
@@ -151,19 +151,19 @@ class WizardWindow(QMainWindow):
             suffix = output[0]
             name = output[1].get_label()
 
-            show_output_button = QAction(_('Show/hide %s window' % name), self)
+            show_output_button = QAction('Show/hide %s window' % name, self)
             show_output_button.setData('show_output_button_%s' % suffix)
             show_output_button.setStatusTip(
-                _('Toggle the visibility of the %s window') % name)
+                'Toggle the visibility of the %s window' % name)
             show_output_button.triggered.connect(self._on_menu_item_selected)
             if first:
                 show_output_button.setShortcut('Ctrl+W')
             output_menu.addAction(show_output_button)
 
-            max_output_button = QAction(_('Maximise %s window') % name, self)
+            max_output_button = QAction('Maximise %s window' % name, self)
             max_output_button.setData('max_output_button_%s' % suffix)
             max_output_button.setStatusTip(
-                _('Toggle the maximisation of the %s window') % name)
+                'Toggle the maximisation of the %s window' % name)
             max_output_button.triggered.connect(self._on_menu_item_selected)
             if first:
                 max_output_button.setShortcut('Ctrl+Shift+F')
@@ -172,27 +172,27 @@ class WizardWindow(QMainWindow):
 
             output_menu.addSeparator()
 
-        resting_orb_button = QAction(_('Trigger resting orb'), self)
+        resting_orb_button = QAction('Trigger resting orb', self)
         resting_orb_button.setData('resting_orb_button')
         resting_orb_button.setShortcut('Ctrl+R')
         resting_orb_button.setStatusTip(
-            _('Show the user that the Wizard is resting'))
+            'Show the user that the Wizard is resting')
         resting_orb_button.triggered.connect(self._on_menu_item_selected)
         output_menu.addAction(resting_orb_button)
 
-        computing_orb_button = QAction(_('Trigger busy orb'), self)
+        computing_orb_button = QAction('Trigger busy orb', self)
         computing_orb_button.setData('computing_orb_button')
         computing_orb_button.setShortcut('Ctrl+B')
         computing_orb_button.setStatusTip(
-            _('Show the user that the Wizard is computing'))
+            'Show the user that the Wizard is computing')
         computing_orb_button.triggered.connect(self._on_menu_item_selected)
         output_menu.addAction(computing_orb_button)
 
-        listening_orb_button = QAction(_('Trigger listening orb'), self)
+        listening_orb_button = QAction('Trigger listening orb', self)
         listening_orb_button.setData('listening_orb_button')
         listening_orb_button.setShortcut('Ctrl+L')
         listening_orb_button.setStatusTip(
-            _('Show the user that the Wizard is listening'))
+            'Show the user that the Wizard is listening')
         listening_orb_button.triggered.connect(self._on_menu_item_selected)
         output_menu.addAction(listening_orb_button)
 
@@ -277,16 +277,15 @@ class PreparedMessagesWidget(QTabWidget):
         self._msgs_models = OrderedDict()
         self._msgs_widgets = OrderedDict()
 
-        first = True
         for cat_id, cat in cats.items():
             treeview = QTreeView()
             treeview.setRootIsDecorated(False)
             treeview.setAlternatingRowColors(True)
 
             model = QStandardItemModel(0, 3, self)
-            model.setHeaderData(self.ID, Qt.Horizontal, _('ID'))
-            model.setHeaderData(self.LABEL, Qt.Horizontal, _('Label'))
-            model.setHeaderData(self.TEXT, Qt.Horizontal, _('Text'))
+            model.setHeaderData(self.ID, Qt.Horizontal, 'ID')
+            model.setHeaderData(self.LABEL, Qt.Horizontal, 'Label')
+            model.setHeaderData(self.TEXT, Qt.Horizontal, 'Text')
 
             treeview.clicked.connect(self._on_msg_doubleclick_check)
             treeview.keyReleaseEvent = self._on_msg_key_release
@@ -441,7 +440,7 @@ class PreparedMessagesWidget(QTabWidget):
 
             self._fill_msg(msg_id)
         except IndexError:
-            Log.error(__name__, 'Message unclicked?')
+            Logger.error(__name__, 'Message unclicked?')
 
     @Slot()
     def _on_msg_doubleclick(self):
@@ -455,7 +454,7 @@ class PreparedMessagesWidget(QTabWidget):
             msg_id = self._get_selected_msg(self.sender())
             self._speak_msg(msg_id)
         except IndexError:
-            Log.warning(__name__, 'Message unclicked?')
+            Logger.warning(__name__, 'Message unclicked?')
 
     @Slot()
     def _on_msg_doubleclick_check(self):
@@ -529,11 +528,11 @@ class SlotHistoryWidget(QTreeView):
         self.model.setHeaderData(
             self.SLOT_NAME,
             Qt.Horizontal,
-            _('Slot'))
+            'Slot')
         self.model.setHeaderData(
             self.SLOT_VALUE,
             Qt.Horizontal,
-            _('Previously entered value'))
+            'Previously entered value')
 
         self.setModel(self.model)
         self.setSelectionMode(QAbstractItemView.NoSelection)
@@ -583,7 +582,7 @@ class MessageQueueWidget(QTreeView):
         self.model.setHeaderData(
             self.QUEUED_MESSAGE,
             Qt.Horizontal,
-            _('Queued message'))
+            'Queued message')
 
         self.setModel(self.model)
         self.setSelectionMode(QAbstractItemView.NoSelection)
@@ -682,7 +681,7 @@ class CommandWidget(QGroupBox):
             self._combo_log_messages = QComboBox()
             self._combo_log_messages.currentIndexChanged.connect(
                 self._on_log_message)
-            self._combo_log_messages.setPlaceholderText(_('Log an event'))
+            self._combo_log_messages.setPlaceholderText('Log an event')
 
             for key, value in log_msgs.items():
                 self._combo_log_messages.addItem(
@@ -696,17 +695,17 @@ class CommandWidget(QGroupBox):
         self._combo_loading_messages.currentIndexChanged.connect(
             self._on_loading_message)
         self._combo_loading_messages.setPlaceholderText(
-            _('Send a loading message...'))
+            'Send a loading message...')
         for key, value in loading_msgs.items():
             self._combo_loading_messages.addItem(value['message'])
 
         buttonBarLayout.addWidget(self._combo_loading_messages)
 
         # clear and speak buttons
-        self._button_clear = QPushButton(_('Clear'))
+        self._button_clear = QPushButton('Clear')
         self._button_clear.clicked.connect(self._on_clear)
 
-        self._button_speak = QPushButton(_('Speak'))
+        self._button_speak = QPushButton('Speak')
         self._button_speak.clicked.connect(self._on_speak)
         self._button_speak.setDefault(True)
         self._button_speak.setAutoDefault(True)
@@ -742,13 +741,9 @@ class CommandWidget(QGroupBox):
         text = text.strip()
         if len(text) > 0:
             requires_editing = False
-            min_match_idx = 0
 
             matches = re.finditer(self.RE_TEXT_SLOT, text)
             for match in matches:
-                start = match.start(0)
-                end = match.end(0)
-
                 autoreplace = \
                     match.group(0)[1:-1].endswith(self.RE_TEXT_SLOT_REPL)
                 autoreplace_end = \
@@ -1193,7 +1188,7 @@ class MessageHistoryWidget(QGroupBox):
         self.model.setHeaderData(
             self.SPOKEN_MESSAGE,
             Qt.Horizontal,
-            _('Previously spoken message'))
+            'Previously spoken message')
 
         self._widget.setModel(self.model)
         self._widget.setSelectionMode(QAbstractItemView.NoSelection)

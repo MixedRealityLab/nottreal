@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-from .utils.init import *
-from .nottreal import *
+from .utils.log import Logger
+from .utils.init import ArgparseUtils
+from .nottreal import App
 
 from argparse import ArgumentParser
 
 import gettext
 import glob
 import os
+import sys
 
 modules = glob.glob(os.path.join(os.path.dirname(__file__), '*.py'))
 __all__ = [os.path.basename(f)[:-3]
@@ -43,6 +45,11 @@ def main():
         type=ArgparseUtils.dir_is_writeable,
         help='Directory to dump logs from spoken text (disabled by default)')
     parser.add_argument(
+        '-r',
+        '--recognition',
+        default='None',
+        help='Use a speech to text recognition system')
+    parser.add_argument(
         '-v',
         '--voice',
         default='outputToLog',
@@ -62,7 +69,7 @@ def main():
     Logger.init(getattr(Logger, args.log))
     Logger.info(__name__, "Hello, World")
 
-    nottreal.App(args)
+    App(args)
 
     Logger.info(__name__, "Goodbye, World")
     sys.exit(0)

@@ -1,14 +1,12 @@
 
 from ..utils.init import ClassUtils
-from ..utils.dir import *
+from ..utils.dir import DirUtils
 from ..utils.log import Logger
 from .v_wizard import WizardWindow
 from .v_output_abstract import AbstractOutputView
 
 from PySide2.QtWidgets import (QApplication, QStyleFactory)
 
-import importlib
-import pkgutil
 import sys
 
 
