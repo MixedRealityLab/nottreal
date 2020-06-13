@@ -1,10 +1,11 @@
 
 from .utils.init import ClassUtils
-from .utils.dir import *
+from .utils.dir import DirUtils
 from .utils.log import Logger
+from .models.m_cfg import ConfigModel
+from .models.m_tsv import TSVModel
+from .views.v_gui import Gui
 from .controllers import c_abstract
-from .models import *
-from .views import *
 
 
 class App:
@@ -23,8 +24,8 @@ class App:
         self._responders = {'app': self}
 
         # initialise the models
-        self.data = m_tsv.TSVModel(args)
-        self.config = m_cfg.ConfigModel(args)
+        self.data = TSVModel(args)
+        self.config = ConfigModel(args)
 
         # initialise the controllers
         module_path = DirUtils.pwd() + '/src/nottreal/controllers'
@@ -55,7 +56,7 @@ class App:
                 self.responder(respond_tos, self.controllers[name])
 
         # initialise the views
-        self.view = v_gui.Gui(self, args, self.data, self.config)
+        self.view = Gui(self, args, self.data, self.config)
         self.view.init_ui()
 
         try:
@@ -66,6 +67,12 @@ class App:
 
         try:
             self.router('wizard', 'ready')
+        except KeyError:
+            Logger.critical(__name__, 'Wizard window controller not found')
+            return
+
+        try:
+            self.router('input', 'ready')
         except KeyError:
             Logger.critical(__name__, 'Wizard window controller not found')
             return
@@ -137,11 +144,11 @@ class App:
         method = None
 
         try:
-            if responder is '_':
+            if responder == '_':
                 responderInstances = {
                     responder: self._responders[responder]
                     for responder in self._responders.keys()
-                    if responder is not 'app'
+                    if responder != 'app'
                 }
             else:
                 responderInstances[responder] = self._responders[responder]

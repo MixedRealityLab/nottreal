@@ -1,22 +1,17 @@
 
 from ..utils.log import Logger
-from ..models.m_mvc import VUIState, WizardOption
+from ..models.m_mvc import VUIState
 from .v_output_abstract import AbstractOutputView
 
 from PySide2.QtWidgets import (QGridLayout, QGraphicsOpacityEffect, QLabel,
                                QScrollArea, QSizePolicy, QWidget)
-from PySide2.QtGui import (QBrush, QColor, QFont, QFontMetrics, QIcon,
-                           QPainter, QPainterPath, QPalette, QPen,
-                           QRadialGradient, QTextDocument, QTextFormat,
-                           QTextOption)
+from PySide2.QtGui import (QBrush, QColor, QFont, QPainter, QPainterPath,
+                           QPalette, QPen, QRadialGradient)
 from PySide2.QtCore import (Qt, QEasingCurve, QEventLoop, QPoint, QPointF,
-                            QPropertyAnimation, QRect, QRectF, QSizeF, QTimer,
-                            QVariantAnimation, Slot)
+                            QPropertyAnimation, QRectF, QSizeF, QTimer,
+                            Slot)
 
 import math
-import numpy
-import sounddevice
-import threading
 
 
 class MVUIWindow(AbstractOutputView):
@@ -103,12 +98,16 @@ class MVUIWindow(AbstractOutputView):
 
     def toggle_visibility(self):
         """
-        Toggle visibility of the window
+        Toggle visibility of the window. If the window
+        is going to be hidden, sets the state to resting.
         """
-        state = self.nottreal.controllers['WizardController'].state
-        self.set_state(state)
-
         super().toggle_visibility()
+
+        if not self.is_visible():
+            self.set_state(VUIState.NOTHING)
+        else:
+            state = self.nottreal.responder('wizard').state
+            self.set_state(state)
 
 
 class MessageWidget(QScrollArea):
@@ -234,8 +233,8 @@ class Orb(QWidget):
         FADE_IN {int} -- Type used to determine opacity changing directions
         CALC_VOL_EVERY_MS {float} -- Frequency to recalculate the volume
         SPEAKING_MIN_OPACITY {int} -- Minimum opacity for speaking glow
-        SPEAKING_OPACITY_CHANGE {int} -- Change in opacity per frame (/255)
-        COMPUTING_SLICE_CHANGE {int} -- Movement of slice per frame (/360)
+        SPEAKING_OPACITY_CHANGE {int} -- Change in opacity per frame (/1)
+        COMPUTING_SLICE_CHANGE {int} -- Movement of slice per frame (/1)
         STATE_FADE_OPACITY {int} -- Change in opacity per frame (/1)
         REPAINT_EVERY_MS {float} -- How often to repaint (milliseconds)
     """
@@ -243,8 +242,8 @@ class Orb(QWidget):
 
     CALC_VOL_EVERY_MS = int(1/2*1000)
 
-    SPEAKING_MIN_OPACITY = 150
-    SPEAKING_OPACITY_CHANGE = 5
+    SPEAKING_MIN_OPACITY = .55
+    SPEAKING_OPACITY_CHANGE = .02
     COMPUTING_SLICE_CHANGE = 8
     STATE_FADE_OPACITY = .12
 
@@ -265,7 +264,7 @@ class Orb(QWidget):
 
         self.FADE_STEPSIZE = math.ceil(255 / self.STATE_FADE_OPACITY)
         self._previous_state = None
-        self._previous_state_opacity = 255
+        self._previous_state_opacity = 0
 
         cfg = parent.nottreal.config.cfg()
 
@@ -300,16 +299,6 @@ class Orb(QWidget):
         self._enable_flutter = cfg.getboolean('MVUI', 'orb_enable_flutter')
         if not self._enable_flutter:
             Logger.info(__name__, 'Volume flutter is disabled')
-        else:
-            self._vol_thread = None
-            
-            devices = sounddevice.query_devices()
-            self._flutter_devices = {}
-            for key, device in enumerate(devices):
-                if device['max_input_channels'] > 0:
-                    self._flutter_devices[key] = device['name']
-
-            self._set_flutter_mic_source(sounddevice.default.device[0])
 
         self._flutter = 0.4
 
@@ -317,24 +306,6 @@ class Orb(QWidget):
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.update)
         self._timer.start(self.REPAINT_EVERY_MS)
-
-    def _set_flutter_mic_source(self, selected_index):
-        source = self._flutter_devices[selected_index]
-        Logger.info(__name__, 'Mic source for flutter set to "%s"' % source)
-
-        values = dict(self._flutter_devices)
-        values[selected_index] = "** " + values[selected_index]
-
-        self.parent.nottreal.router(
-            'wizard',
-            'register_option',
-            label=_('Select microphone source for flutter'),
-            method=self._set_flutter_mic_source,
-            opt_type=WizardOption.DROPDOWN,
-            default=False,
-            values=values)
-
-        self._flutter_device = selected_index
 
     def _get_sizef(self, size, border=0):
         """
@@ -352,31 +323,13 @@ class Orb(QWidget):
         offset_size = size - border
         return QSizeF(offset_size, offset_size)
 
-    def _set_volume_level_loop(self):
-        Logger.info(__name__, 'Listening to the mic for volume flutter')
+    def _set_flutter_intensity(self, volume_norm):
+        """
+        Use the volume level to adjust the flutter
 
-        self._flutter_variation = .2
-        self._flutter_variation_dir = self.FADE_IN
-
-        stream = sounddevice.InputStream(
-                device=self._flutter_device,
-                callback=self._set_volume_level_callback)
-        with stream:
-            self._flutter_device = None
-            while self._hot_mic \
-                    and self.isVisible() \
-                    and self._flutter_device is None:
-                sounddevice.sleep(1000)
-
-        if self._flutter_device is not None \
-                and self._state is VUIState.LISTENING:
-            Logger.info(__name__, 'Swapping input stream for flutter')
-            self._set_volume_level_loop()
-
-        Logger.info(__name__, 'Stopped listening to the mic')
-
-    def _set_volume_level_callback(self, indata, frames, time, status):
-        volume_norm = numpy.linalg.norm(indata)
+        Arguments:
+            volume_norm {float} -- Normalised volume level
+        """
         self._flutter = max(
                 min(
                     math.sin(volume_norm + self._flutter_variation * 1.4),
@@ -433,19 +386,19 @@ class Orb(QWidget):
 
         # fade in the new state
         if (self._previous_state_opacity > -1
-                and self._previous_state_opacity < 256):
-            if self._state == VUIState.SPEAKING:
+                and self._previous_state_opacity <= 1):
+            if self._state is VUIState.SPEAKING:
                 self.paint_speaking_orb(
                     colour=self._border[self._state],
                     opacity=self._previous_state_opacity,
                     x_offset=x_offset)
-            elif self._state == VUIState.LISTENING:
+            elif self._state is VUIState.LISTENING:
                 self.paint_listening_orb(
                     colour=self._border[self._state],
                     opacity=self._previous_state_opacity,
                     x_offset=x_offset,
                     width=width)
-            elif self._state == VUIState.COMPUTING:
+            elif self._state is VUIState.COMPUTING:
                 self.paint_computing_orb(
                     colour=self._border[self._state],
                     opacity=self._previous_state_opacity,
@@ -497,12 +450,12 @@ class Orb(QWidget):
         if opacity == 1:
             if self._speaking_fade_opacity <= self.SPEAKING_MIN_OPACITY:
                 self._speaking_fade_direction = self.FADE_IN
-            elif self._speaking_fade_opacity > 254:
+            elif self._speaking_fade_opacity >= 1:
                 self._speaking_fade_direction = self.FADE_OUT
 
             self.paint_base_orb(
                 colour,
-                self._speaking_fade_opacity/255,
+                self._speaking_fade_opacity,
                 x_offset)
 
             if self._speaking_fade_direction == self.FADE_IN:
@@ -511,7 +464,7 @@ class Orb(QWidget):
                 self._speaking_fade_opacity -= self.SPEAKING_OPACITY_CHANGE
 
         else:
-            self._speaking_fade_opacity = 255
+            self._speaking_fade_opacity = 1
             self._speaking_fade_direction = self.FADE_OUT
 
             self.paint_base_orb(
@@ -604,28 +557,27 @@ class Orb(QWidget):
         Arguments:
             state {int} -- State from {VUIState}
         """
+        listening = VUIState.LISTENING
+
         if self._enable_flutter:
-            if (not self.parent.is_visible()
-                    and state == VUIState.LISTENING) or \
-                (self._state != VUIState.LISTENING
-                    and state == VUIState.LISTENING):
+            if (not self.parent.is_visible() and state is listening) \
+                    or (self._state is not listening and state is listening):
 
-                if self._vol_thread is not None \
-                        and self._vol_thread.is_alive():
-                    Logger.error(
-                        __name__,
-                        'Another volume thread is running!?')
-                else:
-                    self._hot_mic = True
-                    self._vol_thread = threading.Thread(
-                        target=self._set_volume_level_loop)
-                    self._vol_thread.daemon = True
-                    self._vol_thread.start()
+                self._flutter_variation = .2
+                self._flutter_variation_dir = self.FADE_IN
 
-        if (self._state == VUIState.LISTENING and
-                state != VUIState.LISTENING
-                and self._enable_flutter):
-            self._hot_mic = False
+                self.parent.nottreal.router(
+                    'input',
+                    'register_volume_callback',
+                    name='MVUI',
+                    method=self._set_flutter_intensity)
+
+            if (not self.parent.is_visible() and self._state is listening) \
+                    or (self._state is listening and state != listening):
+                self.parent.nottreal.router(
+                    'input',
+                    'deregister_volume_callback',
+                    name='MVUI')
 
             if self._previous_state_opacity > 0:
                 self._previous_state = self._state
