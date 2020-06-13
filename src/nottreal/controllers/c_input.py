@@ -3,14 +3,14 @@ from ..utils.log import Logger
 from ..models.m_mvc import WizardOption
 from .c_abstract import AbstractController
 
-import numpy
-import sounddevice as sd
+import audioop
+import pyaudio
 import threading
 
 
-class SDController(AbstractController):
+class InputController(AbstractController):
     """
-    Handle microphone data through "sounddevice".
+    Handle input source data
 
     Extends:
         AbstractController
@@ -30,13 +30,24 @@ class SDController(AbstractController):
         self._num_callbacks = 0
         self._callbacks_volume = {}
 
+        self._vol_sensitivity = self.nottreal.config.cfg().getint(
+            'Input',
+            'sensitivity')
+
+        self._pyaudio = pyaudio.PyAudio()
         self._thread = None
 
-        devices = sd.query_devices()
+        info = self._pyaudio.get_host_api_info_by_index(0)
+        num_devices = info.get('deviceCount')
+
         self.devices = {}
-        for key, device in enumerate(devices):
-            if device['max_input_channels'] > 0:
-                self.devices[key] = device['name']
+        for i in range(0, num_devices):
+            device = \
+                self._pyaudio.get_device_info_by_host_api_device_index(0, i)
+            num_inputs = device.get('maxInputChannels')
+
+            if num_inputs > 0:
+                self.devices[i] = device.get('name')
 
         Logger.debug(
             __name__,
@@ -54,7 +65,7 @@ class SDController(AbstractController):
 
     def ready(self):
         """Set the default input source"""
-        self.set_device(sd.default.device[0])
+        self.set_device(self._pyaudio.get_default_input_device_info()['index'])
 
     def set_device(self, device):
         """
@@ -113,6 +124,9 @@ class SDController(AbstractController):
             pass
 
     def _start_listening(self):
+        """
+        Starts the thread for listening to the input source.
+        """
         if self._thread is not None:
             Logger.error(__name__, 'Already listening on another thread')
             return
@@ -123,33 +137,48 @@ class SDController(AbstractController):
         self._thread.start()
 
     def _stop_listening(self):
+        """
+        Stop listening.
+        """
         self._hot_mic = False
 
     def _listening_loop(self):
+        """
+        Listen to the selected audio source. This should be
+        called on a separate thread!
+        """
         Logger.info(__name__, 'Listening to the input source')
 
-        stream = sd.InputStream(
-                device=self._swap_to_device,
-                callback=self._callback)
-        with stream:
-            self._swap_to_device = None
-            while self._hot_mic \
-                    and self._num_callbacks > 0 \
-                    and self._swap_to_device is None:
-                sd.sleep(1000)
+        CHUNK = 2048
+        FORMAT = pyaudio.paInt16
+        CHANNELS = 1
+        RATE = 44100
 
-        if self._swap_to_device is not None \
-                and self._num_callbacks > 0:
-            Logger.info(__name__, 'Swapping input stream')
-            self._listening_loop()
+        stream = self._pyaudio.open(
+                        input_device_index=self._swap_to_device,
+                        format=FORMAT,
+                        channels=CHANNELS,
+                        rate=RATE,
+                        input=True,
+                        frames_per_buffer=CHUNK)
 
-        Logger.info(__name__, 'Stopped listening to the mic')
+        self._swap_to_device = None
+
+        while self._hot_mic \
+                and self._num_callbacks > 0 \
+                and self._swap_to_device is None:
+
+            data = stream.read(CHUNK, exception_on_overflow=False)
+            max_volume = audioop.max(data, 2) / self._vol_sensitivity
+
+            for method in self._callbacks_volume.values():
+                method(max_volume)
+
+        Logger.info(__name__, 'Stopped listening to the input source')
+        stream.stop_stream()
+        stream.close()
+
+        if self._swap_to_device is not None:
+            return self._listening_loop()
+
         self._thread = None
-
-    def _callback(self, indata, frames, time, status):
-        """
-        Callback from sounddevice
-        """
-        for method in self._callbacks_volume.values():
-            volume_norm = numpy.linalg.norm(indata)
-            method(volume_norm)
