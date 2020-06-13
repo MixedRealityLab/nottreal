@@ -361,7 +361,9 @@ class Orb(QWidget):
                 callback=self._set_volume_level_callback)
         with stream:
             self._flutter_device = None
-            while self._hot_mic and self._flutter_device is None:
+            while self._hot_mic \
+                    and self.isVisible() \
+                    and self._flutter_device is None:
                 sounddevice.sleep(1000)
 
         if self._flutter_device is not None \
