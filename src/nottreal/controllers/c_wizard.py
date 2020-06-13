@@ -27,7 +27,7 @@ class WizardController(AbstractController):
 
         self._clear_slots_on_tab_change = False
         self.register_option(
-            label=_('Clear slot tracking on tab change'),
+            label='Clear slot tracking on tab change',
             method=self._set_clear_slots_on_tab_change,
             default=self._clear_slots_on_tab_change)
 

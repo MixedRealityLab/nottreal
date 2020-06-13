@@ -3,8 +3,6 @@ from ..utils.log import Logger
 from ..models.m_mvc import VUIState
 from .c_abstract import AbstractController
 
-import abc
-
 
 class OutputController(AbstractController):
     """

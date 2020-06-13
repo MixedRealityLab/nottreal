@@ -1,8 +1,8 @@
 
 from ..utils.log import Logger
+from ..models.m_mvc import VUIState
 from .c_voice import NonBlockingThreadedBaseVoice
 
-from subprocess import Popen, call
 from collections import deque
 
 import stomp
@@ -109,8 +109,6 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
             app {App} -- Application instance
         """
         def __init__(self, parent):
-            __name__ = self.__class__.__name__
-
             self.parent = parent
             self.nottreal = parent.nottreal
             self._cfg = self.nottreal.config.cfg()

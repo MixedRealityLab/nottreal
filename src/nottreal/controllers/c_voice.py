@@ -4,7 +4,7 @@ from .c_abstract import AbstractController
 from ..models.m_mvc import Message, VUIState
 
 from collections import deque
-from subprocess import Popen, call
+from subprocess import call
 
 import abc
 import threading
@@ -410,7 +410,6 @@ class ThreadedBaseVoice(AbstractVoiceController):
 
             try:
                 message = self._text_queue.popleft()
-                append_override = message.override
                 text = message.text
                 loading = message.loading
                 prepared_text, text_to_show = self._prepare_text(text)
