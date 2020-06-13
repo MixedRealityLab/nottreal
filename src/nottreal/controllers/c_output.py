@@ -46,10 +46,13 @@ class OutputController(AbstractController):
         Arguments:
             output {str} -- Name of the output to show
         """
-        try:
+        if self.args.dev:
             self.nottreal.view.output[output.lower()].toggle_visibility()
-        except KeyError:
-            Logger.error(__name__, 'No output view "%s"' % output)
+        else:
+            try:
+                self.nottreal.view.output[output.lower()].toggle_visibility()
+            except KeyError:
+                Logger.error(__name__, 'No output view "%s"' % output)
 
     def toggle_maximise(self, output):
         """
