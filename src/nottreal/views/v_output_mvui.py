@@ -301,6 +301,8 @@ class Orb(QWidget):
         if not self._enable_flutter:
             Logger.info(__name__, 'Volume flutter is disabled')
         else:
+            self._vol_thread = None
+            
             devices = sounddevice.query_devices()
             self._flutter_devices = {}
             for key, device in enumerate(devices):
@@ -607,11 +609,18 @@ class Orb(QWidget):
                     and state == VUIState.LISTENING) or \
                 (self._state != VUIState.LISTENING
                     and state == VUIState.LISTENING):
-                self._hot_mic = True
-                vol_thread = threading.Thread(
-                    target=self._set_volume_level_loop)
-                vol_thread.daemon = True
-                vol_thread.start()
+
+                if self._vol_thread is not None \
+                        and self._vol_thread.is_alive():
+                    Logger.error(
+                        __name__,
+                        'Another volume thread is running!?')
+                else:
+                    self._hot_mic = True
+                    self._vol_thread = threading.Thread(
+                        target=self._set_volume_level_loop)
+                    self._vol_thread.daemon = True
+                    self._vol_thread.start()
 
         if (self._state == VUIState.LISTENING and
                 state != VUIState.LISTENING
