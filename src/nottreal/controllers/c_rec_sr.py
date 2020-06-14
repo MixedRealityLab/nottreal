@@ -3,7 +3,8 @@ from ..utils.log import Logger
 from .c_rec import AbstractRecognition
 
 import importlib
-import numpy
+import time
+import threading
 
 
 class SRRecognition(AbstractRecognition):
@@ -39,6 +40,8 @@ class SRRecognition(AbstractRecognition):
 
         self.is_recognising = False
 
+        self._stop_thread = None
+
     def enabled(self):
         """
         Whether voice recognition is enabled
@@ -52,6 +55,14 @@ class SRRecognition(AbstractRecognition):
         """
         Start voice recognition thread
         """
+        if self._stop_thread is not None \
+                and self._stop_thread.is_alive():
+            Logger.debug(
+                __name__,
+                'Waiting for previous shutdown of recognising')
+            time.sleep(.5)
+            return self.start_recognising()
+
         Logger.info(__name__, 'Start listening for voice recognition')
         self.is_recognising = True
 
@@ -59,29 +70,6 @@ class SRRecognition(AbstractRecognition):
         self._stop_recognising = self.rec.listen_in_background(
             self.nottreal.responder('input').source,
             self.process_audio)
-
-    def _start_recognising(self):
-        """
-        Start voice recognition (run on a separate thread!)
-        """
-        Logger.info(__name__, 'Start listening for voice recognition')
-
-        self.parent.nottreal.router(
-            'input',
-            'register_data_callback',
-            name='recognition',
-            method=self._parse_data)
-
-    def _parse_data(self, indata, frames, time, status):
-        volume_norm = numpy.linalg.norm(indata) * 10
-        if volume_norm < self.GAP_SIZE_THRESHOLDS:
-            if self._breached_threshold is None:
-                self._breached_threshold = \
-                    time.currentTime + self.GAP_SIZE_SECS
-            elif time.currentTime > self._breached_threshold:
-                print('finally')
-        else:
-            self._breached_threshold = None
 
     def stop_recognising(self):
         """
@@ -92,7 +80,12 @@ class SRRecognition(AbstractRecognition):
         """
         Logger.info(__name__, 'Finished listening for voice recognition')
         self.is_recognising = False
-        self._stop_recognising()
+
+        self._stop_thread = threading.Thread(
+                target=self._stop_recognising,
+                args=())
+        self._stop_thread.daemon = True
+        self._stop_thread.start()
 
 
 class RecognitionGoogleSpeech(SRRecognition):
