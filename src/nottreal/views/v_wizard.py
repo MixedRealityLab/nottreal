@@ -332,7 +332,7 @@ class MenuBar(QMenuBar):
         added = self._add_action_to_menu(
             menu,
             text='Trigger resting orb',
-            data='resting_orb_button',
+            data='trigger_orb_resting',
             shortcut='Ctrl+R',
             tooltip='Show the user that the VUI is resting',
             callback=self._on_menu_item_selected)
@@ -348,7 +348,7 @@ class MenuBar(QMenuBar):
         self._add_action_to_menu(
             menu,
             text='Trigger listening orb',
-            data='listening_orb_button',
+            data='trigger_orb_listening',
             shortcut='Ctrl+L',
             tooltip='Show the user that the VUI is listening',
             callback=self._on_menu_item_selected)
@@ -527,7 +527,7 @@ class MenuBar(QMenuBar):
     @Slot()
     def _on_menu_item_selected(self):
         data = self.sender().data()
-        if data == 'resting_orb_button':
+        if data == 'trigger_orb_resting':
             self.parent.router(
                 'wizard',
                 'change_state',
@@ -539,7 +539,7 @@ class MenuBar(QMenuBar):
                 'change_state',
                 state=VUIState.COMPUTING)
             return
-        elif data == 'listening_orb_button':
+        elif data == 'trigger_orb_listening':
             self.parent.router(
                 'wizard',
                 'change_state',

@@ -509,11 +509,20 @@ class ThreadedBaseVoice(AbstractVoiceController):
         if not loading:
             if (state is None and self.auto_listening) \
                     or (state == VUIState.LISTENING):
-                self.router('output', 'now_listening')
+                self.router(
+                    'wizard',
+                    'change_state',
+                    state=VUIState.LISTENING)
             elif state == VUIState.COMPUTING:
-                self.router('output', 'now_computing')
+                self.router(
+                    'wizard',
+                    'change_state',
+                    state=VUIState.COMPUTING)
             else:
-                self.router('output', 'now_resting')
+                self.router(
+                    'wizard',
+                    'change_state',
+                    state=VUIState.NOTHING)
 
     def _interrupt_voice(self):
         """
