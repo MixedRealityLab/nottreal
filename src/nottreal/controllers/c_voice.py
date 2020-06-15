@@ -16,11 +16,12 @@ import sys
 class VoiceController(AbstractController):
     """
     Root controller for the voice synthesis systems
-    
+
     Variables:
-        DEFAULT_VOICE {str} -- Class name of the default system  
+        DEFAULT_VOICE {str} -- Class name of the default system
     """
     DEFAULT_VOICE = 'VoiceOutputToLog'
+
     def __init__(self, nottreal, args):
         """
         Controller to generate the voice of the Wizard.
@@ -36,13 +37,13 @@ class VoiceController(AbstractController):
 
     def ready(self):
         self._available_voices = self.available_voices()
-        
+
         voice = self._voice[0].title() + self._voice[1:]
         if voice == 'None':
             voice = self.DEFAULT_VOICE
         else:
             voice = 'Voice' + voice
-        
+
         self._set_voice(voice)
         self.nottreal.router(
             'wizard',
@@ -55,7 +56,6 @@ class VoiceController(AbstractController):
             values=self._available_voices,
             order=0,
             group=10)
-
 
     def quit(self):
         """
@@ -81,7 +81,7 @@ class VoiceController(AbstractController):
         Arguments:
             instance {AbstractController} -- Controller that has said
                                              it wants to be a responder
-                                             for the same signals as 
+                                             for the same signals as
                                              this controller
         Returns:
             {bool} -- True if it's the voice subsystem we're expecting
@@ -111,8 +111,8 @@ class VoiceController(AbstractController):
         Immediately cancel talking
 
         Arguments:
-            clear_all {bool} -- {True} if any unspoken text should 
-                                not be spoken also, UI configured 
+            clear_all {bool} -- {True} if any unspoken text should
+                                not be spoken also, UI configured
                                 element if {None} (Default {None}}
         Return:
             {bool} -- False
@@ -123,13 +123,13 @@ class VoiceController(AbstractController):
     def _set_voice(self, voice):
         """
         Set a voice subsystem to the used system
-        
+
         Arguments:
             voice {str} -- Class name of the subsystem
         """
         if self.voice_instance is not None:
             self.router('voice', 'packdown')
-        
+
         try:
             self.voice_instance = self.nottreal.controllers[voice]
             name = self.voice_instance.__class__.__name__
@@ -195,7 +195,7 @@ class AbstractVoiceController(AbstractController):
         """
         Packdown this voice subsystem (e.g. if the user changes
         the system used)
-        
+
         Remember to deregister options!
         """
         self.router(
@@ -215,7 +215,7 @@ class AbstractVoiceController(AbstractController):
         Arguments:
             instance {AbstractController} -- Controller that has said
                                              it wants to be a responder
-                                             for the same signals as 
+                                             for the same signals as
                                              this controller
         Returns:
             {bool} -- True if it's the voice subsystem we're expecting
@@ -255,8 +255,8 @@ class AbstractVoiceController(AbstractController):
 
     def _set_auto_listening(self, new_value):
         """
-        After speaking, should the UI default to the VUIState.BUSY state (False) or
-        the LISTENING state (True).
+        After speaking, should the UI default to the VUIState.BUSY
+        state (False) or the LISTENING state (True).
 
         Arguments:
             new_value {bool} -- New checked status
@@ -391,7 +391,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
             opt_cat=WizardOption.CAT_WIZARD,
             method=self._set_clear_queue_on_interrupt,
             default=self._clear_queue_on_interrupt)
-            
+
         self._voice_thread = threading.Thread(
                 target=self._speak,
                 args=())
@@ -406,7 +406,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
         the system used)
         """
         super().packdown()
-        
+
         self.router(
             'wizard',
             'deregister_option',
@@ -684,7 +684,7 @@ class VoiceOutputToLog(ThreadedBaseVoice):
         the system used)
         """
         super().packdown()
-        
+
         self.router(
             'wizard',
             'deregister_option',

@@ -123,7 +123,6 @@ class ClassUtils:
 
         return subclasses
 
-
     @staticmethod
     def is_subclass(test, rootclass):
         """
@@ -139,16 +138,16 @@ class ClassUtils:
         """
         try:
             ClassUtils._cached_subclasses[rootclass.__name__]
-        except:
+        except KeyError:
             ClassUtils._cached_subclasses = {}
             ClassUtils._cached_subclasses[rootclass.__name__] = \
                 ClassUtils.get_all_subclasses(rootclass)
         finally:
             subclasses = ClassUtils._cached_subclasses[rootclass.__name__]
-            
+
         if isinstance(test, type):
             test = test.__name__
-            
+
         for subclass in iter(subclasses):
             if subclass == test:
                 return True

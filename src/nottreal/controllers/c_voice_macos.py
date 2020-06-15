@@ -11,7 +11,8 @@ class VoiceMacOS(VoiceShellCmd):
     """
     def __init__(self, nottreal, args):
         """
-        Create the thread that sends commands to the macOS `say` command.
+        Create the thread that sends commands to the macOS `say`
+        command
 
         Arguments:
             nottreal {App} -- Application instance

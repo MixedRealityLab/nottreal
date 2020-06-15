@@ -13,7 +13,7 @@ class VoiceCerevoice(VoiceShellCmd):
     """
     def __init__(self, nottreal, args):
         """
-        Create the thread that sends commands through to Cerevoice.
+        Create the thread that sends commands through to Cerevoice
 
         Arguments:
             nottreal {App} -- Application instance
@@ -61,13 +61,13 @@ class VoiceCerevoice(VoiceShellCmd):
         the system used)
         """
         super().packdown()
-        
+
         self.router(
             'wizard',
             'deregister_option',
             label='Use a calm voice',
             opt_cat=WizardOption.CAT_OUTPUT)
-            
+
         self.router(
             'wizard',
             'deregister_option',
@@ -79,8 +79,8 @@ class VoiceCerevoice(VoiceShellCmd):
 
     def _set_cerevoice_spurts(self, value):
         """
-        Change whether the certain shortcuts should be substituted with the
-        Cerevoice commands?
+        Change whether the certain shortcuts should be substituted with
+        the Cerevoice commands?
 
         Arguments:
             value {bool} -- New checked status
@@ -108,15 +108,15 @@ class VoiceCerevoice(VoiceShellCmd):
 
     def _prepare_text(self, text):
         """
-        Construct the command for the shell execution and prepare the text for
-        display.
+        Construct the command for the shell execution and prepare the
+        text for display
 
         Arguments:
             text {str} -- Text from the Wizard manager window
 
         Return:
-            {(str, str)} -- Command and the prepared text ({None} if should not
-                be written to screen)
+            {(str, str)} -- Command and the prepared text ({None} if
+                            should not be written to screen)
         """
         text_for_cmd = text.replace(' and', ', and')
 

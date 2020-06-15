@@ -99,7 +99,7 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
         the system used)
         """
         super().packdown()
-            
+
         if self._conn:
             self._conn.disconnect()
 

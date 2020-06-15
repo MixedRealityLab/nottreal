@@ -57,7 +57,7 @@ Run the code by calling `python3 nottreal.py`, with the various options accessib
 
 * NottReal can log all 'spoken' output to TSV files in a specified directory, where a file is created each time the application is run. Point NottReal to this directory with the `-d` option.
 
-* Multiple voices are supported and can be set using the `-v` option followed by the chosen system. Built in choices are `ShellCmd`, `macOS`, `activeMQ`, `cerevoice`, and `outputToLog` (most have configuration in `settings.cfg`). 
+* Multiple voices are supported and can be set using the `-v` option followed by the chosen system. Built in choices are `ShellCmd`, `macOS`, `activeMQ`, `cerevoice`, and `outputToLog` (most have configuration in `settings.cfg`). You can also choose a voice subsystem to use at runtime from the *Output → Voice subsystem menu*.
 
 * Multiple output windows are supported, although only `MVUIWindow` is implemented. This window  looks a bit like a Mobile VUI). Set this to open automatically with the `-o` option, e.g.` -oMVUIWindow`.
 
@@ -75,7 +75,6 @@ In summary, the NottReal *Wizard Window* UI has the following features:
 	f) A list of previously filled *slots*
 	g) A list of optional *log-only messages*
 	h) A list of *loading messages* to display on the Wizard window
-	g) A list of options, dependant upon the voice used
 
 NottReal can store all sent messages in a timestamped log. You can configure this by passing in a directory's path to the `-d` option.
 

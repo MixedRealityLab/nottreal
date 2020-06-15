@@ -85,8 +85,8 @@ class WizardController(AbstractController):
         self.nottreal.view.wizard_window.menu.add_option(option)
 
     def deregister_option(self,
-                        label,
-                        opt_cat=WizardOption.CAT_WIZARD):
+                          label,
+                          opt_cat=WizardOption.CAT_WIZARD):
         """
         Remove an option for the user
 
@@ -178,7 +178,7 @@ class WizardController(AbstractController):
             state {int} -- New {VUIState}
         """
         Logger.debug(__name__, 'New state: %d' % state)
-        
+
         self.state = state
 
         if state is VUIState.RESTING:
