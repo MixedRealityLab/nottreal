@@ -26,7 +26,7 @@ In addition to this, NottReal requires some Python dependencies, which can be in
 
 ### Optional voice recognition
 
-NottReal also supports voice transcription (with the outputs of this _only_ displayed in the Wizard window—nothing else happens with them). This requires the Python [SpeechRecognition](https://pypi.org/project/SpeechRecognition/) library, installed with the following additional dependency:
+NottReal also supports automated/machine voice transcription. Outputs from this _only_ displayed in the Wizard window—nothing else happens with them at the moment. This requires the Python package [SpeechRecognition](https://pypi.org/project/SpeechRecognition/). This can be installed using `pip3`
 
 ```bash
 $ pip3 install SpeechRecognition
@@ -43,7 +43,7 @@ NottReal supports the following services, although note that these haven't been 
 * [IBM Speech to Text](http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/speech-to-text.html)
 * [Tensorflow](https://www.tensorflow.org/)
 
-Configuration options can be found in the `settings.cfg`.
+Configuration options—such as API keys—can be found in the `settings.cfg`.
 
 ## Running
 
@@ -55,7 +55,7 @@ Run the code by calling `python3 nottreal.py`, with the various options accessib
 
   If you put your configuration in a directory called `cfg`, you do not need to set this option. 
 
-* NottReal can log all 'spoken' output to TSB files in a specified directory, where a file is created each time the application is run. Point NottReal to this directory with the `-d` option.
+* NottReal can log all 'spoken' output to TSV files in a specified directory, where a file is created each time the application is run. Point NottReal to this directory with the `-d` option.
 
 * Multiple voices are supported and can be set using the `-v` option followed by the chosen system. Built in choices are `ShellCmd`, `macOS`, `activeMQ`, `cerevoice`, and `outputToLog` (most have configuration in `settings.cfg`). 
 
