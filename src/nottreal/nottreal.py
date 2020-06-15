@@ -71,17 +71,8 @@ class App:
             Logger.critical(__name__, 'Root recognition controller not found')
             return
 
-        try:
-            self.router('wizard', 'ready')
-        except KeyError:
-            Logger.critical(__name__, 'Wizard window controller not found')
-            return
-
-        try:
-            self.router('input', 'ready')
-        except KeyError:
-            Logger.critical(__name__, 'Wizard window controller not found')
-            return
+        self.router('wizard', 'ready')
+        self.router('input', 'ready')
 
         try:
             self.router('output', 'ready')

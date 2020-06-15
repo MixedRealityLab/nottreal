@@ -66,7 +66,19 @@ class InputController(AbstractController):
     def ready(self):
         """Set the default input source"""
         audio = self._pyaudio.PyAudio()
-        self.set_device(audio.get_default_input_device_info()['index'])
+        device = audio.get_default_input_device_info()['index']
+
+        self.nottreal.router(
+            'wizard',
+            'register_option',
+            label='Input source',
+            method=self.set_device,
+            opt_cat=WizardOption.CAT_INPUT,
+            opt_type=WizardOption.SINGLE_CHOICE,
+            default=device,
+            values=self.devices)
+
+        self.set_device(device)
         audio.terminate()
 
     def set_device(self, device):
@@ -82,18 +94,6 @@ class InputController(AbstractController):
 
         self.selected_device = device
         self._swap_to_device = device
-
-        values = dict(self.devices)
-        values[device] = "** " + values[device]
-
-        self.nottreal.router(
-            'wizard',
-            'register_option',
-            label='Select microphone source',
-            method=self.set_device,
-            opt_type=WizardOption.DROPDOWN,
-            default=False,
-            values=values)
 
     def register_volume_callback(self, name, method):
         """

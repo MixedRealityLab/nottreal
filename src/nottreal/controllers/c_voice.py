@@ -1,7 +1,7 @@
 
 from ..utils.log import Logger
 from .c_abstract import AbstractController
-from ..models.m_mvc import Message, VUIState
+from ..models.m_mvc import Message, VUIState, WizardOption
 
 from collections import deque
 from subprocess import call
@@ -131,6 +131,7 @@ class AbstractVoiceController(AbstractController):
             'wizard',
             'register_option',
             label='Listening state after speech',
+            opt_cat=WizardOption.CAT_OUTPUT,
             method=self._set_auto_listening,
             default=self.auto_listening)
 
@@ -300,6 +301,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
             'wizard',
             'register_option',
             label='Clear queue on interrupt',
+            opt_cat=WizardOption.CAT_WIZARD,
             method=self._set_clear_queue_on_interrupt,
             default=self._clear_queue_on_interrupt)
 
@@ -562,7 +564,8 @@ class VoiceOutputToLog(ThreadedBaseVoice):
         self.nottreal.router(
             'wizard',
             'register_option',
-            label='No waiting',
+            opt_cat=WizardOption.CAT_OUTPUT,
+            label='Don\'t simulate talk time',
             method=self._set_no_waiting)
 
     def _set_no_waiting(self, value):

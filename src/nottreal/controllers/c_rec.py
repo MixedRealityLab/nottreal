@@ -1,6 +1,6 @@
 
 from ..utils.log import Logger
-from ..models.m_mvc import VUIState
+from ..models.m_mvc import VUIState, WizardOption
 from .c_abstract import AbstractController
 
 
@@ -131,6 +131,7 @@ class AbstractRecognition(AbstractController):
         self.nottreal.router(
             'wizard',
             'register_option',
+            opt_cat=WizardOption.CAT_INPUT,
             label='Recognition during listening state only',
             method=self._set_recognition_during_listening,
             default=self._recognition_during_listening)

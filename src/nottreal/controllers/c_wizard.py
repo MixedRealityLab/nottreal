@@ -28,6 +28,7 @@ class WizardController(AbstractController):
         self._clear_slots_on_tab_change = False
         self.register_option(
             label='Clear slot tracking on tab change',
+            opt_cat=WizardOption.CAT_WIZARD,
             method=self._set_clear_slots_on_tab_change,
             default=self._clear_slots_on_tab_change)
 
@@ -46,32 +47,39 @@ class WizardController(AbstractController):
     def register_option(self,
                         label,
                         method,
+                        opt_cat=WizardOption.CAT_WIZARD,
                         opt_type=WizardOption.CHECKBOX,
                         default=False,
-                        values={}):
+                        values={},
+                        order=99):
         """
         Create an option for the user to specify
 
         Arguments:
-            label {str} -- Label of the option
-            method {method} -- Method to call with the value when
-                its changed
+            label {str}    -- Label of the option
+            method {func}  -- Method to call with the value when
+                              its changed
 
         Keyword Arguments:
+            opt_cat {int}  -- The category of option
+                              (default: {WizardOption.CAT_WIZARD})
             opt_type {int} -- The type of option
-                (default: {WizardOption.CHECKBOX})
+                              (default: {WizardOption.CHECKBOX})
             default {bool} -- Default value (default: {False})
-            values {dict} -- Dictionary of values (default: {{}})
+            values {dict}  -- Dictionary of values (default: {{}})
+            order {dict}   -- Position of the option
         """
         Logger.debug(__name__, 'Option "%s" registered' % label)
         option = WizardOption(
             label=label,
             method=method,
+            opt_cat=opt_cat,
             opt_type=opt_type,
             default=default,
-            values=values
+            values=values,
+            order=order
         )
-        self.nottreal.view.wizard_window.options.add(option)
+        self.nottreal.view.wizard_window.menu.add_option(option)
 
     def speak_text(self,
                    text,

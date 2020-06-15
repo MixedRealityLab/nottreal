@@ -4,18 +4,30 @@ class WizardOption:
     An option for the wizard to use at runtime
 
     Variables:
-        CHECKBOX {int} -- Identifier for an option that's a checkbox
-        DROPDOWN {int} -- Identifier for an option that's a dropdown
+        CHECKBOX {int}     -- Identifier for an option that's boolean
+        SINGLE_CHOICE {int}-- Identifier for an option that's the user
+                              has to choose one item from a list
+        CAT_WIZARD {int}   -- Identifier for options relating to the
+                              Wizard
+        CAT_VOICE {int}    -- Identifier for options relating to the
+                              synthesised voice
+        CAT_INPUT {int}    -- Identifier for options relating to the
+                              audible input to NottReal
+        CAT_OUTPUT {int}   -- Identifier for options relating to the
+                              visual output
     """
-    CHECKBOX, DROPDOWN = range(2)
+    CHECKBOX, SINGLE_CHOICE = range(2)
+    CAT_WIZARD, CAT_VOICE, CAT_INPUT, CAT_OUTPUT = range(4)
 
     def __init__(self,
                  label,
                  method,
+                 opt_cat=0,
                  opt_type=0,
                  default=False,
                  added=False,
-                 values={}):
+                 values={},
+                 order=99):
         """
         Create a runtime Wizard option
 
@@ -25,19 +37,27 @@ class WizardOption:
                               changed
 
         Keyword Arguments:
-            opt_type {int} -- The type of option (default: {self.CHECKBOX})
+            opt_cat {int}  -- The category of the option
+                              (default: {self.CAT_WIZARD})
+            opt_type {int} -- The type of option
+                              (default: {self.CHECKBOX})
             default {bool} -- Default value (default: {False})
-            added {bool} -- Has been added to the UI (default: {False})
-            values {dict} -- Possible values
+            added {bool}   -- Has been added to the UI
+                              (default: {False})
+            values {dict}  -- Possible values as a dictionary
+            order {int}    -- Position of the option
         """
         self.label = label
         self.method = method
+        self.opt_cat = opt_cat
         self.opt_type = opt_type
         self.default = default
-        self.value = default
         self.added = added
-        self.ui = None
         self.values = values
+        self.order = order
+
+        self.value = default
+        self.ui = None
 
     def change(self, value):
         """

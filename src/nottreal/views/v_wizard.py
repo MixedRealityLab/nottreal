@@ -7,13 +7,14 @@ from PySide2.QtWidgets import (QAbstractItemView, QAction,
                                QCheckBox, QComboBox, QDialogButtonBox,
                                QGridLayout, QGroupBox, QHBoxLayout,
                                QMainWindow, QPlainTextEdit, QPushButton,
-                               QVBoxLayout, QTabWidget,
+                               QVBoxLayout, QTabWidget, QMenuBar, QMenu,
                                QTreeView, QWidget)
 from PySide2.QtGui import (QTextCursor, QStandardItemModel)
 from PySide2.QtCore import (Qt, QItemSelectionModel, QTimer,
                             Slot)
 
 import re
+import sys
 
 
 class WizardWindow(QMainWindow):
@@ -38,6 +39,8 @@ class WizardWindow(QMainWindow):
         self.data = data
         self.config = config
 
+        self.menu = MenuBar(self)
+
         # shortcuts
         self.router = nottreal.router
 
@@ -54,7 +57,6 @@ class WizardWindow(QMainWindow):
             self,
             data.log_msgs,
             data.loading_msgs)
-        self.options = OptionsWidget(self, {})
         self.msg_history = MessageHistoryWidget(self)
 
     def init_ui(self):
@@ -62,7 +64,7 @@ class WizardWindow(QMainWindow):
         Called by the controller when the UI should be finalised and
         made ready to show
         """
-        self._create_menu()
+        self.menu.init_ui()
 
         layout = QGridLayout()
         layout.setVerticalSpacing(0)
@@ -86,6 +88,7 @@ class WizardWindow(QMainWindow):
         row2widget.setContentsMargins(0, 5, 0, 0)
 
         row2layout = QHBoxLayout()
+
         row2layout.addWidget(self.slot_history)
         row2layout.addWidget(self.msg_queue)
 
@@ -93,144 +96,479 @@ class WizardWindow(QMainWindow):
 
         layout.addWidget(row2widget, 1, 0, 1, 2)
         layout.addWidget(self.command, 2, 0, 1, 2)
-        layout.addWidget(self.options, 3, 0, 1, 2)
-        layout.addWidget(self.msg_history, 4, 0, 1, 2)
+        layout.addWidget(self.msg_history, 3, 0, 1, 2)
 
         layout.setRowStretch(0, 3)
         layout.setRowStretch(1, 2)
         layout.setRowStretch(2, 1)
-        layout.setRowStretch(3, 0)
-        layout.setRowStretch(4, 1)
+        layout.setRowStretch(3, 1)
 
         self.setGeometry(0, 0, 800, 600)
 
         Logger.info(__name__, 'Wizard window ready')
 
-    def _create_menu(self):
+
+class MenuBar(QMenuBar):
+    """
+    Create and manage the menu bar for the application
+
+    Variables:
+        MENU_FILE {int} -- Key for the File menu
+        MENU_WIZARD {int} -- Key for the Wizard menu
+        MENU_INPUT {int} -- Key for the Input menu
+        MENU_OUTPUT {int} -- Key for the Output menu
+    """
+    MENU_FILE, MENU_WIZARD, MENU_INPUT, MENU_OUTPUT = range(4)
+
+    def __init__(self, parent):
         """
         Create the menu
+
+        Arguments:
+            parent {QWidget} -- Parent widget
         """
-        main_menu = self.menuBar()
-        file_menu = main_menu.addMenu('File')
-        wizard_menu = main_menu.addMenu('Wizard')
-        output_menu = main_menu.addMenu('Output')
+        super(MenuBar, self).__init__()
 
-        exit_button = QAction('Quit', self)
-        exit_button.setMenuRole(QAction.QuitRole)
-        exit_button.setShortcut('Ctrl+Q')
-        exit_button.setStatusTip('Quit %s' % self.nottreal.appname)
-        exit_button.triggered.connect(self.close)
-        file_menu.addAction(exit_button)
+        self.parent = parent
+        self._options = {}
 
-        next_tab_button = QAction('Next tab', self)
-        next_tab_button.setData('next_tab')
-        next_tab_button.setShortcut('Meta+Tab')
-        next_tab_button.setStatusTip('Move to the next tab/category')
-        next_tab_button.triggered.connect(self._on_menu_item_selected)
-        wizard_menu.addAction(next_tab_button)
+        self._generated_menu = False
 
-        prev_tab_button = QAction('Previous tab', self)
-        prev_tab_button.setData('prev_tab')
-        prev_tab_button.setShortcut('Meta+Shift+Tab')
-        prev_tab_button.setStatusTip('Move to the previous tab/category')
-        prev_tab_button.triggered.connect(self._on_menu_item_selected)
-        wizard_menu.addAction(prev_tab_button)
+        self.MENUS = {
+            self.MENU_FILE: 'File',
+            self.MENU_WIZARD: 'Wizard',
+            self.MENU_INPUT: 'Input',
+            self.MENU_OUTPUT: 'Output'
+        }
 
-        wizard_menu.addSeparator()
+        self._menu_functions = {
+            self.MENU_FILE: self._create_file_menu,
+            self.MENU_WIZARD: self._create_wizard_menu,
+            self.MENU_INPUT: self._create_input_menu,
+            self.MENU_OUTPUT: self._create_output_menu
+        }
 
-        interrupt_voice_button = QAction(
-            'Interrupt current voice output',
-            self)
+        self._instantiated_menus = {}
 
-        interrupt_voice_button.setData('interrupt_output')
-        interrupt_voice_button.setShortcuts(['Meta+C', 'Ctrl+C'])
-        interrupt_voice_button.setStatusTip(
-            'Interrupt the current output and optionally clear the queue')
-        interrupt_voice_button.triggered.connect(self._on_menu_item_selected)
-        wizard_menu.addAction(interrupt_voice_button)
+        self.option_category_to_menu = {
+            WizardOption.CAT_WIZARD: self.MENU_WIZARD,
+            WizardOption.CAT_INPUT: self.MENU_INPUT,
+            WizardOption.CAT_OUTPUT: self.MENU_OUTPUT
+        }
 
+        self.menu_to_option_category = \
+            {v: k for k, v in self.option_category_to_menu.items()}
+
+    def init_ui(self):
+        """
+        Initialise and generate the menus
+        """
+        self._generate_menu(self.MENU_FILE)
+        self._generate_menu(self.MENU_WIZARD)
+        self._generate_menu(self.MENU_INPUT)
+        self._generate_menu(self.MENU_OUTPUT)
+
+        self._generated_menu = True
+
+    def add_option(self, option):
+        """
+        Add an option to the Wizard interface
+
+        Arguments:
+            option {WizardOption} -- Constructed option object
+        """
+        try:
+            self._options[option.opt_cat].append(option)
+        except KeyError:
+            self._options[option.opt_cat] = []
+            return self.add_option(option)
+
+        if self._generated_menu:
+            try:
+                self._generate_menu(
+                    self.option_category_to_menu[option.opt_cat])
+            except KeyError:
+                pass
+
+    def _generate_menu(self, menu):
+        """
+        (Re)generate a menu
+
+        Arguments:
+            menu {int} -- Menu ID to create (see {self.MENUS})
+        """
+        try:
+            function = self._menu_functions[menu]
+        except KeyError:
+            tb = sys.exc_info()[2]
+            raise KeyError(
+                'No menu found with id "%d"' % menu).with_traceback(tb)
+
+        try:
+            opt_cat = self.menu_to_option_category[menu]
+        except KeyError:
+            opt_cat = None
+
+        try:
+            menu_object = self._instantiated_menus[menu]
+        except KeyError:
+            menu_object = self.addMenu(self.MENUS[menu])
+            self._instantiated_menus[menu] = menu_object
+
+        function(menu_object, self._options, opt_cat)
+
+    def _create_file_menu(self, menu, options, category):
+        """
+        Create the File menu
+
+        Arguments:
+            menu {QMenu} -- Qt menu to populate
+            options {dict} -- {WizardOption}s by cat:[{WizardOption}]
+            category {int} -- Category of options to select
+        """
+        self._add_action_to_menu(
+            menu,
+            text='Quit',
+            role=QAction.QuitRole,
+            shortcut='Ctrl+Q',
+            tooltip='Quit ' + self.parent.nottreal.appname,
+            callback=self.close)
+
+    def _create_wizard_menu(self, menu, options, category):
+        """
+        Create the Wizard menu
+
+        Arguments:
+            menu {QMenu} -- Qt menu to populate
+            options {dict} -- {WizardOption}s by cat:[{WizardOption}]
+            category {int} -- Category of options to select
+        """
+        added = self._add_action_to_menu(
+            menu,
+            text='Next tab',
+            data='next_tab',
+            shortcut='Meta+Tab',
+            tooltip='Move to the next tab',
+            callback=self._on_menu_item_selected)
+
+        self._add_action_to_menu(
+            menu,
+            text='Previous tab',
+            data='prev_tab',
+            shortcut='Meta+Shift+Tab',
+            tooltip='Move to the next tab',
+            callback=self._on_menu_item_selected)
+
+        if added:
+            menu.addSeparator()
+
+        self._add_action_to_menu(
+            menu,
+            text='Interrupt output',
+            data='interrupt_output',
+            shortcut=['Meta+C', 'Ctrl+C'],
+            tooltip='Interrupt the current output',
+            callback=self._on_menu_item_selected)
+
+        if added:
+            menu.addSeparator()
+
+        self._add_options_to_menu(menu, options, category)
+
+    def _create_input_menu(self, menu, options, category):
+        """
+        Create the Input menu
+
+        Arguments:
+            menu {QMenu} -- Qt menu to populate
+            options {dict} -- {WizardOption}s by cat:[{WizardOption}]
+            category {int} -- Category of options to select
+        """
+        self._add_options_to_menu(menu, options, category)
+
+    def _create_output_menu(self, menu, options, category):
+        """
+        Create the Output menu
+
+        Arguments:
+            menu {QMenu} -- Qt menu to populate
+            options {dict} -- {WizardOption}s by cat:[{WizardOption}]
+            category {int} -- Category of options to select
+        """
         first = True
-        for output in self.nottreal.view.output.items():
+        for output in self.parent.nottreal.view.output.items():
             suffix = output[0]
             name = output[1].get_label()
 
-            show_output_button = QAction('Show/hide %s window' % name, self)
-            show_output_button.setData('show_output_button_%s' % suffix)
-            show_output_button.setStatusTip(
-                'Toggle the visibility of the %s window' % name)
-            show_output_button.triggered.connect(self._on_menu_item_selected)
             if first:
-                show_output_button.setShortcut('Ctrl+W')
-            output_menu.addAction(show_output_button)
+                shortcut = 'Ctrl+W'
+            else:
+                shortcut = None
 
-            max_output_button = QAction('Maximise %s window' % name, self)
-            max_output_button.setData('max_output_button_%s' % suffix)
-            max_output_button.setStatusTip(
-                'Toggle the maximisation of the %s window' % name)
-            max_output_button.triggered.connect(self._on_menu_item_selected)
+            added = self._add_action_to_menu(
+                menu,
+                text='Show/hide %s window' % name,
+                data='show_output_button_' + suffix,
+                shortcut=shortcut,
+                tooltip='Toggle the visibility of the %s window' % name,
+                callback=self._on_menu_item_selected)
+
             if first:
-                max_output_button.setShortcut('Ctrl+Shift+F')
-                first = False
-            output_menu.addAction(max_output_button)
+                shortcut = 'Ctrl+Shift+F'
+            else:
+                shortcut = None
 
-            output_menu.addSeparator()
+            self._add_action_to_menu(
+                menu,
+                text='Fullscreen/window %s' % name,
+                data='max_output_button_' + suffix,
+                shortcut=shortcut,
+                tooltip='Toggle the maximisation of the %s window' % name,
+                callback=self._on_menu_item_selected)
 
-        resting_orb_button = QAction('Trigger resting orb', self)
-        resting_orb_button.setData('resting_orb_button')
-        resting_orb_button.setShortcut('Ctrl+R')
-        resting_orb_button.setStatusTip(
-            'Show the user that the Wizard is resting')
-        resting_orb_button.triggered.connect(self._on_menu_item_selected)
-        output_menu.addAction(resting_orb_button)
+            if added:
+                menu.addSeparator()
 
-        computing_orb_button = QAction('Trigger busy orb', self)
-        computing_orb_button.setData('computing_orb_button')
-        computing_orb_button.setShortcut('Ctrl+B')
-        computing_orb_button.setStatusTip(
-            'Show the user that the Wizard is computing')
-        computing_orb_button.triggered.connect(self._on_menu_item_selected)
-        output_menu.addAction(computing_orb_button)
+        added = self._add_action_to_menu(
+            menu,
+            text='Trigger resting orb',
+            data='resting_orb_button',
+            shortcut='Ctrl+R',
+            tooltip='Show the user that the VUI is resting',
+            callback=self._on_menu_item_selected)
 
-        listening_orb_button = QAction('Trigger listening orb', self)
-        listening_orb_button.setData('listening_orb_button')
-        listening_orb_button.setShortcut('Ctrl+L')
-        listening_orb_button.setStatusTip(
-            'Show the user that the Wizard is listening')
-        listening_orb_button.triggered.connect(self._on_menu_item_selected)
-        output_menu.addAction(listening_orb_button)
+        self._add_action_to_menu(
+            menu,
+            text='Trigger busy orb',
+            data='computing_orb_button',
+            shortcut='Ctrl+B',
+            tooltip='Show the user that the VUI is busy',
+            callback=self._on_menu_item_selected)
 
-        output_menu.addSeparator()
+        self._add_action_to_menu(
+            menu,
+            text='Trigger listening orb',
+            data='listening_orb_button',
+            shortcut='Ctrl+L',
+            tooltip='Show the user that the VUI is listening',
+            callback=self._on_menu_item_selected)
+
+        if added:
+            menu.addSeparator()
+
+        self._add_options_to_menu(menu, options, category)
+
+    def _add_action_to_menu(
+            self,
+            menu,
+            text,
+            role=None,
+            data=None,
+            checkable=False,
+            value=False,
+            shortcut=None,
+            tooltip=None,
+            callback=None):
+        """
+        Add an action to a menu if it doesn't exist in the menu
+        (only checks based on {text})
+
+        Arguments:
+            menu {QMenu} -- Menu to append action to
+            text {str} -- Text of the item
+
+        Keyword Arguments:
+            role {int} -- {QAction} role to be set
+            data {str} -- Data to be set
+            checkable {bool} -- Whether this is a checkable item
+            value {bool} -- Default value of a checkable item
+            shortcut {str/[str]} -- Keyboard shortcut(s)
+            tooltip {str} -- Tooltip
+            callback {func} -- Function callback
+
+        Returns:
+            {QAction} if item now added or {False}
+        """
+        actions = menu.actions()
+        for action in iter(actions):
+            if action.text() == text:
+                return False
+
+        action = QAction(text, self)
+
+        if role is not None:
+            action.setMenuRole(role)
+
+        if data is not None:
+            action.setData(data)
+
+        if checkable is not None:
+            action.setCheckable(checkable)
+            action.setChecked(value)
+
+        if type(shortcut) is list:
+            action.setShortcuts(shortcut)
+        elif type(shortcut) is str:
+            action.setShortcut(shortcut)
+
+        if tooltip is not None:
+            action.setToolTip(tooltip)
+
+        if callback is not None:
+            action.triggered.connect(callback)
+
+        menu.addAction(action)
+        return action
+
+    def _add_options_to_menu(self, menu, all_options, category):
+        """
+        Append a set of options to a menu
+        """
+        try:
+            unsorted_options = all_options[category]
+        except KeyError:
+            return
+
+        options = sorted(unsorted_options, key=lambda option: option.order)
+        for idx, option in enumerate(options):
+
+            if option.opt_type == WizardOption.CHECKBOX:
+                action = self._add_action_to_menu(
+                    menu,
+                    option.label,
+                    data=str(category),
+                    checkable=True,
+                    value=option.default,
+                    callback=self._on_option_checkbox_toggled)
+
+                option.ui = action
+
+            elif option.opt_type == WizardOption.SINGLE_CHOICE:
+                actions = menu.actions()
+                for action in iter(actions):
+                    if action.text() == option.label:
+                        return False
+
+                submenu = QMenu(option.label)
+
+                actions = []
+                for key, value in option.values.items():
+                    actions.append(self._add_action_to_menu(
+                        submenu,
+                        value,
+                        data=str(category) + ':' + option.label,
+                        checkable=True,
+                        value=True if key == option.default else False,
+                        callback=self._on_option_single_choice_toggled))
+
+                option.ui = actions
+                menu.addMenu(submenu)
+
+    @Slot(bool)
+    def _on_option_checkbox_toggled(self, checked):
+        text = self.sender().text()
+        category = self.sender().data()
+
+        try:
+            cat_options = self._options[int(category)]
+        except KeyError:
+            tb = sys.exc_info()[2]
+            raise KeyError(
+                'Unknown option category: "%s"' % category).with_traceback(tb)
+
+        try:
+            option = [o for o in iter(cat_options) if o.label == text][0]
+        except IndexError:
+            tb = sys.exc_info()[2]
+            raise KeyError(
+                'Unknown option: "%s"' % text).with_traceback(tb)
+
+        option.method(checked)
+
+    @Slot(bool)
+    def _on_option_single_choice_toggled(self, checked):
+
+        text = self.sender().text()
+        data = self.sender().data()
+        category = data.split(':')[0]
+        label = data.split(':')[1]
+
+        try:
+            cat_options = self._options[int(category)]
+        except KeyError:
+            tb = sys.exc_info()[2]
+            raise KeyError(
+                'Unknown option category: "%s"' % category).with_traceback(tb)
+
+        try:
+            option = [o for o in iter(cat_options) if o.label == label][0]
+        except IndexError:
+            tb = sys.exc_info()[2]
+            raise KeyError(
+                'Unknown option: "%s"' % label).with_traceback(tb)
+
+        if not checked:
+            action = [a for a in option.ui if a.text() == text][0]
+            action.setChecked(True)
+            return False
+        else:
+            actions = [a for a in option.ui if a.text() != text]
+            for action in iter(actions):
+                action.setChecked(False)
+
+        choices = option.values
+        choice = [c_id
+                  for c_id, c_label
+                  in choices.items()
+                  if c_label == text][0]
+
+        option.method(choice)
 
     @Slot()
     def _on_menu_item_selected(self):
         data = self.sender().data()
         if data == 'resting_orb_button':
-            self.router('wizard', 'change_state', state=VUIState.NOTHING)
+            self.parent.router(
+                'wizard',
+                'change_state',
+                state=VUIState.NOTHING)
             return
         elif data == 'computing_orb_button':
-            self.router('wizard', 'change_state', state=VUIState.COMPUTING)
+            self.parent.router(
+                'wizard',
+                'change_state',
+                state=VUIState.COMPUTING)
             return
         elif data == 'listening_orb_button':
-            self.router('wizard', 'change_state', state=VUIState.LISTENING)
+            self.parent.router(
+                'wizard',
+                'change_state',
+                state=VUIState.LISTENING)
             return
         elif data == 'next_tab':
-            self.prepared_msgs.adjust_selected_tab(1)
+            self.parent.prepared_msgs.adjust_selected_tab(1)
             return
         elif data == 'prev_tab':
-            self.prepared_msgs.adjust_selected_tab(-1)
+            self.parent.prepared_msgs.adjust_selected_tab(-1)
             return
         elif data == 'interrupt_output':
-            self.router('wizard', 'stop_speaking')
+            self.parent.router('wizard', 'stop_speaking')
             return
         else:
-            for output in self.nottreal.view.output.items():
+            for output in self.parent.nottreal.view.output.items():
                 suffix = output[0]
 
                 if data == ('show_output_button_%s' % suffix):
-                    self.router('output', 'toggle_show', output=suffix)
+                    self.parent.router(
+                        'output',
+                        'toggle_show',
+                        output=suffix)
                     return
                 elif data == ('max_output_button_%s' % suffix):
-                    self.router('output', 'toggle_maximise', output=suffix)
+                    self.parent.router(
+                        'output',
+                        'toggle_maximise',
+                        output=suffix)
                     return
 
         Logger.critical(__name__, 'Unknown menu item selected')
@@ -242,7 +580,7 @@ class WizardWindow(QMainWindow):
         Arguments:
             event {QCloseEvent} -- Event from PySide2
         """
-        self.router('app', 'quit')
+        self.parent.router('app', 'quit')
         event.accept()
 
 
@@ -1086,119 +1424,6 @@ class CommandWidget(QGroupBox):
         """
         text = self._text_speak.toPlainText()
         self.speak_text(text)
-
-
-class OptionsWidget(QGroupBox):
-    """
-    Runtime options
-
-    Extends:
-        {QGroupBox}
-
-    Variables:
-        OPTIONS_COLUMNS {int} -- Number of columns of options
-    """
-    OPTIONS_COLUMNS = 2
-
-    def __init__(self, parent, options={}):
-        """
-        Create the area for runtime Wizard options
-
-        Arguments
-            parent {QWidget} -- Parent widget
-            options {dict} -- Runtime options
-        """
-        super(OptionsWidget, self).__init__(parent)
-
-        self.parent = parent
-
-        self.setContentsMargins(10, 5, 0, 0)
-
-        self.layout = QGridLayout()
-        self.setLayout(self.layout)
-
-        self._options = {}
-        for label, option in options.items():
-            self.add(option)
-
-    def add(self, option):
-        """
-        Add wizard option to the manager window
-
-        Arguments:
-            option {models.nottreal.WizardOption} -- A wizard option
-        """
-        if option.opt_type is WizardOption.CHECKBOX:
-            ui_control = QCheckBox(option.label, self)
-            ui_control.setCheckState(
-                Qt.Checked
-                if option.value
-                else Qt.Unchecked)
-            ui_control.stateChanged.connect(self._option_changed)
-        elif option.opt_type is WizardOption.DROPDOWN:
-            ui_control = QComboBox()
-            ui_control.currentIndexChanged.connect(self._option_changed)
-            ui_control.setPlaceholderText(option.label)
-            for key, value in option.values.items():
-                ui_control.addItem(value, key)
-        else:
-            Logger.error(
-                __name__,
-                'Unknown Wizard option type for option "%s"' % option.label)
-            return
-
-        if option.label not in self._options:
-            row = len(self._options) // self.OPTIONS_COLUMNS
-            col = len(self._options) % self.OPTIONS_COLUMNS
-        else:
-            row = self._options[option.label].ui_row
-            col = self._options[option.label].ui_col
-
-        self.layout.addWidget(ui_control, row, col)
-        self._options[option.label] = option
-        option.ui = ui_control
-        option.ui_row = row
-        option.ui_col = col
-        option.added = True
-
-    @Slot()
-    def _option_changed(self, value=None):
-        """
-        Slot when an option is changed
-
-        Arguments:
-            value {mixed} -- Value sent by the option
-        """
-        sender = type(self.sender()).__name__
-        if sender == 'QCheckBox':
-            label = self.sender().text()
-            try:
-                checkbox = self._options[label].ui
-                state = True if checkbox.checkState() == Qt.Checked else False
-                self._options[label].method(state)
-            except KeyError:
-                Logger.error(
-                    __name__,
-                    'Could not find registered option with label "%s"' % label)
-                pass
-        elif sender == 'QComboBox':
-            label = self.sender().placeholderText()
-            try:
-                dropdown = self._options[label].ui
-                if dropdown.currentIndex() > -1:
-                    id = dropdown.currentData()
-                    dropdown.setCurrentIndex(-1)
-                    self._options[label].method(id)
-            except KeyError:
-                Logger.error(
-                    __name__,
-                    'Could not find registered option with label "%s"' % label)
-                pass
-
-        else:
-            Logger.error(
-                __name__,
-                'Unknown Wizard option value set by a "%s"' % sender)
 
 
 class MessageHistoryWidget(QGroupBox):
