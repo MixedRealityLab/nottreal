@@ -134,7 +134,8 @@ class AbstractRecognition(AbstractController):
             opt_cat=WizardOption.CAT_INPUT,
             label='Recognition during listening state only',
             method=self._set_recognition_during_listening,
-            default=self._recognition_during_listening)
+            default=self._recognition_during_listening,
+            group=1)
 
     def _set_recognition_during_listening(self, value):
         """

@@ -48,12 +48,12 @@ def main():
         '-r',
         '--recognition',
         default='None',
-        help='Use a speech to text recognition system')
+        help='Speech-to-text recognition system to use')
     parser.add_argument(
         '-v',
         '--voice',
-        default='outputToLog',
-        help='Built-in voice synthesis library to use')
+        default='None',
+        help='Voice synthesis library to use')
     parser.add_argument(
         '-o',
         '--output_win',

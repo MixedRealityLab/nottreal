@@ -1,5 +1,6 @@
 
 from ..utils.log import Logger
+from ..models.m_mvc import WizardOption
 from .c_voice import VoiceShellCmd
 
 
@@ -20,6 +21,9 @@ class VoiceCerevoice(VoiceShellCmd):
         """
         super().__init__(nottreal, args)
 
+        self._calm_voice = False
+        self._cerevoice_spurts = True
+
     def init(self, args):
 
         """
@@ -36,21 +40,42 @@ class VoiceCerevoice(VoiceShellCmd):
             'VoiceCerevoice',
             'command_interrupt')
 
-        self._calm_voice = False
-        self._cerevoice_spurts = True
-
         self.router(
             'wizard',
             'register_option',
-            label='Calm voice',
+            label='Use a calm voice',
+            opt_cat=WizardOption.CAT_OUTPUT,
             method=self._set_calm,
             default=self._calm_voice)
         self.router(
             'wizard',
             'register_option',
-            label='Use Cerevoice spurts?',
+            label='Use Cerevoice spurts',
+            opt_cat=WizardOption.CAT_OUTPUT,
             method=self._set_cerevoice_spurts,
             default=self._cerevoice_spurts)
+
+    def packdown(self):
+        """
+        Packdown this voice subsystem (e.g. if the user changes
+        the system used)
+        """
+        super().packdown()
+        
+        self.router(
+            'wizard',
+            'deregister_option',
+            label='Use a calm voice',
+            opt_cat=WizardOption.CAT_OUTPUT)
+            
+        self.router(
+            'wizard',
+            'deregister_option',
+            label='Use Cerevoice spurts',
+            opt_cat=WizardOption.CAT_OUTPUT)
+
+    def name(self):
+        return 'Cerevoice'
 
     def _set_cerevoice_spurts(self, value):
         """

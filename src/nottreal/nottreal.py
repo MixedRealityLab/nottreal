@@ -59,18 +59,8 @@ class App:
         self.view = Gui(self, args, self.data, self.config)
         self.view.init_ui()
 
-        try:
-            self.router('voice_root', 'ready')
-        except KeyError:
-            Logger.critical(__name__, 'Root voice controller not found')
-            return
-
-        try:
-            self.router('recognition_root', 'ready')
-        except KeyError:
-            Logger.critical(__name__, 'Root recognition controller not found')
-            return
-
+        self.router('voice_root', 'ready')
+        self.router('recognition_root', 'ready')
         self.router('wizard', 'ready')
         self.router('input', 'ready')
 

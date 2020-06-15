@@ -76,7 +76,8 @@ class InputController(AbstractController):
             opt_cat=WizardOption.CAT_INPUT,
             opt_type=WizardOption.SINGLE_CHOICE,
             default=device,
-            values=self.devices)
+            values=self.devices,
+            group=0)
 
         self.set_device(device)
         audio.terminate()

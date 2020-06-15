@@ -113,7 +113,7 @@ class ClassUtils:
             rootclass {class} -- Class to look for subclasses of
 
         Returns:
-            [class]
+            {[class]}
         """
         subclasses = {}
 
@@ -122,3 +122,35 @@ class ClassUtils:
             subclasses.update(ClassUtils.get_all_subclasses(subclass))
 
         return subclasses
+
+
+    @staticmethod
+    def is_subclass(test, rootclass):
+        """
+        Recursively get all subclasses
+
+        Arguments:
+            test {class/str}  -- Class to test
+            rootclass {class} -- Class to see if the proposed class is
+                                 a subclass of
+
+        Returns:
+            {bool}
+        """
+        try:
+            ClassUtils._cached_subclasses[rootclass.__name__]
+        except:
+            ClassUtils._cached_subclasses = {}
+            ClassUtils._cached_subclasses[rootclass.__name__] = \
+                ClassUtils.get_all_subclasses(rootclass)
+        finally:
+            subclasses = ClassUtils._cached_subclasses[rootclass.__name__]
+            
+        if isinstance(test, type):
+            test = test.__name__
+            
+        for subclass in iter(subclasses):
+            if subclass == test:
+                return True
+
+        return False

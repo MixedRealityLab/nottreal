@@ -27,7 +27,8 @@ class WizardOption:
                  default=False,
                  added=False,
                  values={},
-                 order=99):
+                 order=99,
+                 group=49):
         """
         Create a runtime Wizard option
 
@@ -45,7 +46,8 @@ class WizardOption:
             added {bool}   -- Has been added to the UI
                               (default: {False})
             values {dict}  -- Possible values as a dictionary
-            order {int}    -- Position of the option
+            order {int}    -- Position of the option within a group
+            grouping {int} -- Grouping of options
         """
         self.label = label
         self.method = method
@@ -55,6 +57,7 @@ class WizardOption:
         self.added = added
         self.values = values
         self.order = order
+        self.group = group
 
         self.value = default
         self.ui = None

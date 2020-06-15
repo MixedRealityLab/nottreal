@@ -20,7 +20,6 @@ class VoiceMacOS(VoiceShellCmd):
         super().__init__(nottreal, args)
 
     def init(self, args):
-
         """
         Set the macOS commands.
         """
@@ -31,3 +30,6 @@ class VoiceMacOS(VoiceShellCmd):
         self._command_speak = \
             'say %s "%%s"' % self._cfg.get('VoiceMacOS', 'command_options')
         self._command_interrupt = 'killall say'
+
+    def name(self):
+        return 'macOS say'

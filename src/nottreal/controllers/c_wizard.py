@@ -51,7 +51,8 @@ class WizardController(AbstractController):
                         opt_type=WizardOption.CHECKBOX,
                         default=False,
                         values={},
-                        order=99):
+                        order=99,
+                        group=49):
         """
         Create an option for the user to specify
 
@@ -67,7 +68,8 @@ class WizardController(AbstractController):
                               (default: {WizardOption.CHECKBOX})
             default {bool} -- Default value (default: {False})
             values {dict}  -- Dictionary of values (default: {{}})
-            order {dict}   -- Position of the option
+            order {int}    -- Position of the option within a {group}
+            group {int}    -- Grouping of the option
         """
         Logger.debug(__name__, 'Option "%s" registered' % label)
         option = WizardOption(
@@ -77,9 +79,26 @@ class WizardController(AbstractController):
             opt_type=opt_type,
             default=default,
             values=values,
-            order=order
+            order=order,
+            group=group
         )
         self.nottreal.view.wizard_window.menu.add_option(option)
+
+    def deregister_option(self,
+                        label,
+                        opt_cat=WizardOption.CAT_WIZARD):
+        """
+        Remove an option for the user
+
+        Arguments:
+            label {str}    -- Label of the option
+
+        Keyword Arguments:
+            opt_cat {int}  -- The category of option
+                              (default: {WizardOption.CAT_WIZARD})
+        """
+        Logger.debug(__name__, 'Option "%s" deregistered' % label)
+        self.nottreal.view.wizard_window.menu.remove_option(label, opt_cat)
 
     def speak_text(self,
                    text,
@@ -159,11 +178,7 @@ class WizardController(AbstractController):
             state {int} -- New {VUIState}
         """
         Logger.debug(__name__, 'New state: %d' % state)
-
-        if self.state is VUIState.SPEAKING \
-                and state is not VUIState.SPEAKING:
-            self.router('voice', 'stop_speaking')
-
+        
         self.state = state
 
         if state is VUIState.RESTING:

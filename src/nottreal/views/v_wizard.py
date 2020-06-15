@@ -38,10 +38,6 @@ class WizardWindow(QMainWindow):
         self.args = args
         self.data = data
         self.config = config
-
-        self.menu = MenuBar(self)
-
-        # shortcuts
         self.router = nottreal.router
 
         super(WizardWindow, self).__init__()
@@ -49,6 +45,8 @@ class WizardWindow(QMainWindow):
 
         Logger.debug(__name__, 'Initialising the Wizard window widgets')
 
+        self.menu = MenuBar(self)
+        
         self.recognised_words = None
         self.prepared_msgs = PreparedMessagesWidget(self, data.cats)
         self.slot_history = SlotHistoryWidget(self)
@@ -190,6 +188,35 @@ class MenuBar(QMenuBar):
             except KeyError:
                 pass
 
+    def remove_option(self, label, opt_cat):
+        """
+        Remove an option from the Wizard interface
+
+        Arguments:
+            label {str} -- Label of the option
+            opt_cat {int} -- Option category
+        """
+        try:
+            cat_options = self._options[opt_cat]
+
+            option = [idx
+                      for idx, c
+                      in enumerate(cat_options)
+                      if c.label == label][0]
+                      
+            del self._options[opt_cat][option]
+        except KeyError:
+            return
+        except IndexError:
+            return
+        
+        if self._generated_menu:
+            try:
+                self._generate_menu(
+                    self.option_category_to_menu[opt_cat])
+            except KeyError:
+                pass
+
     def _generate_menu(self, menu):
         """
         (Re)generate a menu
@@ -226,6 +253,8 @@ class MenuBar(QMenuBar):
             options {dict} -- {WizardOption}s by cat:[{WizardOption}]
             category {int} -- Category of options to select
         """
+        menu.clear()
+        
         self._add_action_to_menu(
             menu,
             text='Quit',
@@ -243,6 +272,8 @@ class MenuBar(QMenuBar):
             options {dict} -- {WizardOption}s by cat:[{WizardOption}]
             category {int} -- Category of options to select
         """
+        menu.clear()
+        
         added = self._add_action_to_menu(
             menu,
             text='Next tab',
@@ -284,6 +315,8 @@ class MenuBar(QMenuBar):
             options {dict} -- {WizardOption}s by cat:[{WizardOption}]
             category {int} -- Category of options to select
         """
+        menu.clear()
+        
         self._add_options_to_menu(menu, options, category)
 
     def _create_output_menu(self, menu, options, category):
@@ -295,6 +328,8 @@ class MenuBar(QMenuBar):
             options {dict} -- {WizardOption}s by cat:[{WizardOption}]
             category {int} -- Category of options to select
         """
+        menu.clear()
+        
         first = True
         for output in self.parent.nottreal.view.output.items():
             suffix = output[0]
@@ -429,9 +464,17 @@ class MenuBar(QMenuBar):
         except KeyError:
             return
 
-        options = sorted(unsorted_options, key=lambda option: option.order)
-        for idx, option in enumerate(options):
+        options = sorted(
+            unsorted_options,
+            key=lambda option: str(option.group) + ":" + str(option.order))
 
+        current_group = options[0].group
+        
+        for idx, option in enumerate(options):
+            if current_group is not option.group:
+                menu.addSeparator()
+                current_group = option.group
+                
             if option.opt_type == WizardOption.CHECKBOX:
                 action = self._add_action_to_menu(
                     menu,
@@ -451,17 +494,18 @@ class MenuBar(QMenuBar):
 
                 submenu = QMenu(option.label)
 
-                actions = []
+                ui_elements = {'root': submenu, 'actions': []}
                 for key, value in option.values.items():
-                    actions.append(self._add_action_to_menu(
+                    ui_elements['actions'].append(self._add_action_to_menu(
                         submenu,
                         value,
-                        data=str(category) + ':' + option.label,
+                        data=\
+                           str(category) + ':' + option.label + ":" + str(key),
                         checkable=True,
                         value=True if key == option.default else False,
                         callback=self._on_option_single_choice_toggled))
 
-                option.ui = actions
+                option.ui = ui_elements
                 menu.addMenu(submenu)
 
     @Slot(bool)
@@ -487,11 +531,11 @@ class MenuBar(QMenuBar):
 
     @Slot(bool)
     def _on_option_single_choice_toggled(self, checked):
-
         text = self.sender().text()
         data = self.sender().data()
         category = data.split(':')[0]
         label = data.split(':')[1]
+        value_key = data.split(':')[2]
 
         try:
             cat_options = self._options[int(category)]
@@ -507,12 +551,15 @@ class MenuBar(QMenuBar):
             raise KeyError(
                 'Unknown option: "%s"' % label).with_traceback(tb)
 
+        action = [a for a in option.ui['actions'] if isinstance(a, QAction) and a.text() == text][0]
+        action.setChecked(True)
+        
+        option.default = value_key
+        
         if not checked:
-            action = [a for a in option.ui if a.text() == text][0]
-            action.setChecked(True)
             return False
         else:
-            actions = [a for a in option.ui if a.text() != text]
+            actions = [a for a in option.ui['actions'] if a.text() != text]
             for action in iter(actions):
                 action.setChecked(False)
 

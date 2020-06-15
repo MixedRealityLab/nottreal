@@ -93,6 +93,19 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
                 __name__,
                 'Failed to connect to ActiveMQ/STOMP server: %s' % str(e))
 
+    def packdown(self):
+        """
+        Packdown this voice subsystem (e.g. if the user changes
+        the system used)
+        """
+        super().packdown()
+            
+        if self._conn:
+            self._conn.disconnect()
+
+    def name(self):
+        return 'ActiveMQ'
+
     def quit(self):
         """
         Disconnect from the ActiveMQ/STOMP server

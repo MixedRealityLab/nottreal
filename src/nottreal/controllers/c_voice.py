@@ -1,5 +1,6 @@
 
 from ..utils.log import Logger
+from ..utils.init import ClassUtils
 from .c_abstract import AbstractController
 from ..models.m_mvc import Message, VUIState, WizardOption
 
@@ -9,9 +10,17 @@ from subprocess import call
 import abc
 import threading
 import time
+import sys
 
 
 class VoiceController(AbstractController):
+    """
+    Root controller for the voice synthesis systems
+    
+    Variables:
+        DEFAULT_VOICE {str} -- Class name of the default system  
+    """
+    DEFAULT_VOICE = 'VoiceOutputToLog'
     def __init__(self, nottreal, args):
         """
         Controller to generate the voice of the Wizard.
@@ -23,23 +32,30 @@ class VoiceController(AbstractController):
         super().__init__(nottreal, args)
 
         self._voice = args.voice
-        self._voiceInstance = None
+        self.voice_instance = None
 
     def ready(self):
-        name = 'Voice%s%s' % (self._voice[0].title(), self._voice[1:])
+        self._available_voices = self.available_voices()
+        
+        voice = self._voice[0].title() + self._voice[1:]
+        if voice == 'None':
+            voice = self.DEFAULT_VOICE
+        else:
+            voice = 'Voice' + voice
+        
+        self._set_voice(voice)
+        self.nottreal.router(
+            'wizard',
+            'register_option',
+            label='Voice subsystem',
+            method=self._set_voice,
+            opt_cat=WizardOption.CAT_OUTPUT,
+            opt_type=WizardOption.SINGLE_CHOICE,
+            default=voice,
+            values=self._available_voices,
+            order=0,
+            group=10)
 
-        try:
-            self._voiceInstance = self.nottreal.controllers[name]
-        except KeyError:
-            Logger.critical(
-                __name__,
-                'Could not find voice controller "%s"' % name)
-            return
-
-        Logger.info(__name__, 'Setting voice to "%s"' % name)
-
-        self.responder('voice', self._voiceInstance)
-        self.router('voice', 'init', args=self.args)
 
     def quit(self):
         """
@@ -50,8 +66,8 @@ class VoiceController(AbstractController):
     def respond_to(self):
         """
         This class will handle "voice" and "voice_root" commands. This
-        controller will be replaced as handler of "voice" commands by the
-        chosen subsystem.
+        controller will be replaced as handler of "voice" commands by
+        the chosen subsystem.
 
         Returns:
             [{str}] -- Label for this controller
@@ -63,12 +79,20 @@ class VoiceController(AbstractController):
         Relinquish control over voice signals to the right subsystem.
 
         Arguments:
-            instance {AbstractController} -- Controller that has said it wants
-                to be a responder for the same signals as this controller.
+            instance {AbstractController} -- Controller that has said
+                                             it wants to be a responder
+                                             for the same signals as 
+                                             this controller
         Returns:
             {bool} -- True if it's the voice subsystem we're expecting
         """
-        return instance == self._voiceInstance
+        return instance == self.voice_instance
+
+    def available_voices(self):
+        return {c: self.nottreal.controllers[c].name()
+                for k, c in enumerate(self.nottreal.controllers)
+                if c.startswith('Voice')
+                and ClassUtils.is_subclass(c, AbstractVoiceController)}
 
     def speak(self, text):
         """
@@ -87,13 +111,43 @@ class VoiceController(AbstractController):
         Immediately cancel talking
 
         Arguments:
-            clear_all {bool} -- True if any unspoken text should not be spoken
-                also, UI configured element if None (Default {None}}
+            clear_all {bool} -- {True} if any unspoken text should 
+                                not be spoken also, UI configured 
+                                element if {None} (Default {None}}
         Return:
             {bool} -- False
         """
         Logger.error(__name__, 'No voice instantiated!')
         return False
+
+    def _set_voice(self, voice):
+        """
+        Set a voice subsystem to the used system
+        
+        Arguments:
+            voice {str} -- Class name of the subsystem
+        """
+        if self.voice_instance is not None:
+            self.router('voice', 'packdown')
+        
+        try:
+            self.voice_instance = self.nottreal.controllers[voice]
+            name = self.voice_instance.__class__.__name__
+        except KeyError:
+            try:
+                self.voice_instance = \
+                    self.nottreal.controllers['Voice' + voice]
+                name = self.voice_instance.__class__.__name__
+            except KeyError:
+                tb = sys.exc_info()[2]
+                raise KeyError(
+                    'Unknown voice ID: "%s"' % voice).with_traceback(tb)
+                return
+
+        Logger.info(__name__, 'Setting voice to "%s"' % name)
+
+        self.responder('voice', self.voice_instance)
+        self.router('voice', 'init', args=self.args)
 
 
 class AbstractVoiceController(AbstractController):
@@ -125,7 +179,8 @@ class AbstractVoiceController(AbstractController):
             abc.abstractmethod
 
         Arguments:
-            args {[str]} -- Arguments passed through for the voice subsystem.
+            args {[str]} -- Arguments passed through for the voice
+                            subsystem
         """
         self.router(
             'wizard',
@@ -134,6 +189,38 @@ class AbstractVoiceController(AbstractController):
             opt_cat=WizardOption.CAT_OUTPUT,
             method=self._set_auto_listening,
             default=self.auto_listening)
+
+    @abc.abstractmethod
+    def packdown(self):
+        """
+        Packdown this voice subsystem (e.g. if the user changes
+        the system used)
+        
+        Remember to deregister options!
+        """
+        self.router(
+            'wizard',
+            'deregister_option',
+            label='Listening state after speech',
+            opt_cat=WizardOption.CAT_OUTPUT)
+
+    @abc.abstractmethod
+    def name(self):
+        return 'Unimplemented voice'
+
+    def relinquish(self, instance):
+        """
+        Relinquish control over voice signals to the right subsystem.
+
+        Arguments:
+            instance {AbstractController} -- Controller that has said
+                                             it wants to be a responder
+                                             for the same signals as 
+                                             this controller
+        Returns:
+            {bool} -- True if it's the voice subsystem we're expecting
+        """
+        return instance == self.nottreal.responder('voice_root').voice_instance
 
     @abc.abstractmethod
     def quit(self):
@@ -304,7 +391,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
             opt_cat=WizardOption.CAT_WIZARD,
             method=self._set_clear_queue_on_interrupt,
             default=self._clear_queue_on_interrupt)
-
+            
         self._voice_thread = threading.Thread(
                 target=self._speak,
                 args=())
@@ -312,6 +399,19 @@ class ThreadedBaseVoice(AbstractVoiceController):
 
         self._voice_thread.daemon = True
         self._voice_thread.start()
+
+    def packdown(self):
+        """
+        Packdown this voice subsystem (e.g. if the user changes
+        the system used)
+        """
+        super().packdown()
+        
+        self.router(
+            'wizard',
+            'deregister_option',
+            label='Clear queue on interrupt',
+            opt_cat=WizardOption.CAT_OUTPUT)
 
     def _set_dont_append_cat_change(self, value):
         """
@@ -575,7 +675,24 @@ class VoiceOutputToLog(ThreadedBaseVoice):
             'register_option',
             opt_cat=WizardOption.CAT_OUTPUT,
             label='Don\'t simulate talk time',
-            method=self._set_no_waiting)
+            method=self._set_no_waiting,
+            default=self._no_waiting)
+
+    def packdown(self):
+        """
+        Packdown this voice subsystem (e.g. if the user changes
+        the system used)
+        """
+        super().packdown()
+        
+        self.router(
+            'wizard',
+            'deregister_option',
+            label='Don\'t simulate talk time',
+            opt_cat=WizardOption.CAT_OUTPUT)
+
+    def name(self):
+        return 'Output to log'
 
     def _set_no_waiting(self, value):
         """
@@ -647,6 +764,9 @@ class VoiceShellCmd(ThreadedBaseVoice):
         self._command_interrupt = self._cfg.get(
             'VoiceShellCmd',
             'command_interrupt')
+
+    def name(self):
+        return 'Shell command'
 
     def _prepare_text(self, text):
         """
