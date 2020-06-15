@@ -135,7 +135,7 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
         def on_message(self, headers, message):
             if message == self._message_state_nothing:
                 Logger.debug(__name__, 'Apparently nothing is happening....')
-                self.parent._on_stop_speaking(state=VUIState.NOTHING)
+                self.parent._on_stop_speaking(state=VUIState.RESTING)
 
             elif message == self._message_state_listening:
                 Logger.debug(__name__, 'Apparently we\'re listening...')
@@ -145,7 +145,7 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
                 Logger.debug(
                     __name__,
                     'Apparently computation is happening...')
-                self.parent._on_stop_speaking(state=VUIState.COMPUTING)
+                self.parent._on_stop_speaking(state=VUIState.BUSY)
 
             elif message == self._message_state_speaking:
                 try:

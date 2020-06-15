@@ -122,8 +122,7 @@ class VUIState:
         AbstractController
 
     Variables:
-        NOTHING, SPEAKING, LISTENING, COMPUTING {int} -- States of the
-                                                         Wizard
+        RESTING, SPEAKING, LISTENING, BUSY {int} -- States of the VUI
 
     """
-    NOTHING, SPEAKING, LISTENING, COMPUTING = range(0, 4)
+    RESTING, SPEAKING, LISTENING, BUSY = range(0, 4)

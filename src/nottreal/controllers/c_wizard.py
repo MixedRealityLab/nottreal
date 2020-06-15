@@ -16,7 +16,7 @@ class WizardController(AbstractController):
         """
         super().__init__(nottreal, args)
 
-        self.state = VUIState.COMPUTING
+        self.state = VUIState.BUSY
 
     def ready(self):
         """
@@ -166,10 +166,10 @@ class WizardController(AbstractController):
 
         self.state = state
 
-        if state is VUIState.NOTHING:
+        if state is VUIState.RESTING:
             self.router('output', 'now_resting')
             self.router('recognition', 'now_not_listening')
-        elif state is VUIState.COMPUTING:
+        elif state is VUIState.BUSY:
             self.router('output', 'now_computing')
             self.router('recognition', 'now_not_listening')
         elif state is VUIState.LISTENING:

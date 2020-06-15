@@ -87,7 +87,7 @@ class OutputController(AbstractController):
         """
         for output in self.nottreal.view.output.values():
             if output.is_visible():
-                output.set_state(VUIState.NOTHING)
+                output.set_state(VUIState.RESTING)
 
     def now_listening(self):
         """
@@ -105,7 +105,7 @@ class OutputController(AbstractController):
         """
         for output in self.nottreal.view.output.values():
             if output.is_visible():
-                output.set_state(VUIState.COMPUTING)
+                output.set_state(VUIState.BUSY)
 
     def quit(self):
         """

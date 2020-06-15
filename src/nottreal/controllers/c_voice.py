@@ -168,7 +168,7 @@ class AbstractVoiceController(AbstractController):
 
     def _set_auto_listening(self, new_value):
         """
-        After speaking, should the UI default to the NOTHING state (False) or
+        After speaking, should the UI default to the VUIState.BUSY state (False) or
         the LISTENING state (True).
 
         Arguments:
@@ -177,7 +177,7 @@ class AbstractVoiceController(AbstractController):
         if new_value:
             Logger.debug(__name__, 'Will default to LISTENING state')
         else:
-            Logger.debug(__name__, 'Will default to NOTHING state')
+            Logger.debug(__name__, 'Will default to VUIState.BUSY state')
 
         self.auto_listening = new_value
 
@@ -420,7 +420,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
                     self._on_start_speaking(
                         text=text,
                         text_to_show=text_to_show,
-                        state=VUIState.COMPUTING)
+                        state=VUIState.BUSY)
                 else:
                     self._on_start_speaking(
                         text=text,
@@ -513,16 +513,16 @@ class ThreadedBaseVoice(AbstractVoiceController):
                     'wizard',
                     'change_state',
                     state=VUIState.LISTENING)
-            elif state == VUIState.COMPUTING:
+            elif state == VUIState.BUSY:
                 self.router(
                     'wizard',
                     'change_state',
-                    state=VUIState.COMPUTING)
+                    state=VUIState.BUSY)
             else:
                 self.router(
                     'wizard',
                     'change_state',
-                    state=VUIState.NOTHING)
+                    state=VUIState.RESTING)
 
     def _interrupt_voice(self):
         """

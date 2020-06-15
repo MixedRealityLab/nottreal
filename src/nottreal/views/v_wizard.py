@@ -340,7 +340,7 @@ class MenuBar(QMenuBar):
         self._add_action_to_menu(
             menu,
             text='Trigger busy orb',
-            data='computing_orb_button',
+            data='trigger_orb_busy',
             shortcut='Ctrl+B',
             tooltip='Show the user that the VUI is busy',
             callback=self._on_menu_item_selected)
@@ -531,13 +531,13 @@ class MenuBar(QMenuBar):
             self.parent.router(
                 'wizard',
                 'change_state',
-                state=VUIState.NOTHING)
+                state=VUIState.RESTING)
             return
-        elif data == 'computing_orb_button':
+        elif data == 'trigger_orb_busy':
             self.parent.router(
                 'wizard',
                 'change_state',
-                state=VUIState.COMPUTING)
+                state=VUIState.BUSY)
             return
         elif data == 'trigger_orb_listening':
             self.parent.router(

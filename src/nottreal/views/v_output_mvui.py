@@ -61,7 +61,7 @@ class MVUIWindow(AbstractOutputView):
         layout.setRowStretch(2, .5)
 
         # create the state widget (i.e. the orb)
-        self.state = Orb(self, VUIState.COMPUTING)
+        self.state = Orb(self, VUIState.BUSY)
         layout.addWidget(self.state, 3, 1)
         layout.setRowStretch(3, 0)
         layout.setRowMinimumHeight(3, self.state.size_max)
@@ -104,7 +104,7 @@ class MVUIWindow(AbstractOutputView):
         super().toggle_visibility()
 
         if not self.is_visible():
-            self.set_state(VUIState.NOTHING)
+            self.set_state(VUIState.RESTING)
         else:
             state = self.nottreal.responder('wizard').state
             self.set_state(state)
@@ -234,7 +234,7 @@ class Orb(QWidget):
         CALC_VOL_EVERY_MS {float} -- Frequency to recalculate the volume
         SPEAKING_MIN_OPACITY {int} -- Minimum opacity for speaking glow
         SPEAKING_OPACITY_CHANGE {int} -- Change in opacity per frame (/1)
-        COMPUTING_SLICE_CHANGE {int} -- Movement of slice per frame (/1)
+        BUSY_SLICE_CHANGE {int} -- Movement of slice per frame (/1)
         STATE_FADE_OPACITY {int} -- Change in opacity per frame (/1)
         REPAINT_EVERY_MS {float} -- How often to repaint (milliseconds)
     """
@@ -244,7 +244,7 @@ class Orb(QWidget):
 
     SPEAKING_MIN_OPACITY = .55
     SPEAKING_OPACITY_CHANGE = .02
-    COMPUTING_SLICE_CHANGE = 8
+    BUSY_SLICE_CHANGE = 8
     STATE_FADE_OPACITY = .12
 
     REPAINT_EVERY_MS = 1/12*1000
@@ -283,9 +283,9 @@ class Orb(QWidget):
         # create orb base and glow circles
         self._border = {}
         self._border_glow = {}
-        self._border[VUIState.NOTHING] = cfg.get('MVUI', 'orb_nothing')
+        self._border[VUIState.RESTING] = cfg.get('MVUI', 'orb_resting')
         self._border[VUIState.LISTENING] = cfg.get('MVUI', 'orb_listening')
-        self._border[VUIState.COMPUTING] = cfg.get('MVUI', 'orb_computing')
+        self._border[VUIState.BUSY] = cfg.get('MVUI', 'orb_busy')
         self._border[VUIState.SPEAKING] = cfg.get('MVUI', 'orb_speaking')
 
         # speaking glow
@@ -371,7 +371,7 @@ class Orb(QWidget):
                     opacity=-self._previous_state_opacity,
                     x_offset=x_offset,
                     width=width)
-            elif self._previous_state == VUIState.COMPUTING:
+            elif self._previous_state == VUIState.BUSY:
                 self.paint_computing_orb(
                     colour=self._border[self._previous_state],
                     opacity=-self._previous_state_opacity,
@@ -398,7 +398,7 @@ class Orb(QWidget):
                     opacity=self._previous_state_opacity,
                     x_offset=x_offset,
                     width=width)
-            elif self._state is VUIState.COMPUTING:
+            elif self._state is VUIState.BUSY:
                 self.paint_computing_orb(
                     colour=self._border[self._state],
                     opacity=self._previous_state_opacity,
@@ -548,7 +548,7 @@ class Orb(QWidget):
         qp_slice.restore()
 
         self._computing_slice_angle = \
-            (self._computing_slice_angle + self.COMPUTING_SLICE_CHANGE) % 360
+            (self._computing_slice_angle + self.BUSY_SLICE_CHANGE) % 360
 
     def set(self, state):
         """
