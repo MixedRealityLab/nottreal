@@ -86,8 +86,8 @@ class WizardWindow(QMainWindow):
         row2widget.setContentsMargins(0, 5, 0, 0)
 
         row2layout = QHBoxLayout()
-        row2layout.addWidget(self.msg_queue)
         row2layout.addWidget(self.slot_history)
+        row2layout.addWidget(self.msg_queue)
 
         row2widget.setLayout(row2layout)
 
