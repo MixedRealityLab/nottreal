@@ -91,7 +91,21 @@ class DataRecorderController(AbstractController):
                 file=self._file,
                 flush=True)
 
-    def raw_text(self, text):
+    def transcribed_text(self, text):
+        """
+        Record some text that was transcribed to the data log
+
+        Arguments:
+            text {str} -- Text spoken
+        """
+        if self._enable:
+            timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
+            print(
+                '%s\t_Transcribed\t\t\t\t%s' % (timestamp, text),
+                file=self._file,
+                flush=True)
+
+    def sent_raw_message(self, text):
         """
         Record some text being spoken to the data log
 
@@ -105,7 +119,7 @@ class DataRecorderController(AbstractController):
                 file=self._file,
                 flush=True)
 
-    def prepared_text(self, text, cat, id, slots):
+    def sent_prepared_message(self, text, cat, id, slots):
         """
         Record some text being spoken to the data log that was from a
         prepared message

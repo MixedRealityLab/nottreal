@@ -228,13 +228,13 @@ class AbstractVoiceController(AbstractController):
         if cat and id:
             self.router(
                 'data',
-                'prepared_text',
+                'sent_prepared_message',
                 text=text,
                 cat=cat,
                 id=id,
                 slots=slots)
         else:
-            self.router('data', 'raw_text', text=text)
+            self.router('data', 'sent_raw_message', text=text)
 
     def stop_speaking(self, clear_all=None):
         """

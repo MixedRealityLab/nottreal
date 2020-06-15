@@ -169,6 +169,10 @@ class AbstractRecognition(AbstractController):
             'recognised_words',
             words=words
         )
+        self.router(
+            'data',
+            'transcribed_text',
+            text=words)
 
     def now_listening(self):
         """
