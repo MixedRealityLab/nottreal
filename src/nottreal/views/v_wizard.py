@@ -44,6 +44,8 @@ class WizardWindow(QMainWindow):
         self.setWindowTitle(nottreal.appname)
 
         Logger.debug(__name__, 'Initialising the Wizard window widgets')
+        
+        self.disable_enter_press = False
 
         self.menu = MenuBar(self)
 
@@ -572,11 +574,15 @@ class MenuBar(QMenuBar):
             raise KeyError(
                 'Unknown option: "%s"' % text).with_traceback(tb)
 
+        self.parent.disable_enter_press = True
+        
         dialog = QFileDialog(self, option.label, option.default)
         dialog.setFileMode(QFileDialog.Directory)
         if dialog.exec_():
             directory = dialog.selectedFiles()
             option.method(directory[0])
+
+        self.parent.disable_enter_press = False
 
     @Slot(bool)
     def _on_option_single_choice_toggled(self, checked):
@@ -972,11 +978,18 @@ class PreparedMessagesWidget(QTabWidget):
             event {KeyEvent} -- Event triggered by the key release
         """
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+            if self.parent.disable_enter_press:
+                return event.accept()
+                
             tab_index = self.currentIndex()
             cat_id = list(self._cats.keys())[tab_index]
             treeview = self._msgs_widgets[cat_id]
+            
+            try:
+                msg_id = self._get_selected_msg(treeview)
+            except IndexError:
+                return
 
-            msg_id = self._get_selected_msg(treeview)
             if (event.modifiers() == Qt.ControlModifier):
                 self._speak_msg(msg_id)
             else:
