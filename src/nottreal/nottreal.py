@@ -7,6 +7,8 @@ from .models.m_tsv import TSVModel
 from .views.v_gui import Gui
 from .controllers import c_abstract
 
+import inspect
+
 
 class App:
     def __init__(self, args):
@@ -21,7 +23,7 @@ class App:
 
         self.args = args
         self._controllers = {}
-        self._responders = {'app': self}
+        self.responders = {'app': self}
 
         # initialise the models
         self.data = TSVModel(args)
@@ -59,17 +61,29 @@ class App:
         self.view = Gui(self, args, self.data, self.config)
         self.view.init_ui()
 
-        self.router('voice_root', 'ready')
-        self.router('recognition_root', 'ready')
-        self.router('wizard', 'ready')
-        self.router('input', 'ready')
+        # ready the controllers
+        def filter_func(x):
+            return \
+                hasattr(self.responders[x], 'ready_order') \
+                and self.router(x, 'ready_order') > -1
 
-        try:
-            self.router('output', 'ready')
-        except KeyError:
-            Logger.critical(__name__, 'Output window controller not found')
-            return
+        def sort_func(x):
+            return self.router(x, 'ready_order')
 
+        responders = filter(
+            filter_func,
+            self.responders)
+        responders = sorted(
+            responders,
+            key=sort_func)
+        
+        for name in iter(responders):
+            try:
+                self.router(name, 'ready')
+            except AttributeError:
+                pass
+
+        # boom!
         self.view.run_loop()
 
         Logger.debug(__name__, 'Exiting the GUI application')
@@ -77,7 +91,7 @@ class App:
     def quit(self):
         """Gracefully shutdown the application"""
         self.view.quit()
-
+        
     def responder(self, name, responder=None):
         """
         Retrieve a particular message responder, or set one
@@ -92,21 +106,21 @@ class App:
         """
         if responder is not None:
             responder_class = responder.__class__.__name__
-            if name not in self._responders:
-                self._responders[name] = responder
+            if name not in self.responders:
+                self.responders[name] = responder
                 Logger.debug(
                     __name__,
                     'Controller "%s" is handling "%s" signals'
                     % (responder_class, name))
-            elif self._responders[name].relinquish(responder):
-                curr_class = self._responders[name].__class__.__name__
-                self._responders[name] = responder
+            elif self.responders[name].relinquish(responder):
+                curr_class = self.responders[name].__class__.__name__
+                self.responders[name] = responder
                 Logger.debug(
                     __name__,
                     'Controller "%s" is handling "%s" signals (taking over '
                     'from "%s")' % (responder_class, name, curr_class))
             else:
-                curr_class = self._responders[name].__class__.__name__
+                curr_class = self.responders[name].__class__.__name__
                 Logger.warning(
                     __name__,
                     'Controller "%s" requested to respond to "%s" signals, '
@@ -114,11 +128,11 @@ class App:
                     % (responder_class, name, curr_class))
 
         try:
-            return self._responders[name]
+            return self.responders[name]
         except KeyError:
             raise KeyError('No responder named "%s"' % name)
 
-    def router(self, responder, action, **kwargs):
+    def router(self, recipient, action, **kwargs):
         """
         Route a message between elements the framework to a responder
 
@@ -131,14 +145,14 @@ class App:
         method = None
 
         try:
-            if responder == '_':
+            if recipient == '_':
                 responderInstances = {
-                    responder: self._responders[responder]
-                    for responder in self._responders.keys()
+                    responder: self.responders[responder]
+                    for responder in self.responders.keys()
                     if responder != 'app'
                 }
             else:
-                responderInstances[responder] = self._responders[responder]
+                responderInstances[recipient] = self.responders[recipient]
         except KeyError as e:
             Logger.critical(
                 __name__,
@@ -148,7 +162,12 @@ class App:
         for responder, responderInstance in responderInstances.items():
             if self.args.dev:
                 method = getattr(responderInstance, action)
-                method(**kwargs)
+                
+                args = inspect.getfullargspec(method)
+                if 'responder' in args[0]:
+                    return method(responder=recipient, **kwargs)
+                else:
+                    return method(**kwargs)
             else:
                 try:
                     method = getattr(responderInstance, action)
@@ -164,6 +183,13 @@ class App:
                             'Pass "%s" signal to the controller "%s"'
                             % (action, responder)
                         )
+                        
+                        args = inspect.getfullargspec(method)
+                        print(args[0])
+                        if 'responder' in args[0]:
+                            print('fgdgdfgfg')
+                            print(type(kwargs))
+                        
                         try:
                             method(**kwargs)
                         except TypeError:

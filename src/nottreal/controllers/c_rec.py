@@ -23,10 +23,28 @@ class RecognitionController(AbstractController):
 
         self.is_recognising = False
 
-    def ready(self):
+    def ready_order(self, responder=None):
+        """
+        We should be readied early
+        
+        Arguments:
+            responder {str} -- Will only work for the
+                               {recognition_root}
+                               responder
+        """
+        return 20 if responder == 'recognition_root' else -1
+
+    def ready(self, responder=None):
         """
         Load the voice recognition subsystem if enabled
+        
+        Arguments:
+            responder {str} -- Will only work for the
+                               {recognition_root} responder
         """
+        if responder != 'recognition_root':
+            return
+            
         if self._recognition is not None:
             name = 'Recognition%s%s' % \
                    (self._recognition[0].title(), self._recognition[1:])
@@ -136,6 +154,15 @@ class AbstractRecognition(AbstractController):
             method=self._set_recognition_during_listening,
             default=self._recognition_during_listening,
             group=1)
+
+    def ready_order(self, responder=None):
+        """
+        Voice controllers are readied by the {RecognitionController}
+        
+        Returns:
+            -1
+        """
+        return -1
 
     def _set_recognition_during_listening(self, value):
         """

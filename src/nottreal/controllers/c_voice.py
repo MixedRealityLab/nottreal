@@ -35,7 +35,28 @@ class VoiceController(AbstractController):
         self._voice = args.voice
         self.voice_instance = None
 
-    def ready(self):
+    def ready_order(self, responder=None):
+        """
+        We should be readied early
+        
+        Arguments:
+            responder {str} -- Will only work for the {voice_root}
+                               responder
+        """
+        return 10 if responder == 'voice_root' else -1
+        
+
+    def ready(self, responder=None):
+        """
+        Setup and select the default voice subsystem
+        
+        Arguments:
+            responder {str} -- Will only work for the {voice_root}
+                               responder
+        """
+        if responder != 'voice_root':
+            return
+        
         self._available_voices = self.available_voices()
 
         voice = self._voice[0].title() + self._voice[1:]
@@ -189,6 +210,15 @@ class AbstractVoiceController(AbstractController):
             opt_cat=WizardOption.CAT_OUTPUT,
             method=self._set_auto_listening,
             default=self.auto_listening)
+
+    def ready_order(self, responder=None):
+        """
+        Voice controllers are readied by the {VoiceController}
+        
+        Returns:
+            -1
+        """
+        return -1
 
     @abc.abstractmethod
     def packdown(self):
