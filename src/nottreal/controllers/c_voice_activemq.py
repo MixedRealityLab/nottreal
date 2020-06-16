@@ -106,14 +106,6 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
     def name(self):
         return 'ActiveMQ'
 
-    def quit(self):
-        """
-        Disconnect from the ActiveMQ/STOMP server
-        """
-        if self._conn:
-            self._conn.disconnect()
-        super().quit()
-
     class Listener(stomp.ConnectionListener):
         """
         Listen to messages from the ActiveMQ/STOMP server

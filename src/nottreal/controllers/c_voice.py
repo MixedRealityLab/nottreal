@@ -78,12 +78,6 @@ class VoiceController(AbstractController):
             order=0,
             group=10)
 
-    def quit(self):
-        """
-        This class doesn't have to do anything on quit
-        """
-        pass
-
     def respond_to(self):
         """
         This class will handle "voice" and "voice_root" commands. This
@@ -257,7 +251,7 @@ class AbstractVoiceController(AbstractController):
         """
         Shutdown the voice subsystem.
         """
-        pass
+        self.packdown()
 
     @abc.abstractmethod
     def speak(self,
@@ -437,6 +431,8 @@ class ThreadedBaseVoice(AbstractVoiceController):
         """
         super().packdown()
 
+        self._stop_voice_loop = True
+        
         self.router(
             'wizard',
             'deregister_option',
@@ -509,12 +505,6 @@ class ThreadedBaseVoice(AbstractVoiceController):
         self.append_override = Message.NO_OVERRIDE
         return True
 
-    def quit(self):
-        """
-        Interrupt the voice thread so that it comes to a graceful halt
-        """
-        self._stop_voice_loop = True
-
     def _prepare_text(self, text):
         """
         Prepare text by stripping quotes and deciding whether it
@@ -536,10 +526,14 @@ class ThreadedBaseVoice(AbstractVoiceController):
         Logger.debug(__name__, 'Voice thread started')
 
         while self._stop_voice_loop is False:
-            while not self._text_queue \
-                    or (self._blocking and self._is_speaking):
+            while not self._stop_voice_loop \
+                  and not self._text_queue \
+                  or (self._blocking and self._is_speaking):
                 time.sleep(self._sleep_between_queue_checks)
 
+            if self._stop_voice_loop:
+                break
+                    
             try:
                 message = self._text_queue.popleft()
                 text = message.text
