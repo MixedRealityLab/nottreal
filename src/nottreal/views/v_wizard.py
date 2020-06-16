@@ -972,10 +972,11 @@ class PreparedMessagesWidget(QTabWidget):
             event {KeyEvent} -- Event triggered by the key release
         """
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
-            tab_index = self._msg_tabs.currentIndex()
+            tab_index = self.currentIndex()
             cat_id = list(self._cats.keys())[tab_index]
-            treeview = self._msg_widgets[cat_id]
-            msg_id = self.selected_msg_id(treeview)
+            treeview = self._msgs_widgets[cat_id]
+            
+            msg_id = self._get_selected_msg(treeview)
             if (event.modifiers() == Qt.ControlModifier):
                 self._speak_msg(msg_id)
             else:
