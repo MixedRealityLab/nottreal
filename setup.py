@@ -12,7 +12,7 @@ setup(
     version='1.0.0',
     description='An application for running Wizard of Oz studies with '
                 'a simulated voice user interface.',
-    url='http://github.com/mporcheron/nottreal/',
+    url='http://github.com/mixedrealitylab/nottreal/',
     author='Martin Porcheron',
     author_email='martin+nottreal@porcheron.uk',
     classifiers=[
@@ -28,8 +28,7 @@ setup(
         'numpy',
         'python-gettext',
         'pyaudio',
-        'PySide2',
-        'sounddevice'],
+        'PySide2'],
     package_data={
         'sample': [
             '.cfg_dist/categories.tsv',
