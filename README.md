@@ -47,21 +47,33 @@ Configuration options—such as API keys—can be found in the `settings.cfg`.
 
 ## Running
 
-Run the code by calling `python3 nottreal.py`, with the various options accessible with `-h` option. Summarily:
+Run the code by calling `python3 nottreal.py`. There are various options you can supply at call time:
 
 * Logging is controlled by using the `-l` option, with the levels `WARNING`, `DEBUG`, `ERROR`, `INFO`, `CRITICAL`
+
+  *This option can only be set at call time.*
 
 * The configuration directory can be set using the `-c` option. A sample configuration directory is in `.cfg-dist`. Create a copy of this directory and use the option to specify the location.
 
   If you put your configuration in a directory called `cfg`, you do not need to set this option. 
 
+  *This option can only be set at call time.*
+
 * NottReal can log all 'spoken' output to TSV files in a specified directory, where a file is created each time the application is run. Point NottReal to this directory with the `-d` option.
 
-* Multiple voices are supported and can be set using the `-v` option followed by the chosen system. Built in choices are `ShellCmd`, `macOS`, `activeMQ`, `cerevoice`, and `outputToLog` (most have configuration in `settings.cfg`). You can also choose a voice subsystem to use at runtime from the *Output → Voice subsystem menu*.
+  *You can enable/disable data recording and select the target directory in the Wizard menu.*
+
+* Multiple voices are supported and can be set using the `-v` option followed by the chosen system. Built in choices are `ShellCmd`, `macOS`, `activeMQ`, `cerevoice`, and `outputToLog` (most have configuration in `settings.cfg`).
+
+  *You can also choose a voice subsystem to use at runtime from the Output → Voice subsystem menu.*
 
 * Multiple output windows are supported, although only `MVUIWindow` is implemented. This window  looks a bit like a Mobile VUI). Set this to open automatically with the `-o` option, e.g.` -oMVUIWindow`.
 
+  *You can show/hide this window using the options in the Output menu.*
+
 * Voice recognition using the `-r` option followed by the chosen library (available: `GoogleCloud`, `Witai` `Bing`, `Azure`,`Lex`,`Houndify`,`IBM`,`Tensorflow`)
+
+  *You can make recognition continuous or during the listening state only, and can select the desired recognition system, from the Input menu.*
 
 ## App layout and configuration
 Copy the contents of the `.cfg_dist` directory to a new directory (e.g. `cfg`).  The application doesn't load configuration files from `cfg_dist`---these are only accessed if no configuration is specified.
