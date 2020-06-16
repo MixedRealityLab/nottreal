@@ -71,7 +71,7 @@ class RecognitionController(AbstractController):
             default=recogniser,
             values=self._available_recognisers,
             order=0,
-            group=1)
+            group='recognition')
 
     def quit(self):
         """
@@ -226,7 +226,7 @@ class AbstractRecognitionController(AbstractController):
             method=self._set_recognition_during_listening,
             default=self._recognition_during_listening,
             order=2,
-            group=1)
+            group='recognition')
         
     def ready(self, responder=None):
         """
