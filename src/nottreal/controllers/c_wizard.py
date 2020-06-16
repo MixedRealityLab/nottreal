@@ -146,6 +146,18 @@ class WizardController(AbstractController):
             Logger.debug(__name__, 'Clear parameter tracking')
             self.nottreal.view.wizard_window.command.clear_saved_slots()
 
+    def data_recording_enabled(self, state):
+        """
+        Show the pre-scripted data recording messages.
+
+        Arguments:
+            state {bool} -- {True} if data recording is enabled
+        """
+        if state:
+            self.nottreal.view.wizard_window.command.data_messages.show()
+        else:
+            self.nottreal.view.wizard_window.command.data_messages.hide()
+
     def recognition_enabled(self, state):
         """
         Show the recognised words list because a valid recogniser

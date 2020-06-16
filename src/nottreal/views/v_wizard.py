@@ -1161,19 +1161,19 @@ class CommandWidget(QGroupBox):
         buttonBarLayout = QHBoxLayout()
         buttonBar.setLayout(buttonBarLayout)
 
-        # options for log mesages
-        if self.parent.args.output_dir is not None:
-            self._combo_log_messages = QComboBox()
-            self._combo_log_messages.currentIndexChanged.connect(
-                self._on_log_message)
-            self._combo_log_messages.setPlaceholderText('Log an event')
+        # options for data log mesages
+        self.data_messages = QComboBox()
+        self.data_messages.currentIndexChanged.connect(
+            self._on_log_message)
+        self.data_messages.setPlaceholderText('Log an event')
 
-            for key, value in log_msgs.items():
-                self._combo_log_messages.addItem(
-                    value['message'],
-                    value['id'])
+        for key, value in log_msgs.items():
+            self.data_messages.addItem(
+                value['message'],
+                value['id'])
 
-            buttonBarLayout.addWidget(self._combo_log_messages)
+        buttonBarLayout.addWidget(self.data_messages)
+        self.data_messages.hide()
 
         # options for loading messages
         self._combo_loading_messages = QComboBox()
@@ -1478,10 +1478,10 @@ class CommandWidget(QGroupBox):
             Slot
         """
         if num > -1:
-            id = self._combo_log_messages.currentData()
-            text = self._combo_log_messages.currentText()
+            id = self.data_messages.currentData()
+            text = self.data_messages.currentText()
             self.parent.router('wizard', 'log_message', id=id, text=text)
-            self._combo_log_messages.setCurrentIndex(-1)
+            self.data_messages.setCurrentIndex(-1)
 
     @Slot(int)
     def _on_loading_message(self, num):

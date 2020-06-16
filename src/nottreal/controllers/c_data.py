@@ -96,9 +96,19 @@ class DataRecorderController(AbstractController):
             if state:
                 Logger.info(__name__, 'Enabled recording of data')
                 self._enabled = True
+                    
+                self.router(
+                    'wizard',
+                    'data_recording_enabled',
+                    state=True)
             else:
                 Logger.info(__name__, 'Disabled recording of data')
                 self._enabled = False
+                    
+                self.router(
+                    'wizard',
+                    'data_recording_enabled',
+                    state=False)
 
             return True
         else:
@@ -116,19 +126,19 @@ class DataRecorderController(AbstractController):
         try:
             self._file = open(self._filepath, mode='a')
             if self._file:
-                self._enablable = True
-                self._enabled = True
-
                 Logger.info(
                     __name__,
                     'Set data directory to "%s"' % self._filepath)
+                    
+                self._enablable = True
+                self.enable_data_output(True)
         except IOError:
-            self._enablable = False
-            self._enabled = False
-
             Logger.warning(
                 __name__,
                 'Failed to open "%s" to record data' % self._filepath)
+
+            self._enablable = False
+            self.enable_data_output(False)
 
     def quit(self):
         """
