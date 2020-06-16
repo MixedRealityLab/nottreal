@@ -58,13 +58,13 @@ class VoiceController(AbstractController):
 
         Logger.debug(__name__, 'Setting up voice synthesis')
 
-        self._available_voices = self.available_voices()
-
-        voice = self._voice[0].title() + self._voice[1:]
-        if voice == 'None':
+        if self._voice == None:
             voice = self.DEFAULT_VOICE
         else:
-            voice = 'Voice' + voice
+            voice = 'Voice' \
+                    + self._voice[0].title() + self._voice[1:]
+
+        self._available_voices = self.available_voices()
 
         self._set_voice(voice)
         self.nottreal.router(

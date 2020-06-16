@@ -49,12 +49,11 @@ class RecognitionController(AbstractController):
 
         Logger.debug(__name__, 'Setting up voice recognition')
 
-        recogniser = self._recogniser[0].title() + self._recogniser[1:]
-
-        if recogniser == 'None':
+        if self._recogniser == None:
             recogniser = self.DEFAULT_RECOGNISER
         else:
-            recogniser = 'Recognition' + recogniser
+            recogniser = 'Recognition' \
+                         + self._recogniser[0].title() + self._recogniser[1:]
 
         self._available_recognisers = self.available_recognisers()
         if not self.args.dev and recogniser != 'RecognitionGoogleSpeech':

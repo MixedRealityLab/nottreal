@@ -47,12 +47,12 @@ def main():
     parser.add_argument(
         '-r',
         '--recognition',
-        default='None',
+        default=None,
         help='Speech-to-text recognition system to use')
     parser.add_argument(
         '-v',
         '--voice',
-        default='None',
+        default=None,
         help='Voice synthesis library to use')
     parser.add_argument(
         '-o',
