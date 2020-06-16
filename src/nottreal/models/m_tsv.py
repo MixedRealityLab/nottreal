@@ -7,26 +7,24 @@ import csv
 
 
 class TSVModel:
-    def __init__(self, args):
+    def __init__(self, directory):
         """
         Load data from tab-separated values.
 
         Arguments:
-            args {[arg]} -- Application arguments
+            directory {str} -- Directory to open
         """
-        dir = args.config_dir
-
         Logger.debug(__name__, 'Loading data from the TSV files')
 
         Logger.debug(__name__, 'Load categories data')
         self.cats = self._parseTsv(
-            dir,
+            directory,
             'categories.tsv',
             ['id', 'label'])
 
         Logger.debug(__name__, 'Load messages data')
         self.msgs = self._parseTsv(
-            dir,
+            directory,
             'messages.tsv',
             ['id', 'cat_id', 'label', 'text'])
 
@@ -35,14 +33,14 @@ class TSVModel:
         default[0] = {'id': 0, 'message': 'Just a minute'}
         default[1] = {'id': 0, 'message': 'I\'m working on it'}
         self.loading_msgs = self._parseTsv(
-            dir,
+            directory,
             'loading.tsv',
             ['id', 'message'],
             default)
 
         Logger.debug(__name__, 'Load custom log messages data')
         self.log_msgs = self._parseTsv(
-            dir,
+            directory,
             'log.tsv',
             ['id', 'message'],
             OrderedDict())

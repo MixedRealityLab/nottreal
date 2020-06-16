@@ -25,6 +25,9 @@ class OutputController(AbstractController):
         super().__init__(nottreal, args)
 
     def ready(self):
+        for output in self.nottreal.view.output.values():
+            output.updated_config(self.nottreal.config)
+
         if self.args.output_win and self.args.output_win != 'disabled':
             self.toggle_show(self.args.output_win)
 

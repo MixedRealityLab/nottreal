@@ -3,7 +3,6 @@ from .utils.init import ClassUtils
 from .utils.dir import DirUtils
 from .utils.log import Logger
 from .models.m_cfg import ConfigModel
-from .models.m_tsv import TSVModel
 from .views.v_gui import Gui
 from .controllers import c_abstract
 
@@ -26,8 +25,7 @@ class App:
         self._controllers = {}
         self.responders = {'app': self}
 
-        # initialise the models
-        self.data = TSVModel(args)
+        # config model (actually loaded by the Wizard controller)
         self.config = ConfigModel(args)
 
         # initialise the controllers
@@ -59,7 +57,7 @@ class App:
                 self.responder(respond_tos, self.controllers[name])
 
         # initialise the views
-        self.view = Gui(self, args, self.data, self.config)
+        self.view = Gui(self, args)
         self.view.init_ui()
 
         # ready the controllers

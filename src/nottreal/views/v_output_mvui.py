@@ -3,8 +3,8 @@ from ..utils.log import Logger
 from ..models.m_mvc import VUIState
 from .v_output_abstract import AbstractOutputView
 
-from PySide2.QtWidgets import (QGridLayout, QGraphicsOpacityEffect, QLabel,
-                               QScrollArea, QSizePolicy, QWidget)
+from PySide2.QtWidgets import (QGridLayout, QGraphicsOpacityEffect, QFrame,
+                               QLabel, QScrollArea, QSizePolicy, QWidget)
 from PySide2.QtGui import (QBrush, QColor, QFont, QPainter, QPainterPath,
                            QPalette, QPen, QRadialGradient)
 from PySide2.QtCore import (Qt, QEasingCurve, QEventLoop, QPoint, QPointF,
@@ -21,56 +21,63 @@ class MVUIWindow(AbstractOutputView):
     Extends:
         QMainWindow
     """
-    def __init__(self, nottreal, args, data, config):
+    def __init__(self, nottreal, args):
         """
         A simple mobile-like VUI
 
         Arguments:
             nottreal {App} -- Main NottReal class
             args {[str]} -- CLI arguments
-            data {TSVModel} -- Data from static data files
-            config {ConfigModel} -- Data from static configuration files
         """
-        super(MVUIWindow, self).__init__(nottreal, args, data, config)
+        super(MVUIWindow, self).__init__(nottreal, args)
+
+        self._initiated = False
 
     def init_ui(self):
-        """Initialise the UI"""
+        """Don't do anything until the configuration is loaded"""
+        self.nottreal.config.add_listener(self.updated_config)
+
+    def updated_config(self, config):
         Logger.debug(__name__, 'Initialising the MVUI window')
 
+        self.config = self.nottreal.config.config
         self._background_colour = self.config.get('MVUI', 'background_colour')
 
         self.setWindowTitle(self.config.get('MVUI', 'window_title'))
         self.setStyleSheet('background-color: %s' % self._background_colour)
 
-        self.setGeometry(800, 10, 700, 800)
+        if not self._initiated:
+            self.setGeometry(800, 10, 700, 800)
 
-        # create the layout
-        layout = QGridLayout()
-        layout.setVerticalSpacing(100)
-        layout.setHorizontalSpacing(100)
-        self.setLayout(layout)
+            # create the layout
+            layout = QGridLayout()
+            layout.setVerticalSpacing(100)
+            layout.setHorizontalSpacing(100)
+            self.setLayout(layout)
 
-        layout.setRowStretch(0, .5)
+            layout.setRowStretch(0, .5)
 
-        # create the message widget
-        default_msg = self.nottreal.config.get('MVUI', 'initial_text')
-        self.message = MessageWidget(self, default_msg)
-        layout.addWidget(self.message, 1, 1)
-        layout.setRowStretch(1, 10)
+            # create the message widget
+            self.message = MessageWidget(self, config)
 
-        layout.setRowStretch(2, .5)
+            layout.addWidget(self.message, 1, 1)
+            layout.setRowStretch(1, 10)
+            layout.setRowStretch(2, .5)
 
-        # create the state widget (i.e. the orb)
-        self.state = Orb(self, VUIState.BUSY)
-        layout.addWidget(self.state, 3, 1)
-        layout.setRowStretch(3, 0)
-        layout.setRowMinimumHeight(3, self.state.size_max)
+            # create the state widget (i.e. the orb)
+            self.state = Orb(self, config, VUIState.BUSY)
+            layout.addWidget(self.state, 3, 1)
+            layout.setRowStretch(3, 0)
+            layout.setRowMinimumHeight(3, self.state.size_max)
 
-        layout.setRowStretch(4, .5)
+            layout.setRowStretch(4, .5)
 
-        layout.setColumnStretch(0, 1)
-        layout.setColumnStretch(1, 10)
-        layout.setColumnStretch(2, 1)
+            layout.setColumnStretch(0, 1)
+            layout.setColumnStretch(1, 10)
+            layout.setColumnStretch(2, 1)
+        else:
+            self.message.updated_config(config)
+            self.state.updated_config(config)
 
     def activated(self):
         return True
@@ -126,35 +133,33 @@ class MessageWidget(QScrollArea):
     DOUBLE_CLICK_TIMER = 450
     ID, LABEL, TEXT = range(3)
 
-    def __init__(self, parent, default):
+    def __init__(self, parent, config):
         """
         Create the label that'll show the messages to the user
 
         Arguments
             parent {QWidget} -- Parent widget
-            default {str} -- Default/inital text
+            config {ConfigModel} -- Configuration model
         """
         self.parent = parent
-        self._cfg = parent.nottreal.config
 
         super(MessageWidget, self).__init__(parent)
 
+        self.has_set_text = False
+
+        self.setFrameShape(QFrame.NoFrame)
         self.setWidgetResizable(True)
         self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Expanding)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setAlignment(Qt.AlignTop | Qt.AlignCenter)
 
-        # create the label
-        typeface = self._cfg.cfg().get('MVUI', 'typeface')
-        font_size = self._cfg.cfg().getint('MVUI', 'font_size')
-        text_colour = self._cfg.cfg().get('MVUI', 'text_colour')
+        self.config = parent.nottreal.config.config
 
-        self._label = QLabel('<p class="text-align: center;">%s</p>' % default)
+        # create the label
+        self._label = QLabel('<p class="text-align: center;">…</p>')
         self._label.setTextFormat(Qt.RichText)
         self._label.setWordWrap(True)
-        self._label.setFont(QFont(typeface, font_size, QFont.Bold))
-        self._label.setStyleSheet('color: ' + text_colour)
         self._label.setAlignment(Qt.AlignTop | Qt.AlignCenter)
         self._label.setSizePolicy(
             QSizePolicy.MinimumExpanding,
@@ -166,7 +171,20 @@ class MessageWidget(QScrollArea):
         self.effect = QGraphicsOpacityEffect()
         self._label.setGraphicsEffect(self.effect)
         self._animation = QPropertyAnimation(self.effect, b'opacity')
-        self._fade_in()
+
+        self.updated_config(config)
+
+    def updated_config(self, config):
+        default_msg = config.config.get('MVUI', 'initial_text')
+        typeface = config.config.get('MVUI', 'typeface')
+        font_size = config.config.getint('MVUI', 'font_size')
+        text_colour = config.config.get('MVUI', 'text_colour')
+
+        self._label.setFont(QFont(typeface, font_size, QFont.Bold))
+        self._label.setStyleSheet('color: ' + text_colour)
+
+        if not self.has_set_text:
+            self.set(default_msg)
 
     @Slot()
     def _change_colour(self, color):
@@ -206,6 +224,8 @@ class MessageWidget(QScrollArea):
         Arguments:
             text {str} -- New message to show
         """
+        self.has_set_text = True
+
         html = '<p class="text-align: center">%s</p>' % text
 
         self._fade_out()
@@ -249,13 +269,14 @@ class Orb(QWidget):
 
     REPAINT_EVERY_MS = 1/12*1000
 
-    def __init__(self, parent, default):
+    def __init__(self, parent, config, default):
         """
         Create the orb container
 
         Arguments
             parent {QWidget} -- Parent widget
-            default {int} -- Default/initial state
+            config {ConfigModel} -- Configuration model
+            default {int} -- Default state
         """
         self.parent = parent
         super(Orb, self).__init__(parent)
@@ -266,16 +287,22 @@ class Orb(QWidget):
         self._previous_state = None
         self._previous_state_opacity = 0
 
-        cfg = parent.nottreal.config.cfg()
+        self.updated_config(config)
 
+        # start drawing
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self.update)
+        self._timer.start(self.REPAINT_EVERY_MS)
+
+    def updated_config(self, config):
         # initial sizes
-        self._border_width = cfg.getint('MVUI', 'orb_width')
+        self._border_width = config.config.getint('MVUI', 'orb_width')
         double_border = 2*self._border_width
-        self._size = cfg.getint('MVUI', 'orb_size')
+        self._size = config.config.getint('MVUI', 'orb_size')
         self._sizef = self._get_sizef(self._size, double_border)
         self._rectf = QRectF(QPointF(0, 0), self._sizef)
 
-        self.size_max = cfg.getint('MVUI', 'orb_size_max')
+        self.size_max = config.config.getint('MVUI', 'orb_size_max')
         self._sizef_max = self._get_sizef(self.size_max)
 
         self._y_offset = (self._sizef_max.height() - self._size) / 2
@@ -283,10 +310,14 @@ class Orb(QWidget):
         # create orb base and glow circles
         self._border = {}
         self._border_glow = {}
-        self._border[VUIState.RESTING] = cfg.get('MVUI', 'orb_resting')
-        self._border[VUIState.LISTENING] = cfg.get('MVUI', 'orb_listening')
-        self._border[VUIState.BUSY] = cfg.get('MVUI', 'orb_busy')
-        self._border[VUIState.SPEAKING] = cfg.get('MVUI', 'orb_speaking')
+        self._border[VUIState.RESTING] = \
+            config.config.get('MVUI', 'orb_resting')
+        self._border[VUIState.LISTENING] = \
+            config.config.get('MVUI', 'orb_listening')
+        self._border[VUIState.BUSY] = \
+            config.config.get('MVUI', 'orb_busy')
+        self._border[VUIState.SPEAKING] = \
+            config.config.get('MVUI', 'orb_speaking')
 
         # speaking glow
         self._speaking_fade_opacity = 255
@@ -296,16 +327,13 @@ class Orb(QWidget):
         self._computing_slice_angle = 90
 
         # enable fluttering?
-        self._enable_flutter = cfg.getboolean('MVUI', 'orb_enable_flutter')
+        self._enable_flutter = config.config.getboolean(
+            'MVUI',
+            'orb_enable_flutter')
         if not self._enable_flutter:
             Logger.info(__name__, 'Volume flutter is disabled')
 
         self._flutter = 0.4
-
-        # start drawing
-        self._timer = QTimer(self)
-        self._timer.timeout.connect(self.update)
-        self._timer.start(self.REPAINT_EVERY_MS)
 
     def _get_sizef(self, size, border=0):
         """

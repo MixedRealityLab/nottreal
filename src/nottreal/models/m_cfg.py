@@ -16,10 +16,18 @@ class ConfigModel:
 
         Logger.debug(__name__, 'Loading data from the configuration file')
 
+        self._listeners = []
         self.config = configparser.ConfigParser()
-        self.config.read(args.config_dir + '/settings.cfg')
 
-        Logger.info(__name__, 'Loaded configuration')
+    def update(self, directory):
+        self.config.read(directory + '/settings.cfg')
+        Logger.info(__name__, 'Loaded configuration file')
+
+        for listener in iter(self._listeners):
+            listener(self)
+
+    def add_listener(self, method):
+        self._listeners.append(method)
 
     def get(self, section, option):
         return self.config.get(section, option)

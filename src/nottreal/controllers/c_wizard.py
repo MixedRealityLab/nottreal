@@ -1,11 +1,19 @@
 
 from ..utils.log import Logger
 from ..models.m_mvc import VUIState, WizardOption
+from ..models.m_tsv import TSVModel
 from .c_abstract import AbstractController
 
 
 class WizardController(AbstractController):
-    """Primary controller for the Wizard window"""
+    """
+    Primary controller for the Wizard window
+
+    Variables:
+        DEFAULT_DIRECTORY {str} -- Default configuration directory
+    """
+    DEFAULT_DIRECTORY = 'cfg'
+
     def __init__(self, nottreal, args):
         """
         Controller to manage the Wizard's manager window.
@@ -15,6 +23,12 @@ class WizardController(AbstractController):
             args {[str]} -- Application arguments
         """
         super().__init__(nottreal, args)
+
+        self._dir = args.config_dir
+        if self._dir is None:
+            self._dir = self.DEFAULT_DIRECTORY
+
+        self._set_config_directory(self._dir)
 
         self.state = VUIState.BUSY
         self.recogniser_state = False
@@ -27,6 +41,15 @@ class WizardController(AbstractController):
         """
         self.nottreal.view.wizard_window.init_ui()
 
+        self.nottreal.view.wizard_window.set_data(self.data)
+        self.register_option(
+            option=WizardOption(
+                label='Select config directory…',
+                opt_cat=WizardOption.CAT_CORE,
+                opt_type=WizardOption.DIRECTORY,
+                method=self._set_config_directory,
+                default=self._dir))
+
         self._clear_slots_on_tab_change = False
         self.register_option(
             option=WizardOption(
@@ -37,6 +60,31 @@ class WizardController(AbstractController):
 
         Logger.debug(__name__, "Opening the Wizard window…")
         self.nottreal.view.wizard_window.show()
+
+    def _set_config_directory(self, directory, skip_config=False):
+        """
+        Load some data from the directory and update the UI
+
+        Arguments:
+            directory {str} -- New configuration directory
+
+        Keyword arguments:
+            skip_config {bool} -- Don't propagate to the output
+        """
+        if not skip_config:
+            self.nottreal.config.update(directory)
+
+        self.data = TSVModel(directory)
+
+        try:
+            self.nottreal.view.wizard_window.set_data(self.data)
+        except AttributeError:
+            pass
+
+        if not skip_config:
+            Logger.info(
+                __name__,
+                'Configuration directory set to "%s"' % directory)
 
     def respond_to(self):
         """
@@ -188,9 +236,9 @@ class WizardController(AbstractController):
             state {bool} -- {True} if data recording is enabled
         """
         if state:
-            self.nottreal.view.wizard_window.command.data_messages.show()
+            self.nottreal.view.wizard_window.command.log_msgs.show()
         else:
-            self.nottreal.view.wizard_window.command.data_messages.hide()
+            self.nottreal.view.wizard_window.command.log_msgs.hide()
 
     def recognition_enabled(self, state):
         """

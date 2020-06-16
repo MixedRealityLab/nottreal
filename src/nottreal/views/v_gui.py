@@ -12,23 +12,19 @@ import sys
 
 class Gui:
     """The primary GUI application class"""
-    def __init__(self, nottreal, args, data, config):
+    def __init__(self, nottreal, args):
         """
         Initialise the GUI application libraries
 
         Arguments:
             nottreal {App} -- Main NottReal class
             args {[str]} -- CLI arguments
-            data {TSVModel} -- Data from static data files
-            config {ConfigModel} -- Data from configuration files
         """
         self._qtapp = QApplication(sys.argv)
         QApplication.setStyle(QStyleFactory.create('Fusion'))
 
         self.nottreal = nottreal
         self.args = args
-        self.data = data
-        self.config = config
 
     def init_ui(self):
         module_path = DirUtils.pwd() + '/src/nottreal/views'
@@ -39,23 +35,18 @@ class Gui:
 
         self.wizard_window = WizardWindow(
             self.nottreal,
-            self.args,
-            self.data,
-            self.config)
+            self.args)
 
         self.output = {}
         for name, cls in classes.items():
             if self.args.dev:
                 instance = cls(
                     self.nottreal,
-                    self.args,
-                    self.data,
-                    self.config)
+                    self.args)
 
                 if instance.activated():
                     self.output[name.lower()] = instance
                     instance.init_ui()
-                    Logger.info(__name__, 'Loaded output view "%s"' % name)
                 else:
                     Logger.info(
                         __name__,
@@ -64,9 +55,7 @@ class Gui:
                 try:
                     instance = cls(
                         self.nottreal,
-                        self.args,
-                        self.data,
-                        self.config)
+                        self.args)
 
                     if instance.activated():
                         self.output[name.lower()] = instance

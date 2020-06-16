@@ -32,10 +32,6 @@ class InputController(AbstractController):
         self._num_callbacks = 0
         self._callbacks_volume = {}
 
-        self._vol_sensitivity = self.nottreal.config.cfg().getint(
-            'Input',
-            'sensitivity')
-
         self.source = Microphone()
         self._pyaudio = self.source.pyaudio_module
         self._thread = None
@@ -65,6 +61,11 @@ class InputController(AbstractController):
 
     def ready(self):
         """Set the default input source"""
+
+        self._vol_sensitivity = self.nottreal.config.cfg().getint(
+            'Input',
+            'sensitivity')
+
         audio = self._pyaudio.PyAudio()
         device = audio.get_default_input_device_info()['index']
 

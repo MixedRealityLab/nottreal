@@ -24,20 +24,16 @@ class WizardWindow(QMainWindow):
     Extends:
         QMainWindow
     """
-    def __init__(self, nottreal, args, data, config):
+    def __init__(self, nottreal, args):
         """
         The Window for controlling the VUI
 
         Arguments:
             nottreal {App} -- Main NottReal class
             args {[str]} -- CLI arguments
-            data {TSVModel} -- Data from static data files
-            config {ConfigModel} -- Data from static configuration files
         """
         self.nottreal = nottreal
         self.args = args
-        self.data = data
-        self.config = config
         self.router = nottreal.router
 
         super(WizardWindow, self).__init__()
@@ -50,13 +46,10 @@ class WizardWindow(QMainWindow):
         self.menu = MenuBar(self)
 
         self.recognised_words = RecognisedWordsWidget(self)
-        self.prepared_msgs = PreparedMessagesWidget(self, data.cats)
+        self.prepared_msgs = PreparedMessagesWidget(self)
         self.slot_history = SlotHistoryWidget(self)
         self.msg_queue = MessageQueueWidget(self)
-        self.command = CommandWidget(
-            self,
-            data.log_msgs,
-            data.loading_msgs)
+        self.command = CommandWidget(self)
         self.msg_history = MessageHistoryWidget(self)
 
     def init_ui(self):
@@ -101,6 +94,16 @@ class WizardWindow(QMainWindow):
         self.setGeometry(0, 0, 800, 600)
 
         Logger.info(__name__, 'Loaded Wizard window')
+
+    def set_data(self, data):
+        """
+        Populate the Wizard window with new data
+
+        Arguments:
+            data {TSVModel} -- New model
+        """
+        self.prepared_msgs.set_data(data.cats)
+        self.command.set_data(data.log_msgs, data.loading_msgs)
 
     def toggle_recogniser(self):
         """
@@ -159,6 +162,7 @@ class MenuBar(QMenuBar):
         self._instantiated_menus = {}
 
         self.option_category_to_menu = {
+            WizardOption.CAT_CORE: self.MENU_FILE,
             WizardOption.CAT_WIZARD: self.MENU_WIZARD,
             WizardOption.CAT_INPUT: self.MENU_INPUT,
             WizardOption.CAT_OUTPUT: self.MENU_OUTPUT
@@ -263,6 +267,8 @@ class MenuBar(QMenuBar):
             category {int} -- Category of options to select
         """
         menu.clear()
+
+        self._add_options_to_menu(menu, options, category)
 
         self._add_action_to_menu(
             menu,
@@ -771,7 +777,7 @@ class PreparedMessagesWidget(QTabWidget):
     DOUBLE_CLICK_TIMER = 450
     ID, LABEL, TEXT = range(3)
 
-    def __init__(self, parent, cats):
+    def __init__(self, parent):
         """
         Create the tabs and lists of prepared messages.
 
@@ -782,14 +788,22 @@ class PreparedMessagesWidget(QTabWidget):
         super(PreparedMessagesWidget, self).__init__(parent)
 
         self.parent = parent
-
         self.selected_msg = None
+        self.resize(300, 200)
 
-        self._cats = cats
+    def set_data(self, msgs_by_cat):
+        """
+        Set the categories and messages displayed
+
+        Arguments:
+            msgs_by_cat {dict} -- Categories of messages
+        """
+        self.clear()
+        self._cats = msgs_by_cat
         self._msgs_models = OrderedDict()
         self._msgs_widgets = OrderedDict()
 
-        for cat_id, cat in cats.items():
+        for cat_id, cat in self._cats.items():
             treeview = QTreeView()
             treeview.setRootIsDecorated(False)
             treeview.setAlternatingRowColors(True)
@@ -829,7 +843,6 @@ class PreparedMessagesWidget(QTabWidget):
             self.addTab(widget, cat['label'])
 
         self.currentChanged.connect(self._on_tab_change)
-        self.resize(300, 200)
 
     def selected_tab_label(self):
         """
@@ -1161,7 +1174,7 @@ class CommandWidget(QGroupBox):
     RE_TEXT_SLOT_REPL = r'*'
     RE_TEXT_SLOT_ENDREPL = r'$'
 
-    def __init__(self, parent, log_msgs, loading_msgs):
+    def __init__(self, parent):
         """
         Create the area to type text and submit it to the voice
         subsystem
@@ -1197,29 +1210,21 @@ class CommandWidget(QGroupBox):
         buttonBar.setLayout(buttonBarLayout)
 
         # options for data log mesages
-        self.data_messages = QComboBox()
-        self.data_messages.currentIndexChanged.connect(
+        self.log_msgs = QComboBox()
+        self.log_msgs.currentIndexChanged.connect(
             self._on_log_message)
-        self.data_messages.setPlaceholderText('Record an event')
+        self.log_msgs.setPlaceholderText('Record an event')
 
-        for key, value in log_msgs.items():
-            self.data_messages.addItem(
-                value['message'],
-                value['id'])
-
-        buttonBarLayout.addWidget(self.data_messages)
-        self.data_messages.hide()
+        buttonBarLayout.addWidget(self.log_msgs)
+        self.log_msgs.hide()
 
         # options for loading messages
-        self._combo_loading_messages = QComboBox()
-        self._combo_loading_messages.currentIndexChanged.connect(
+        self.loading_msgs = QComboBox()
+        self.loading_msgs.currentIndexChanged.connect(
             self._on_loading_message)
-        self._combo_loading_messages.setPlaceholderText(
-            'Send a loading message...')
-        for key, value in loading_msgs.items():
-            self._combo_loading_messages.addItem(value['message'])
-
-        buttonBarLayout.addWidget(self._combo_loading_messages)
+        self.loading_msgs.setPlaceholderText(
+            'Send a loading message…')
+        buttonBarLayout.addWidget(self.loading_msgs)
 
         # clear and speak buttons
         self._button_clear = QPushButton('Clear')
@@ -1236,6 +1241,24 @@ class CommandWidget(QGroupBox):
         buttonBarLayout.addWidget(buttonBox)
 
         layout.addWidget(buttonBar)
+
+    def set_data(self, log_msgs, new_loading_msgs):
+        """
+        Set the log and loading messages
+
+        Arguments:
+            log_msgs {dict} -- Log/data recording messages
+            loading_msgs {dict} -- Loading messages
+        """
+        self.log_msgs.clear()
+        for key, value in log_msgs.items():
+            self.log_msgs.addItem(
+                value['message'],
+                value['id'])
+
+        self.loading_msgs.clear()
+        for key, value in new_loading_msgs.items():
+            self.loading_msgs.addItem(value['message'])
 
     def set_text(self, text):
         """
@@ -1513,10 +1536,10 @@ class CommandWidget(QGroupBox):
             Slot
         """
         if num > -1:
-            id = self.data_messages.currentData()
-            text = self.data_messages.currentText()
+            id = self.log_msgs.currentData()
+            text = self.log_msgs.currentText()
             self.parent.router('wizard', 'log_message', id=id, text=text)
-            self.data_messages.setCurrentIndex(-1)
+            self.log_msgs.setCurrentIndex(-1)
 
     @Slot(int)
     def _on_loading_message(self, num):
@@ -1530,9 +1553,9 @@ class CommandWidget(QGroupBox):
             Slot
         """
         if num > -1:
-            text = self._combo_loading_messages.currentText()
+            text = self.loading_msgs.currentText()
             self.speak_text(text, loading=True)
-            self._combo_loading_messages.setCurrentIndex(-1)
+            self.loading_msgs.setCurrentIndex(-1)
 
     @Slot()
     def _on_clear(self):

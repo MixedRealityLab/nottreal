@@ -13,7 +13,7 @@ class AbstractOutputView(QWidget):
     Extends:
         QWidget
     """
-    def __init__(self, nottreal, args, data, config):
+    def __init__(self, nottreal, args):
         """
         A window that displays output
 
@@ -23,14 +23,9 @@ class AbstractOutputView(QWidget):
         Arguments:
             nottreal {App} -- Main NottReal class
             args {[str]} -- CLI arguments
-            data {TSVModel} -- Data from static data files
-            config {ConfigModel} -- Data from static configuration
-                files
         """
         self.nottreal = nottreal
         self.args = args
-        self.data = data
-        self.config = config
 
         super(AbstractOutputView, self).__init__()
 

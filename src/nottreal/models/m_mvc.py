@@ -13,6 +13,8 @@ class WizardOption:
                               has to choose one item from a list
         DIRECTORY {int}    -- Identifier for an option that the user
                               has to choose a directory
+        CAT_CORE {int}     -- Identifier for options relating to the
+                              application overall
         CAT_WIZARD {int}   -- Identifier for options relating to the
                               Wizard
         CAT_VOICE {int}    -- Identifier for options relating to the
@@ -24,7 +26,7 @@ class WizardOption:
     """
     CHECKBOX = 0
     BOOLEAN, SINGLE_CHOICE, DIRECTORY = range(3)
-    CAT_WIZARD, CAT_VOICE, CAT_INPUT, CAT_OUTPUT = range(4)
+    CAT_CORE, CAT_WIZARD, CAT_VOICE, CAT_INPUT, CAT_OUTPUT = range(5)
 
     def __init__(self,
                  label,

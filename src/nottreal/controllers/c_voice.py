@@ -43,7 +43,7 @@ class VoiceController(AbstractController):
             responder {str} -- Will only work for the {voice_root}
                                responder
         """
-        return 10 if responder == 'voice_root' else -1
+        return 25 if responder == 'voice_root' else -1
 
     def ready(self, responder=None):
         """
