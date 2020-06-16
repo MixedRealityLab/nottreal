@@ -19,7 +19,7 @@ class ConfigModel:
         self.config = configparser.ConfigParser()
         self.config.read(args.config_dir + '/settings.cfg')
 
-        Logger.info(__name__, 'Configuration loaded')
+        Logger.info(__name__, 'Loaded configuration')
 
     def get(self, section, option):
         return self.config.get(section, option)

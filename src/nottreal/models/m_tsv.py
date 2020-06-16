@@ -58,7 +58,7 @@ class TSVModel:
             if 'msgs' not in cat:
                 cat['msgs'] = OrderedDict()
 
-        Logger.info(__name__, 'Model successfully loaded from files')
+        Logger.info(__name__, 'Loaded prepared messages')
 
     def msgs(self, cat_id=None, msg_id=None):
         """

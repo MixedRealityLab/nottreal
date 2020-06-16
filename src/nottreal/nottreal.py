@@ -85,7 +85,7 @@ class App:
                 pass
 
         # boom!
-        Logger.info(__name__, 'Initiation complete')
+        Logger.info(__name__, self.appname + ' is running')
         self.view.run_loop()
 
         Logger.debug(__name__, 'Exiting the GUI application')

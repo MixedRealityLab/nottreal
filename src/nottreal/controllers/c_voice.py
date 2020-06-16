@@ -58,7 +58,7 @@ class VoiceController(AbstractController):
 
         Logger.debug(__name__, 'Setting up voice synthesis')
 
-        if self._voice == None:
+        if self._voice is None:
             voice = self.DEFAULT_VOICE
         else:
             voice = 'Voice' \
@@ -160,7 +160,7 @@ class VoiceController(AbstractController):
                     'Unknown voice ID: "%s"' % voice).with_traceback(tb)
                 return
 
-        Logger.info(__name__, 'Setting voice to "%s"' % name)
+        Logger.info(__name__, 'Set voice synthesis to "%s"' % name)
 
         self.responder('voice', self.voice_instance)
         self.router('voice', 'init', args=self.args)

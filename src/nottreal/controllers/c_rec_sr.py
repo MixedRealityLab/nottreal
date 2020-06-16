@@ -74,7 +74,7 @@ class SRRecognition(AbstractRecognitionController):
             time.sleep(.5)
             return self.start_recognising()
 
-        Logger.info(__name__, 'Start listening for voice recognition')
+        Logger.info(__name__, 'Started listening for voice recognition')
 
         self.rec = self.sr.Recognizer()
         self._stop_recognising = self.rec.listen_in_background(

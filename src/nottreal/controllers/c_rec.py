@@ -49,7 +49,7 @@ class RecognitionController(AbstractController):
 
         Logger.debug(__name__, 'Setting up voice recognition')
 
-        if self._recogniser == None:
+        if self._recogniser is None:
             recogniser = self.DEFAULT_RECOGNISER
         else:
             recogniser = 'Recognition' \
@@ -148,7 +148,7 @@ class RecognitionController(AbstractController):
         """
         Logger.info(
             __name__,
-            'Setting voice recognition to "%s"' % recogniser)
+            'Set voice recognition to "%s"' % recogniser)
 
         previous_instance = self.recogniser_instance
         try:

@@ -34,7 +34,7 @@ class WizardController(AbstractController):
             method=self._set_clear_slots_on_tab_change,
             default=self._clear_slots_on_tab_change)
 
-        Logger.info(__name__, "Opening the Wizard window…")
+        Logger.debug(__name__, "Opening the Wizard window…")
         self.nottreal.view.wizard_window.show()
 
     def respond_to(self):

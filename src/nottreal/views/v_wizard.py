@@ -4,10 +4,11 @@ from ..models.m_mvc import VUIState, WizardOption
 
 from collections import OrderedDict, deque
 from PySide2.QtWidgets import (QAbstractItemView, QAction, QComboBox,
-                               QDialogButtonBox, QFileDialog, QGridLayout, QGroupBox,
-                               QHBoxLayout, QMainWindow, QPlainTextEdit,
-                               QPushButton, QVBoxLayout, QTabWidget, QMenuBar,
-                               QMenu, QTreeView, QWidget)
+                               QDialogButtonBox, QFileDialog, QGridLayout,
+                               QGroupBox, QHBoxLayout, QMainWindow,
+                               QPlainTextEdit, QPushButton, QVBoxLayout,
+                               QTabWidget, QMenuBar, QMenu, QTreeView,
+                               QWidget)
 from PySide2.QtGui import (QTextCursor, QStandardItemModel)
 from PySide2.QtCore import (Qt, QItemSelectionModel, QTimer,
                             Slot)
@@ -97,7 +98,7 @@ class WizardWindow(QMainWindow):
 
         self.setGeometry(0, 0, 800, 600)
 
-        Logger.info(__name__, 'Wizard window ready')
+        Logger.info(__name__, 'Loaded Wizard window')
 
     def toggle_recogniser(self):
         """
@@ -575,7 +576,7 @@ class MenuBar(QMenuBar):
         dialog.setFileMode(QFileDialog.Directory)
         if dialog.exec_():
             directory = dialog.selectedFiles()
-            response = option.method(directory[0])
+            option.method(directory[0])
 
     @Slot(bool)
     def _on_option_single_choice_toggled(self, checked):

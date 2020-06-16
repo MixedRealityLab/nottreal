@@ -91,7 +91,7 @@ class InputController(AbstractController):
         """
         Logger.info(
             __name__,
-            'Input source set to "%s"' % self.devices[device])
+            'Set input source to "%s"' % self.devices[device])
 
         self.selected_device = device
         self._swap_to_device = device

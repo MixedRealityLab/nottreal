@@ -60,7 +60,7 @@ class DataRecorderController(AbstractController):
         Arguments:
             responder {str} -- Ignored
         """
-        Logger.info(__name__, 'Setting up data logging')
+        Logger.debug(__name__, 'Setting up data logging')
         self._set_directory(self._dir)
 
         self.nottreal.router(
@@ -118,12 +118,14 @@ class DataRecorderController(AbstractController):
             if self._file:
                 self._enablable = True
                 self._enabled = True
+
                 Logger.info(
                     __name__,
-                    'Data will be recorded to "%s"' % self._filepath)
+                    'Set data directory to "%s"' % self._filepath)
         except IOError:
             self._enablable = False
             self._enabled = False
+
             Logger.warning(
                 __name__,
                 'Failed to open "%s" to record data' % self._filepath)
