@@ -4,7 +4,7 @@ from ..models.m_mvc import VUIState, WizardOption
 
 from collections import OrderedDict, deque
 from PySide2.QtWidgets import (QAbstractItemView, QAction, QComboBox,
-                               QDialogButtonBox, QGridLayout, QGroupBox,
+                               QDialogButtonBox, QFileDialog, QGridLayout, QGroupBox,
                                QHBoxLayout, QMainWindow, QPlainTextEdit,
                                QPushButton, QVBoxLayout, QTabWidget, QMenuBar,
                                QMenu, QTreeView, QWidget)
@@ -444,7 +444,7 @@ class MenuBar(QMenuBar):
         if data is not None:
             action.setData(data)
 
-        if checkable is not None:
+        if checkable is True and type(value) is bool:
             action.setCheckable(checkable)
             action.setChecked(value)
 
@@ -490,6 +490,17 @@ class MenuBar(QMenuBar):
                     checkable=True,
                     value=option.default,
                     callback=self._on_option_checkbox_toggled)
+
+                option.ui = action
+
+            elif option.opt_type == WizardOption.DIRECTORY:
+                action = self._add_action_to_menu(
+                    menu,
+                    option.label,
+                    data=str(category),
+                    checkable=False,
+                    value=option.default,
+                    callback=self._on_option_directory_triggered)
 
                 option.ui = action
 
@@ -540,6 +551,31 @@ class MenuBar(QMenuBar):
         response = option.method(checked)
         if response is False:
             self.sender().setChecked(not self.sender().isChecked())
+
+    @Slot()
+    def _on_option_directory_triggered(self):
+        text = self.sender().text()
+        category = self.sender().data()
+
+        try:
+            cat_options = self._options[int(category)]
+        except KeyError:
+            tb = sys.exc_info()[2]
+            raise KeyError(
+                'Unknown option category: "%s"' % category).with_traceback(tb)
+
+        try:
+            option = [o for o in iter(cat_options) if o.label == text][0]
+        except IndexError:
+            tb = sys.exc_info()[2]
+            raise KeyError(
+                'Unknown option: "%s"' % text).with_traceback(tb)
+
+        dialog = QFileDialog(self, option.label, option.default)
+        dialog.setFileMode(QFileDialog.Directory)
+        if dialog.exec_():
+            directory = dialog.selectedFiles()
+            response = option.method(directory[0])
 
     @Slot(bool)
     def _on_option_single_choice_toggled(self, checked):

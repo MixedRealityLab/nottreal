@@ -66,7 +66,7 @@ class DataRecorderController(AbstractController):
         self.nottreal.router(
             'wizard',
             'register_option',
-            label='Enable logging',
+            label='Enable data recording',
             method=self.enable_data_output,
             opt_cat=WizardOption.CAT_WIZARD,
             opt_type=WizardOption.BOOLEAN,
@@ -77,11 +77,11 @@ class DataRecorderController(AbstractController):
         self.nottreal.router(
             'wizard',
             'register_option',
-            label='Log data directory',
+            label='Select data directory',
             method=self._set_directory,
             opt_cat=WizardOption.CAT_WIZARD,
             opt_type=WizardOption.DIRECTORY,
-            default=self.DATA_DIRECTORY,
+            default=self._dir,
             order=1,
             group='data')
 
