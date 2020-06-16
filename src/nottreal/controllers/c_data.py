@@ -79,7 +79,7 @@ class DataRecorderController(AbstractController):
             'wizard',
             'register_option',
             option=WizardOption(
-                label='Select data directory',
+                label='Select data directory…',
                 method=self._set_directory,
                 opt_cat=WizardOption.CAT_WIZARD,
                 opt_type=WizardOption.DIRECTORY,
