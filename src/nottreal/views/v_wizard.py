@@ -962,7 +962,7 @@ class PreparedMessagesWidget(QTabWidget):
     def _on_msg_key_release(self, event):
         """
         Handle key releases on the message list, to catch the return
-        key being pressed. Enter is the same as clicking, Ctrl+Eenter
+        key being pressed. Enter is the same as clicking, Ctrl+Enter
         (cmd on a Mac) is the same as double clicking.
 
         Decorators:
@@ -975,7 +975,7 @@ class PreparedMessagesWidget(QTabWidget):
             tab_index = self.currentIndex()
             cat_id = list(self._cats.keys())[tab_index]
             treeview = self._msgs_widgets[cat_id]
-            
+
             msg_id = self._get_selected_msg(treeview)
             if (event.modifiers() == Qt.ControlModifier):
                 self._speak_msg(msg_id)

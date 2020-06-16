@@ -96,7 +96,7 @@ class DataRecorderController(AbstractController):
             if state:
                 Logger.info(__name__, 'Enabled recording of data')
                 self._enabled = True
-                    
+
                 self.router(
                     'wizard',
                     'data_recording_enabled',
@@ -104,7 +104,7 @@ class DataRecorderController(AbstractController):
             else:
                 Logger.info(__name__, 'Disabled recording of data')
                 self._enabled = False
-                    
+
                 self.router(
                     'wizard',
                     'data_recording_enabled',
@@ -129,7 +129,7 @@ class DataRecorderController(AbstractController):
                 Logger.info(
                     __name__,
                     'Set data directory to "%s"' % self._filepath)
-                    
+
                 self._enablable = True
                 self.enable_data_output(True)
         except IOError:
