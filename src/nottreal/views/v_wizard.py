@@ -209,9 +209,9 @@ class MenuBar(QMenuBar):
             cat_options = self._options[option.opt_cat]
 
             option_idx = [idx
-                      for idx, c
-                      in enumerate(cat_options)
-                      if c.label == option.label][0]
+                          for idx, c
+                          in enumerate(cat_options)
+                          if c.label == option.label][0]
 
             del self._options[option.opt_cat][option_idx]
         except KeyError:
@@ -531,13 +531,13 @@ class MenuBar(QMenuBar):
 
                 option.ui = ui_elements
                 option.ui_update = self.update_option_single_choice
-                
+
                 menu.addMenu(submenu)
 
     def update_option_boolean(self, option):
         """
         Toggle value of a boolean option
-        
+
         Arguments:
             option {WizardOption} -- Option to update
         """
@@ -546,7 +546,7 @@ class MenuBar(QMenuBar):
     def update_option_single_choice(self, option):
         """
         Toggle value of single choice option
-        
+
         Arguments:
             option {WizardOption} -- Option to update
         """

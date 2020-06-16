@@ -40,20 +40,22 @@ class VoiceCerevoice(VoiceShellCmd):
             'VoiceCerevoice',
             'command_interrupt')
 
-        self.router(
+        self._opt_calm_voice = self.router(
             'wizard',
             'register_option',
-            label='Use a calm voice',
-            opt_cat=WizardOption.CAT_OUTPUT,
-            method=self._set_calm,
-            default=self._calm_voice)
-        self.router(
+            option=WizardOption(
+                label='Use a calm voice',
+                opt_cat=WizardOption.CAT_OUTPUT,
+                method=self._set_calm,
+                default=self._calm_voice))
+        self._opt_spurts = self.router(
             'wizard',
             'register_option',
-            label='Use Cerevoice spurts',
-            opt_cat=WizardOption.CAT_OUTPUT,
-            method=self._set_cerevoice_spurts,
-            default=self._cerevoice_spurts)
+            option=WizardOption(
+                label='Use Cerevoice spurts',
+                opt_cat=WizardOption.CAT_OUTPUT,
+                method=self._set_cerevoice_spurts,
+                default=self._cerevoice_spurts))
 
     def packdown(self):
         """
@@ -65,14 +67,12 @@ class VoiceCerevoice(VoiceShellCmd):
         self.router(
             'wizard',
             'deregister_option',
-            label='Use a calm voice',
-            opt_cat=WizardOption.CAT_OUTPUT)
+            option=self._opt_calm_voice)
 
         self.router(
             'wizard',
             'deregister_option',
-            label='Use Cerevoice spurts',
-            opt_cat=WizardOption.CAT_OUTPUT)
+            option=self._opt_spurts)
 
     def name(self):
         return 'Cerevoice'

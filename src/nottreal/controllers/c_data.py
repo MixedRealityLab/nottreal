@@ -67,24 +67,25 @@ class DataRecorderController(AbstractController):
             'wizard',
             'register_option',
             option=WizardOption(
-            label='Enable data recording',
-            method=self.enable_data_output,
-            opt_cat=WizardOption.CAT_WIZARD,
-            opt_type=WizardOption.BOOLEAN,
-            default=self._enabled,
-            order=0,
-            group='data'))
+                label='Enable data recording',
+                method=self.enable_data_output,
+                opt_cat=WizardOption.CAT_WIZARD,
+                opt_type=WizardOption.BOOLEAN,
+                default=self._enabled,
+                order=0,
+                group='data'))
 
         self.nottreal.router(
             'wizard',
             'register_option',
-            label='Select data directory',
-            method=self._set_directory,
-            opt_cat=WizardOption.CAT_WIZARD,
-            opt_type=WizardOption.DIRECTORY,
-            default=self._dir,
-            order=1,
-            group='data')
+            option=WizardOption(
+                label='Select data directory',
+                method=self._set_directory,
+                opt_cat=WizardOption.CAT_WIZARD,
+                opt_type=WizardOption.DIRECTORY,
+                default=self._dir,
+                order=1,
+                group='data'))
 
     def enable_data_output(self, state):
         """
@@ -122,7 +123,7 @@ class DataRecorderController(AbstractController):
         """
         Set the data recording directory and enable data
         recording
-        
+
         Arguments:
             new_dir {str} -- Path to new directory
         """
@@ -146,10 +147,8 @@ class DataRecorderController(AbstractController):
                 'Failed to open "%s" to record data' % self._filepath)
 
             self._enablable = False
-            self.enable_data_output(False)         
+            self.enable_data_output(False)
 
-
-                
         try:
             self._opt_data_recording.value = self._enabled
             self._opt_data_recording = self.nottreal.router(

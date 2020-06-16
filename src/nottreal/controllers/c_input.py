@@ -71,13 +71,14 @@ class InputController(AbstractController):
         self.nottreal.router(
             'wizard',
             'register_option',
-            label='Input source',
-            method=self.set_device,
-            opt_cat=WizardOption.CAT_INPUT,
-            opt_type=WizardOption.SINGLE_CHOICE,
-            default=device,
-            values=self.devices,
-            group=0)
+            option=WizardOption(
+                label='Input source',
+                method=self.set_device,
+                opt_cat=WizardOption.CAT_INPUT,
+                opt_type=WizardOption.SINGLE_CHOICE,
+                default=device,
+                values=self.devices,
+                group=0))
 
         self.set_device(device)
         audio.terminate()

@@ -19,7 +19,7 @@ class WizardController(AbstractController):
         self.state = VUIState.BUSY
         self.recogniser_state = False
         self.have_recognised_words = False
-        
+
     def ready(self):
         """
         Called when the framework is established and the controller can
@@ -29,10 +29,11 @@ class WizardController(AbstractController):
 
         self._clear_slots_on_tab_change = False
         self.register_option(
-            label='Clear slot tracking on tab change',
-            opt_cat=WizardOption.CAT_WIZARD,
-            method=self._set_clear_slots_on_tab_change,
-            default=self._clear_slots_on_tab_change)
+            option=WizardOption(
+                label='Clear slot tracking on tab change',
+                opt_cat=WizardOption.CAT_WIZARD,
+                method=self._set_clear_slots_on_tab_change,
+                default=self._clear_slots_on_tab_change))
 
         Logger.debug(__name__, "Opening the Wizard window…")
         self.nottreal.view.wizard_window.show()
@@ -61,7 +62,7 @@ class WizardController(AbstractController):
 
         Arguments:
             option {WizardOption} -- Wizard option to set
-                        
+
         Deprecated arguments:
             label {str}    -- Label of the option
             method {func}  -- Method to call with the value when
@@ -74,7 +75,7 @@ class WizardController(AbstractController):
             values {dict}  -- Dictionary of values (default: {{}})
             order {int}    -- Position of the option within a {group}
             group {int}    -- Grouping of the option
-        
+
         Returns:
             {WizardOption}
         """
@@ -103,7 +104,7 @@ class WizardController(AbstractController):
         Arguments:
             option {WizardOption} -- Option to update
             new_value {mixed}     -- New value
-        """     
+        """
         try:
             option.ui_update(option)
             Logger.debug(__name__, 'Option "%s" updated' % option.label)

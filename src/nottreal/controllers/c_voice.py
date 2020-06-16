@@ -70,14 +70,15 @@ class VoiceController(AbstractController):
         self.nottreal.router(
             'wizard',
             'register_option',
-            label='Voice subsystem',
-            method=self._set_voice,
-            opt_cat=WizardOption.CAT_OUTPUT,
-            opt_type=WizardOption.SINGLE_CHOICE,
-            default=voice,
-            values=self._available_voices,
-            order=0,
-            group=10)
+            option=WizardOption(
+                label='Voice subsystem',
+                method=self._set_voice,
+                opt_cat=WizardOption.CAT_OUTPUT,
+                opt_type=WizardOption.SINGLE_CHOICE,
+                default=voice,
+                values=self._available_voices,
+                order=0,
+                group=10))
 
     def respond_to(self):
         """
@@ -198,13 +199,14 @@ class AbstractVoiceController(AbstractController):
             args {[str]} -- Arguments passed through for the voice
                             subsystem
         """
-        self.router(
+        self._opt_listen_after = self.router(
             'wizard',
             'register_option',
-            label='Listening state after speech',
-            opt_cat=WizardOption.CAT_OUTPUT,
-            method=self._set_auto_listening,
-            default=self.auto_listening)
+            option=WizardOption(
+                label='Listening state after speech',
+                opt_cat=WizardOption.CAT_OUTPUT,
+                method=self._set_auto_listening,
+                default=self.auto_listening))
 
     def ready_order(self, responder=None):
         """
@@ -226,8 +228,7 @@ class AbstractVoiceController(AbstractController):
         self.router(
             'wizard',
             'deregister_option',
-            label='Listening state after speech',
-            opt_cat=WizardOption.CAT_OUTPUT)
+            option=self._opt_listen_after)
 
     @abc.abstractmethod
     def name(self):
@@ -409,13 +410,14 @@ class ThreadedBaseVoice(AbstractVoiceController):
         self._dont_append_cat_change = True
         self._clear_queue_on_interrupt = True
 
-        self.nottreal.router(
+        self._opt_clear_queue = self.nottreal.router(
             'wizard',
             'register_option',
-            label='Clear queue on interrupt',
-            opt_cat=WizardOption.CAT_WIZARD,
-            method=self._set_clear_queue_on_interrupt,
-            default=self._clear_queue_on_interrupt)
+            option=WizardOption(
+                label='Clear queue on interrupt',
+                opt_cat=WizardOption.CAT_WIZARD,
+                method=self._set_clear_queue_on_interrupt,
+                default=self._clear_queue_on_interrupt))
 
         self._voice_thread = threading.Thread(
                 target=self._speak,
@@ -437,8 +439,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
         self.router(
             'wizard',
             'deregister_option',
-            label='Clear queue on interrupt',
-            opt_cat=WizardOption.CAT_OUTPUT)
+            option=self._opt_clear_queue)
 
     def _set_dont_append_cat_change(self, value):
         """
@@ -695,13 +696,14 @@ class VoiceOutputToLog(ThreadedBaseVoice):
 
     def init(self, args):
         super().init(args)
-        self.nottreal.router(
+        self._opt_dont_simulate = self.nottreal.router(
             'wizard',
             'register_option',
-            opt_cat=WizardOption.CAT_OUTPUT,
-            label='Don\'t simulate talk time',
-            method=self._set_no_waiting,
-            default=self._no_waiting)
+            option=WizardOption(
+                opt_cat=WizardOption.CAT_OUTPUT,
+                label='Don\'t simulate talk time',
+                method=self._set_no_waiting,
+                default=self._no_waiting))
 
     def packdown(self):
         """
@@ -713,8 +715,7 @@ class VoiceOutputToLog(ThreadedBaseVoice):
         self.router(
             'wizard',
             'deregister_option',
-            label='Don\'t simulate talk time',
-            opt_cat=WizardOption.CAT_OUTPUT)
+            option=self._opt_dont_simulate)
 
     def name(self):
         return 'Output to log'

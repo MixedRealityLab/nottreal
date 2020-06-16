@@ -63,14 +63,15 @@ class RecognitionController(AbstractController):
         self.nottreal.router(
             'wizard',
             'register_option',
-            label='Recogniser',
-            method=self._set_recogniser,
-            opt_cat=WizardOption.CAT_INPUT,
-            opt_type=WizardOption.SINGLE_CHOICE,
-            default=recogniser,
-            values=self._available_recognisers,
-            order=0,
-            group='recognition')
+            option=WizardOption(
+                label='Recogniser',
+                method=self._set_recogniser,
+                opt_cat=WizardOption.CAT_INPUT,
+                opt_type=WizardOption.SINGLE_CHOICE,
+                default=recogniser,
+                values=self._available_recognisers,
+                order=0,
+                group='recognition'))
 
     def quit(self):
         """
@@ -220,12 +221,13 @@ class AbstractRecognitionController(AbstractController):
         self.nottreal.router(
             'wizard',
             'register_option',
-            opt_cat=WizardOption.CAT_INPUT,
-            label='Recognition during listening state only',
-            method=self._set_recognition_during_listening,
-            default=self._recognition_during_listening,
-            order=2,
-            group='recognition')
+            option=WizardOption(
+                opt_cat=WizardOption.CAT_INPUT,
+                label='Recognition during listening state only',
+                method=self._set_recognition_during_listening,
+                default=self._recognition_during_listening,
+                order=2,
+                group='recognition'))
 
     def ready(self, responder=None):
         """
