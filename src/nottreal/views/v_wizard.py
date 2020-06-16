@@ -1200,7 +1200,7 @@ class CommandWidget(QGroupBox):
         self.data_messages = QComboBox()
         self.data_messages.currentIndexChanged.connect(
             self._on_log_message)
-        self.data_messages.setPlaceholderText('Log an event')
+        self.data_messages.setPlaceholderText('Record an event')
 
         for key, value in log_msgs.items():
             self.data_messages.addItem(
