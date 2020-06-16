@@ -482,7 +482,7 @@ class MenuBar(QMenuBar):
                 menu.addSeparator()
                 current_group = option.group
 
-            if option.opt_type == WizardOption.CHECKBOX:
+            if option.opt_type == WizardOption.BOOLEAN:
                 action = self._add_action_to_menu(
                     menu,
                     option.label,

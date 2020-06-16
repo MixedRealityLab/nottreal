@@ -45,7 +45,7 @@ class WizardOption:
             opt_cat {int}  -- The category of the option
                               (default: {self.CAT_WIZARD})
             opt_type {int} -- The type of option
-                              (default: {self.CHECKBOX})
+                              (default: {self.BOOLEAN})
             default {bool} -- Default value (default: {False})
             added {bool}   -- Has been added to the UI
                               (default: {False})

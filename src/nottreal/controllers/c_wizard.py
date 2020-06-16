@@ -50,7 +50,7 @@ class WizardController(AbstractController):
                         label,
                         method,
                         opt_cat=WizardOption.CAT_WIZARD,
-                        opt_type=WizardOption.CHECKBOX,
+                        opt_type=WizardOption.BOOLEAN,
                         default=False,
                         values={},
                         order=99,
@@ -67,7 +67,7 @@ class WizardController(AbstractController):
             opt_cat {int}  -- The category of option
                               (default: {WizardOption.CAT_WIZARD})
             opt_type {int} -- The type of option
-                              (default: {WizardOption.CHECKBOX})
+                              (default: {WizardOption.BOOLEAN})
             default {bool} -- Default value (default: {False})
             values {dict}  -- Dictionary of values (default: {{}})
             order {int}    -- Position of the option within a {group}
