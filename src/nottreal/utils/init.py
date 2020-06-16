@@ -138,7 +138,7 @@ class ClassUtils:
         """
         try:
             ClassUtils._cached_subclasses[rootclass.__name__]
-        except AttributeError:
+        except Exception:
             ClassUtils._cached_subclasses = {}
             ClassUtils._cached_subclasses[rootclass.__name__] = \
                 ClassUtils.get_all_subclasses(rootclass)
