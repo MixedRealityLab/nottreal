@@ -1,4 +1,7 @@
 
+import base64
+
+
 class WizardOption:
     """
     An option for the wizard to use at runtime
@@ -65,6 +68,11 @@ class WizardOption:
 
         self.value = default
         self.ui = None
+        self.ui_update = None
+        
+        self.base64label = base64.b64encode(self.label.encode('ascii'))
+        
+        self.__internal_tracking_id = None
 
     def change(self, value):
         """

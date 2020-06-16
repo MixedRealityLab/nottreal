@@ -44,7 +44,7 @@ class WizardWindow(QMainWindow):
         self.setWindowTitle(nottreal.appname)
 
         Logger.debug(__name__, 'Initialising the Wizard window widgets')
-        
+
         self.disable_enter_press = False
 
         self.menu = MenuBar(self)
@@ -198,23 +198,22 @@ class MenuBar(QMenuBar):
             except KeyError:
                 pass
 
-    def remove_option(self, label, opt_cat):
+    def remove_option(self, option):
         """
         Remove an option from the Wizard interface
 
         Arguments:
-            label {str} -- Label of the option
-            opt_cat {int} -- Option category
+            option {WizardOption} -- Option to remove
         """
         try:
-            cat_options = self._options[opt_cat]
+            cat_options = self._options[option.opt_cat]
 
-            option = [idx
+            option_idx = [idx
                       for idx, c
                       in enumerate(cat_options)
-                      if c.label == label][0]
+                      if c.label == option.label][0]
 
-            del self._options[opt_cat][option]
+            del self._options[option.opt_cat][option_idx]
         except KeyError:
             return
         except IndexError:
@@ -223,7 +222,7 @@ class MenuBar(QMenuBar):
         if self._generated_menu:
             try:
                 self._generate_menu(
-                    self.option_category_to_menu[opt_cat])
+                    self.option_category_to_menu[option.opt_cat])
             except KeyError:
                 pass
 
@@ -492,9 +491,10 @@ class MenuBar(QMenuBar):
                     data=str(category),
                     checkable=True,
                     value=option.default,
-                    callback=self._on_option_checkbox_toggled)
+                    callback=self._on_option_boolean_toggled)
 
                 option.ui = action
+                option.ui_update = self.update_option_boolean
 
             elif option.opt_type == WizardOption.DIRECTORY:
                 action = self._add_action_to_menu(
@@ -530,10 +530,31 @@ class MenuBar(QMenuBar):
                         callback=self._on_option_single_choice_toggled))
 
                 option.ui = ui_elements
+                option.ui_update = self.update_option_single_choice
+                
                 menu.addMenu(submenu)
 
+    def update_option_boolean(self, option):
+        """
+        Toggle value of a boolean option
+        
+        Arguments:
+            option {WizardOption} -- Option to update
+        """
+        option.ui.setChecked(option.value)
+
+    def update_option_single_choice(self, option):
+        """
+        Toggle value of single choice option
+        
+        Arguments:
+            option {WizardOption} -- Option to update
+        """
+        for action in iter(option.ui['actions']):
+            action.setChecked(action.text() == option.value)
+
     @Slot(bool)
-    def _on_option_checkbox_toggled(self, checked):
+    def _on_option_boolean_toggled(self, checked):
         text = self.sender().text()
         category = self.sender().data()
 
@@ -575,7 +596,7 @@ class MenuBar(QMenuBar):
                 'Unknown option: "%s"' % text).with_traceback(tb)
 
         self.parent.disable_enter_press = True
-        
+
         dialog = QFileDialog(self, option.label, option.default)
         dialog.setFileMode(QFileDialog.Directory)
         if dialog.exec_():
@@ -980,11 +1001,11 @@ class PreparedMessagesWidget(QTabWidget):
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             if self.parent.disable_enter_press:
                 return event.accept()
-                
+
             tab_index = self.currentIndex()
             cat_id = list(self._cats.keys())[tab_index]
             treeview = self._msgs_widgets[cat_id]
-            
+
             try:
                 msg_id = self._get_selected_msg(treeview)
             except IndexError:

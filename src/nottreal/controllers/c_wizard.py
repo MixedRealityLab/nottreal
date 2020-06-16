@@ -19,7 +19,7 @@ class WizardController(AbstractController):
         self.state = VUIState.BUSY
         self.recogniser_state = False
         self.have_recognised_words = False
-
+        
     def ready(self):
         """
         Called when the framework is established and the controller can
@@ -47,8 +47,9 @@ class WizardController(AbstractController):
         return 'wizard'
 
     def register_option(self,
-                        label,
-                        method,
+                        option=None,
+                        label='',
+                        method=None,
                         opt_cat=WizardOption.CAT_WIZARD,
                         opt_type=WizardOption.BOOLEAN,
                         default=False,
@@ -59,11 +60,12 @@ class WizardController(AbstractController):
         Create an option for the user to specify
 
         Arguments:
+            option {WizardOption} -- Wizard option to set
+                        
+        Deprecated arguments:
             label {str}    -- Label of the option
             method {func}  -- Method to call with the value when
                               its changed
-
-        Keyword Arguments:
             opt_cat {int}  -- The category of option
                               (default: {WizardOption.CAT_WIZARD})
             opt_type {int} -- The type of option
@@ -72,22 +74,47 @@ class WizardController(AbstractController):
             values {dict}  -- Dictionary of values (default: {{}})
             order {int}    -- Position of the option within a {group}
             group {int}    -- Grouping of the option
+        
+        Returns:
+            {WizardOption}
         """
-        Logger.debug(__name__, 'Option "%s" registered' % label)
-        option = WizardOption(
-            label=label,
-            method=method,
-            opt_cat=opt_cat,
-            opt_type=opt_type,
-            default=default,
-            values=values,
-            order=order,
-            group=group
-        )
+        if option is None:
+            Logger.debug(__name__, 'Option "%s" registered' % label)
+            option = WizardOption(
+                label=label,
+                method=method,
+                opt_cat=opt_cat,
+                opt_type=opt_type,
+                default=default,
+                values=values,
+                order=order,
+                group=group)
+        else:
+            Logger.debug(__name__, 'Option "%s" registered' % option.label)
+
         self.nottreal.view.wizard_window.menu.add_option(option)
 
+        return option
+
+    def update_option(self, option):
+        """
+        Create an option for the user to specify
+
+        Arguments:
+            option {WizardOption} -- Option to update
+            new_value {mixed}     -- New value
+        """     
+        try:
+            option.ui_update(option)
+            Logger.debug(__name__, 'Option "%s" updated' % option.label)
+        except TypeError:
+            Logger.error(
+                __name__,
+                'Option not updatable in UI: "%s"' % option.label)
+
     def deregister_option(self,
-                          label,
+                          option=None,
+                          label='',
                           opt_cat=WizardOption.CAT_WIZARD):
         """
         Remove an option for the user
@@ -99,8 +126,14 @@ class WizardController(AbstractController):
             opt_cat {int}  -- The category of option
                               (default: {WizardOption.CAT_WIZARD})
         """
-        Logger.debug(__name__, 'Option "%s" deregistered' % label)
-        self.nottreal.view.wizard_window.menu.remove_option(label, opt_cat)
+        if option is None:
+            option = WizardOption(
+                label=label,
+                method=None,
+                opt_cat=opt_cat)
+
+        self.nottreal.view.wizard_window.menu.remove_option(option)
+        Logger.debug(__name__, 'Option "%s" deregistered' % option.label)
 
     def speak_text(self,
                    text,

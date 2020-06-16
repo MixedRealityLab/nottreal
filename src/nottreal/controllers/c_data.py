@@ -63,16 +63,17 @@ class DataRecorderController(AbstractController):
         Logger.debug(__name__, 'Setting up data logging')
         self._set_directory(self._dir)
 
-        self.nottreal.router(
+        self._opt_data_recording = self.nottreal.router(
             'wizard',
             'register_option',
+            option=WizardOption(
             label='Enable data recording',
             method=self.enable_data_output,
             opt_cat=WizardOption.CAT_WIZARD,
             opt_type=WizardOption.BOOLEAN,
             default=self._enabled,
             order=0,
-            group='data')
+            group='data'))
 
         self.nottreal.router(
             'wizard',
@@ -118,6 +119,13 @@ class DataRecorderController(AbstractController):
             return False
 
     def _set_directory(self, new_dir):
+        """
+        Set the data recording directory and enable data
+        recording
+        
+        Arguments:
+            new_dir {str} -- Path to new directory
+        """
         self._dir = new_dir
         timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
         path = '%s%s%s' % (self.FILE_PREFIX, timestamp, self.FILE_EXT)
@@ -138,7 +146,18 @@ class DataRecorderController(AbstractController):
                 'Failed to open "%s" to record data' % self._filepath)
 
             self._enablable = False
-            self.enable_data_output(False)
+            self.enable_data_output(False)         
+
+
+                
+        try:
+            self._opt_data_recording.value = self._enabled
+            self._opt_data_recording = self.nottreal.router(
+                'wizard',
+                'update_option',
+                option=self._opt_data_recording)
+        except AttributeError:
+            pass
 
     def quit(self):
         """
