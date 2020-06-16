@@ -1,13 +1,13 @@
 
 from ..utils.log import Logger
-from .c_rec import AbstractRecognition
+from .c_rec import AbstractRecognitionController
 
 import importlib
 import time
 import threading
 
 
-class SRRecognition(AbstractRecognition):
+class SRRecognition(AbstractRecognitionController):
     """
     Base voice recognition library that transcribes input in a
     background thread and displays the results
@@ -38,9 +38,20 @@ class SRRecognition(AbstractRecognition):
         Logger.debug(__name__, 'Loading "speech_recognition" module')
         self.sr = importlib.import_module('speech_recognition')
 
-        self.is_recognising = False
-
         self._stop_thread = None
+
+    def name(self):
+        return 'Unimplemented recogniser'
+
+    def packdown(self, on_complete=None):
+        """
+        Packdown the current voice recognition system and
+        (optionally) call a method once done.
+
+        Keyword arguments:
+            on_complete {func} -- Method to call on complete
+        """
+        self.stop_recognising(on_complete=on_complete)
 
     def enabled(self):
         """
@@ -64,28 +75,37 @@ class SRRecognition(AbstractRecognition):
             return self.start_recognising()
 
         Logger.info(__name__, 'Start listening for voice recognition')
-        self.is_recognising = True
 
         self.rec = self.sr.Recognizer()
         self._stop_recognising = self.rec.listen_in_background(
             self.nottreal.responder('input').source,
             self.process_audio)
 
-    def stop_recognising(self):
+        super().start_recognising()
+
+    def stop_recognising(self, on_complete=None):
         """
-        Immediately cancel recognition
+        Immediately cancel recognition and (optionally) call a
+        method once done.
+
+        Keyword arguments:
+            on_complete {func} -- Method to call on complete
 
         Returns:
             {bool} -- False
         """
         Logger.info(__name__, 'Finished listening for voice recognition')
-        self.is_recognising = False
 
-        self._stop_thread = threading.Thread(
-                target=self._stop_recognising,
-                args=())
-        self._stop_thread.daemon = True
-        self._stop_thread.start()
+        try:
+            self._stop_thread = threading.Thread(
+                    target=self._stop_recognising,
+                    args=())
+            self._stop_thread.daemon = True
+            self._stop_thread.start()
+
+            super().stop_recognising(on_complete)
+        except AttributeError:
+            Logger.debug(__name__, 'Seemingly not recognising at the moment')
 
 
 class RecognitionGoogleSpeech(SRRecognition):
@@ -105,6 +125,9 @@ class RecognitionGoogleSpeech(SRRecognition):
             args {[str]} -- Application arguments
         """
         super(RecognitionGoogleSpeech, self).__init__(nottreal, args)
+
+    def name(self):
+        return 'Google Speech Recognition'
 
     def process_audio(self, rec, audio):
         """
@@ -157,6 +180,9 @@ class RecognitionGoogleCloud(SRRecognition):
         """
         super(RecognitionGoogleCloud, self).__init__(nottreal, args)
 
+    def name(self):
+        return 'Google Text-to-Speech'
+
     def process_audio(self, rec, audio):
         """
         Send some audio off to Google for recognition
@@ -205,6 +231,9 @@ class RecognitionWitai(SRRecognition):
         """
         super(RecognitionWitai, self).__init__(nottreal, args)
 
+    def name(self):
+        return 'Wit.ai'
+
     def process_audio(self, rec, audio):
         """
         Send some audio off to Wit.ai for recognition
@@ -248,6 +277,9 @@ class RecognitionBing(SRRecognition):
             args {[str]} -- Application arguments
         """
         super(RecognitionBing, self).__init__(nottreal, args)
+
+    def name(self):
+        return 'Microsoft Bing'
 
     def process_audio(self, rec, audio):
         """
@@ -297,6 +329,9 @@ class RecognitionAzure(SRRecognition):
         """
         super(RecognitionAzure, self).__init__(nottreal, args)
 
+    def name(self):
+        return 'Microsoft Azure'
+
     def process_audio(self, rec, audio):
         """
         Send some audio off to Microsoft for recognition
@@ -344,6 +379,9 @@ class RecognitionLex(SRRecognition):
             args {[str]} -- Application arguments
         """
         super(RecognitionLex, self).__init__(nottreal, args)
+
+    def name(self):
+        return 'Amazon Lex'
 
     def process_audio(self, rec, audio):
         """
@@ -416,6 +454,9 @@ class RecognitionHoundify(SRRecognition):
         """
         super(RecognitionHoundify, self).__init__(nottreal, args)
 
+    def name(self):
+        return 'Houndify'
+
     def process_audio(self, rec, audio):
         """
         Send some audio off to Houndify for recognition
@@ -463,6 +504,9 @@ class RecognitionIBM(SRRecognition):
             args {[str]} -- Application arguments
         """
         super(RecognitionIBM, self).__init__(nottreal, args)
+
+    def name(self):
+        return 'IBM Watson'
 
     def process_audio(self, rec, audio):
         """
@@ -515,6 +559,9 @@ class RecognitionTensorflow(SRRecognition):
             args {[str]} -- Application arguments
         """
         super(RecognitionTensorflow, self).__init__(nottreal, args)
+
+    def name(self):
+        return 'Tensorflow'
 
     def process_audio(self, rec, audio):
         """

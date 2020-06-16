@@ -52,12 +52,12 @@ class AbstractController:
         """
         Return a position in the queue to be readied. If below 0
         then the {ready} method will not be called.
-        
+
         Arguments:
-            responder {str} -- The responder to be readied. If not 
+            responder {str} -- The responder to be readied. If not
                                specified, assume its all responders
                                handled by this class
-        
+
         Returns:
             {int}
         """
@@ -67,9 +67,9 @@ class AbstractController:
         """
         Run any additional commands once all controllers are ready
         (allows for running cross-controller hooks)
-        
+
         Arguments:
-            responder {str} -- The responder to be readied. If not 
+            responder {str} -- The responder to be readied. If not
                                specified, assume its all responders
                                handled by this class
         """

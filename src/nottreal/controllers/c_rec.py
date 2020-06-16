@@ -1,10 +1,16 @@
 
 from ..utils.log import Logger
+from ..utils.init import ClassUtils
 from ..models.m_mvc import VUIState, WizardOption
 from .c_abstract import AbstractController
 
+import abc
+import sys
+
 
 class RecognitionController(AbstractController):
+    DEFAULT_RECOGNISER = 'RecognitionNone'
+
     def __init__(self, nottreal, args):
         """
         Controller to do speech to text recognition
@@ -15,54 +21,57 @@ class RecognitionController(AbstractController):
         """
         super(RecognitionController, self).__init__(nottreal, args)
 
-        if args.recognition == 'None':
-            self._recognition = None
-        else:
-            self._recognition = args.recognition
-        self._recognitionInstance = None
-
-        self.is_recognising = False
+        self.previous_instance = None
+        self._recogniser = args.recognition
+        self.recogniser_instance = None
 
     def ready_order(self, responder=None):
         """
         We should be readied early
-        
+
         Arguments:
             responder {str} -- Will only work for the
                                {recognition_root}
                                responder
         """
-        return 20 if responder == 'recognition_root' else -1
+        return 150 if responder == 'recognition_root' else -1
 
     def ready(self, responder=None):
         """
         Load the voice recognition subsystem if enabled
-        
+
         Arguments:
             responder {str} -- Will only work for the
                                {recognition_root} responder
         """
         if responder != 'recognition_root':
             return
-            
-        if self._recognition is not None:
-            name = 'Recognition%s%s' % \
-                   (self._recognition[0].title(), self._recognition[1:])
 
-            try:
-                self._recognitionInstance = self.nottreal.controllers[name]
-            except KeyError:
-                Logger.critical(
-                    __name__,
-                    'Could not find recognition controller "%s"' % name)
-                return
+        Logger.debug(__name__, 'Setting up voice recognition')
+        
+        recogniser = self._recogniser[0].title() + self._recogniser[1:]
 
-            Logger.info(__name__, 'Setting recognition to "%s"' % name)
-
-            self.responder('recognition', self._recognitionInstance)
-            self.router('recognition', 'init', args=self.args)
+        if recogniser == 'None':
+            recogniser = self.DEFAULT_RECOGNISER
         else:
-            Logger.info(__name__, 'No voice recognition enabled')
+            recogniser = 'Recognition' + recogniser
+
+        self._available_recognisers = self.available_recognisers()
+        if not self.args.dev and recogniser != 'RecognitionGoogleSpeech':
+            del self._available_recognisers['RecognitionGoogleSpeech']
+            
+        self._set_recogniser(recogniser)
+        self.nottreal.router(
+            'wizard',
+            'register_option',
+            label='Recogniser',
+            method=self._set_recogniser,
+            opt_cat=WizardOption.CAT_INPUT,
+            opt_type=WizardOption.SINGLE_CHOICE,
+            default=recogniser,
+            values=self._available_recognisers,
+            order=0,
+            group=1)
 
     def quit(self):
         """
@@ -94,7 +103,7 @@ class RecognitionController(AbstractController):
             {bool} -- True if it's the Recognition subsystem we're
                       expecting
         """
-        return instance == self._recognitionInstance
+        return instance == self.recogniser_instance
 
     def enabled(self):
         """
@@ -103,26 +112,88 @@ class RecognitionController(AbstractController):
         Returns:
             {bool}
         """
-        return False
+        return True
+
+    def available_recognisers(self):
+        return {c: self.nottreal.controllers[c].name()
+                for k, c in enumerate(self.nottreal.controllers)
+                if c.startswith('Recognition')
+                and ClassUtils.is_subclass(c, AbstractRecognitionController)}
 
     def now_listening(self):
         """Does nothing as no recogniser is set"""
+        Logger.warning(__name__, 'No voice recognition library instantiated!')
         pass
 
     def now_not_listening(self):
         """Does nothing as no recogniser is set"""
+        Logger.warning(__name__, 'No voice recognition library instantiated!')
         pass
 
     def start_recognising(self):
         """Does nothing as no recogniser is set"""
+        Logger.warning(__name__, 'No voice recognition library instantiated!')
         pass
 
     def stop_recognising(self):
         """Does nothing as no recogniser is set"""
+        Logger.warning(__name__, 'No voice recognition library instantiated!')
         pass
 
+    def _set_recogniser(self, recogniser):
+        """
+        Set a recognition subsystem to the used system
 
-class AbstractRecognition(AbstractController):
+        Arguments:
+            recogniser {str} -- Class name of the subsystem
+        """
+        Logger.info(
+            __name__,
+            'Setting voice recognition to "%s"' % recogniser)
+
+        previous_instance = self.recogniser_instance
+        try:
+            self.recogniser_instance = self.nottreal.controllers[recogniser]
+        except KeyError:
+            try:
+                self.recogniser_instance = \
+                    self.nottreal.controllers['Recognition' + recogniser]
+            except KeyError:
+                tb = sys.exc_info()[2]
+                raise KeyError(
+                    'Unknown recognition ID: "%s"' % recogniser) \
+                    .with_traceback(tb)
+
+        if previous_instance is not None:
+            was_recognising = previous_instance.is_recognising()
+        else:
+            was_recognising = False
+
+        if was_recognising:
+            self.next_recogniser = recogniser
+            self.router(
+                'recognition',
+                'packdown',
+                on_complete=self._finish_setting_recogniser)
+        else:
+            self._finish_setting_recogniser(restart_recognising=False)
+
+    def _finish_setting_recogniser(self, restart_recognising=True):
+        """
+        Set a recognition subsystem to the used system
+
+        Keyword arguments:
+            restart_recognising {bool -- Restart recognition
+        """
+        self.responder('recognition', self.recogniser_instance)
+        self.router('recognition', 'init', args=self.args)
+        self.router('recognition', 'ready')
+
+        if restart_recognising:
+            self.router('recognition', 'start_recognising')
+
+
+class AbstractRecognitionController(AbstractController):
     """
     Base voice recognition library that handles the mic and setup
 
@@ -137,7 +208,7 @@ class AbstractRecognition(AbstractController):
             nottreal {App} -- Application instance
             args {[str]} -- Application arguments
         """
-        super(AbstractRecognition, self).__init__(nottreal, args)
+        super(AbstractRecognitionController, self).__init__(nottreal, args)
 
     def init(self, args):
         """
@@ -145,6 +216,7 @@ class AbstractRecognition(AbstractController):
         """
         self._callbacks = []
 
+        self._is_recognising = False
         self._recognition_during_listening = True
         self.nottreal.router(
             'wizard',
@@ -153,16 +225,47 @@ class AbstractRecognition(AbstractController):
             label='Recognition during listening state only',
             method=self._set_recognition_during_listening,
             default=self._recognition_during_listening,
+            order=2,
             group=1)
-
-    def ready_order(self, responder=None):
-        """
-        Voice controllers are readied by the {RecognitionController}
         
-        Returns:
-            -1
+    def ready(self, responder=None):
         """
-        return -1
+        Ensure the recognised words list is in the UI
+        """
+        self.router(
+            'wizard',
+            'recognition_enabled',
+            state=True)
+
+    def packdown(self, on_complete=None):
+        """
+        Packdown the current voice recognition system and
+        (optionally) call a method once done.
+
+        Keyword arguments:
+            on_complete {func} -- Method to call on complete
+        """
+        self.stop_recognising(on_complete=on_complete)
+
+    @abc.abstractmethod
+    def name(self):
+        return 'Unimplemented recogniser'
+
+    def relinquish(self, instance):
+        """
+        Relinquish control over recognition signals to the right subsystem.
+
+        Arguments:
+            instance {AbstractController} -- Controller that has said
+                                             it wants to be a responder
+                                             for the same signals as
+                                             this controller
+        Returns:
+            {bool} -- True if it's the recognition subsystem we're
+                      expecting
+        """
+        return instance == \
+            self.nottreal.responder('recognition_root').recogniser_instance
 
     def _set_recognition_during_listening(self, value):
         """
@@ -208,7 +311,7 @@ class AbstractRecognition(AbstractController):
         already.
         """
         if self._recognition_during_listening and \
-                self.is_recognising is False:
+                self._is_recognising is False:
             self.start_recognising()
 
     def now_not_listening(self):
@@ -217,22 +320,59 @@ class AbstractRecognition(AbstractController):
         listening and we should only listen in the listening state.
         """
         if self._recognition_during_listening and \
-                self.is_recognising is True:
+                self._is_recognising is True:
             self.stop_recognising()
+
+    def is_recognising(self):
+        return self._is_recognising
 
     def start_recognising(self):
         """
         Start voice recognition
         """
-        Logger.error(__name__, 'No voice recognition library instantiated!')
-        self.is_recognising = True
+        self._is_recognising = True
 
-    def stop_recognising(self):
+    def stop_recognising(self, on_complete=None):
         """
-        Immediately cancel recognition
+        Immediately cancel recognition and (optionally) call a
+        method once done.
+
+        Keyword arguments:
+            on_complete {func} -- Method to call on complete
 
         Returns:
             {bool} -- False
         """
-        Logger.error(__name__, 'No voice recognition library instantiated!')
-        self.is_recognising = False
+        self._is_recognising = False
+        if on_complete is not None:
+            on_complete()
+
+
+class RecognitionNone(AbstractRecognitionController):
+    """
+    No voice recognition library used
+
+    Extends:
+        AbstractRecognitionController
+    """
+    def __init__(self, nottreal, args):
+        """
+        Create the thread that sends audio and receives responses
+
+        Arguments:
+            nottreal {App} -- Application instance
+            args {[str]} -- Application arguments
+        """
+        super(RecognitionNone, self).__init__(nottreal, args)
+
+    def name(self):
+        return 'None'
+        
+    def ready(self, responder=None):
+        """
+        Ensure the recognised words list isn't in the UI
+        """
+        self.router(
+            'wizard',
+            'recognition_enabled',
+            state=False)

@@ -17,6 +17,8 @@ class WizardController(AbstractController):
         super().__init__(nottreal, args)
 
         self.state = VUIState.BUSY
+        self.recogniser_state = False
+        self.have_recognised_words = False
 
     def ready(self):
         """
@@ -144,6 +146,28 @@ class WizardController(AbstractController):
             Logger.debug(__name__, 'Clear parameter tracking')
             self.nottreal.view.wizard_window.command.clear_saved_slots()
 
+    def recognition_enabled(self, state):
+        """
+        Show the recognised words list because a valid recogniser
+        has been enabled. Alternatively, will hide the list if
+        a non-working recogniser has been set (unless there 
+        are transcribed words in the list).
+        
+        Arguments:
+            state {bool} -- {True} if a working recogniser has been
+                            enabled
+        """
+        if self.have_recognised_words:
+            self.recogniser_state = state
+            return
+            
+        if state and not self.recogniser_state:
+            self.nottreal.view.wizard_window.toggle_recogniser()
+        elif not state and self.recogniser_state :
+            self.nottreal.view.wizard_window.toggle_recogniser()
+        
+        self.recogniser_state = state
+
     def log_message(self, id, text):
         """
         Log a message to the data file
@@ -177,7 +201,7 @@ class WizardController(AbstractController):
         Arguments:
             state {int} -- New {VUIState}
         """
-        Logger.debug(__name__, 'New state: %d' % state)
+        Logger.debug(__name__, 'New VUI state: %s' % VUIState.str(state))
 
         self.state = state
 
@@ -222,6 +246,7 @@ class WizardController(AbstractController):
             words {str} -- Recognised words
         """
         self.nottreal.view.wizard_window.recognised_words.add(words)
+        self.have_recognised_words = True
 
     def quit(self):
         """

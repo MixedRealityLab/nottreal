@@ -46,7 +46,7 @@ class WizardWindow(QMainWindow):
 
         self.menu = MenuBar(self)
 
-        self.recognised_words = None
+        self.recognised_words = RecognisedWordsWidget(self)
         self.prepared_msgs = PreparedMessagesWidget(self, data.cats)
         self.slot_history = SlotHistoryWidget(self)
         self.msg_queue = MessageQueueWidget(self)
@@ -63,23 +63,18 @@ class WizardWindow(QMainWindow):
         """
         self.menu.init_ui()
 
-        layout = QGridLayout()
-        layout.setVerticalSpacing(0)
+        self.layout = QGridLayout()
+        self.layout.setVerticalSpacing(0)
 
         window_main = QWidget()
-        window_main.setLayout(layout)
+        window_main.setLayout(self.layout)
         self.setCentralWidget(window_main)
 
-        recognising = self.nottreal.responder('recognition').enabled()
-        if recognising:
-            self.recognised_words = RecognisedWordsWidget(self)
-
-            layout.addWidget(self.recognised_words, 0, 0)
-            layout.addWidget(self.prepared_msgs, 0, 1)
-            layout.setColumnStretch(0, 1)
-            layout.setColumnStretch(1, 3)
-        else:
-            layout.addWidget(self.prepared_msgs, 0, 0)
+        self.recognised_words.hide()
+        self.layout.addWidget(self.prepared_msgs, 0, 0, 1, 2)
+    
+        self.layout.setColumnStretch(0, 1)
+        self.layout.setColumnStretch(1, 3)
 
         row2widget = QGroupBox()
         row2widget.setContentsMargins(0, 5, 0, 0)
@@ -91,18 +86,31 @@ class WizardWindow(QMainWindow):
 
         row2widget.setLayout(row2layout)
 
-        layout.addWidget(row2widget, 1, 0, 1, 2)
-        layout.addWidget(self.command, 2, 0, 1, 2)
-        layout.addWidget(self.msg_history, 3, 0, 1, 2)
+        self.layout.addWidget(row2widget, 1, 0, 1, 2)
+        self.layout.addWidget(self.command, 2, 0, 1, 2)
+        self.layout.addWidget(self.msg_history, 3, 0, 1, 2)
 
-        layout.setRowStretch(0, 3)
-        layout.setRowStretch(1, 2)
-        layout.setRowStretch(2, 1)
-        layout.setRowStretch(3, 1)
+        self.layout.setRowStretch(0, 3)
+        self.layout.setRowStretch(1, 2)
+        self.layout.setRowStretch(2, 1)
+        self.layout.setRowStretch(3, 1)
 
         self.setGeometry(0, 0, 800, 600)
 
-        Logger.info(__name__, 'Wizard window ready')
+        Logger.info(__name__, 'Wizard window ready')    
+        
+    def toggle_recogniser(self):
+        """
+        Toggle the visibility of the recogniser
+        """
+        if self.recognised_words.isVisible():
+            self.recognised_words.hide()
+            self.layout.removeWidget(self.recognised_words)
+            self.layout.addWidget(self.prepared_msgs, 0, 0, 1, 2)
+        else:
+            self.layout.addWidget(self.recognised_words, 0, 0)
+            self.layout.addWidget(self.prepared_msgs, 0, 1)
+            self.recognised_words.show()
 
 
 class MenuBar(QMenuBar):

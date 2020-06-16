@@ -1,8 +1,8 @@
 
 from ..utils.log import Logger
 from ..utils.init import ClassUtils
-from .c_abstract import AbstractController
 from ..models.m_mvc import Message, VUIState, WizardOption
+from .c_abstract import AbstractController
 
 from collections import deque
 from subprocess import call
@@ -38,25 +38,26 @@ class VoiceController(AbstractController):
     def ready_order(self, responder=None):
         """
         We should be readied early
-        
+
         Arguments:
             responder {str} -- Will only work for the {voice_root}
                                responder
         """
         return 10 if responder == 'voice_root' else -1
-        
 
     def ready(self, responder=None):
         """
         Setup and select the default voice subsystem
-        
+
         Arguments:
             responder {str} -- Will only work for the {voice_root}
                                responder
         """
         if responder != 'voice_root':
             return
-        
+
+        Logger.debug(__name__, 'Setting up voice synthesis')
+
         self._available_voices = self.available_voices()
 
         voice = self._voice[0].title() + self._voice[1:]
@@ -208,7 +209,7 @@ class AbstractVoiceController(AbstractController):
     def ready_order(self, responder=None):
         """
         Voice controllers are readied by the {VoiceController}
-        
+
         Returns:
             -1
         """
@@ -432,7 +433,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
         super().packdown()
 
         self._stop_voice_loop = True
-        
+
         self.router(
             'wizard',
             'deregister_option',
@@ -533,7 +534,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
 
             if self._stop_voice_loop:
                 break
-                    
+
             try:
                 message = self._text_queue.popleft()
                 text = message.text

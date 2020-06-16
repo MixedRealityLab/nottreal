@@ -129,3 +129,23 @@ class VUIState:
 
     """
     RESTING, SPEAKING, LISTENING, BUSY = range(0, 4)
+
+    LABELS = {
+        RESTING: 'resting',
+        SPEAKING: 'speaking',
+        LISTENING: 'listening',
+        BUSY: 'busy'
+    }
+
+    @staticmethod
+    def str(state):
+        """
+        Get the state as a string
+
+        Arguments:
+            state {int} -- State as an integer
+
+        Returns:
+            {str}
+        """
+        return VUIState.LABELS[state]

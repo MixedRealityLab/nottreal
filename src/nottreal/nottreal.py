@@ -8,6 +8,7 @@ from .views.v_gui import Gui
 from .controllers import c_abstract
 
 import inspect
+import sys
 
 
 class App:
@@ -76,7 +77,7 @@ class App:
         responders = sorted(
             responders,
             key=sort_func)
-        
+
         for name in iter(responders):
             try:
                 self.router(name, 'ready')
@@ -84,6 +85,7 @@ class App:
                 pass
 
         # boom!
+        Logger.info(__name__, 'Initiation complete')
         self.view.run_loop()
 
         Logger.debug(__name__, 'Exiting the GUI application')
@@ -91,7 +93,7 @@ class App:
     def quit(self):
         """Gracefully shutdown the application"""
         self.view.quit()
-        
+
     def responder(self, name, responder=None):
         """
         Retrieve a particular message responder, or set one
@@ -154,15 +156,16 @@ class App:
             else:
                 responderInstances[recipient] = self.responders[recipient]
         except KeyError as e:
+            tb = sys.exc_info()[2]
             Logger.critical(
                 __name__,
-                'No responder for "%s": "%s"' % (responder, repr(e)))
-            raise e
+                'No responder for "%s": "%s"' % (recipient, repr(e)))
+            raise e.with_traceback(tb)
 
         for responder, responderInstance in responderInstances.items():
             if self.args.dev:
                 method = getattr(responderInstance, action)
-                
+
                 args = inspect.getfullargspec(method)
                 if 'responder' in args[0]:
                     return method(responder=recipient, **kwargs)
@@ -183,15 +186,14 @@ class App:
                             'Pass "%s" signal to the controller "%s"'
                             % (action, responder)
                         )
-                        
+
                         args = inspect.getfullargspec(method)
-                        print(args[0])
-                        if 'responder' in args[0]:
-                            print('fgdgdfgfg')
-                            print(type(kwargs))
-                        
+
                         try:
-                            method(**kwargs)
+                            if 'responder' in args[0]:
+                                return method(responder=recipient, **kwargs)
+                            else:
+                                return method(**kwargs)
                         except TypeError:
                             Logger.error(
                                 __name__,
