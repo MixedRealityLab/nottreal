@@ -72,7 +72,7 @@ class WizardWindow(QMainWindow):
 
         self.recognised_words.hide()
         self.layout.addWidget(self.prepared_msgs, 0, 0, 1, 2)
-    
+
         self.layout.setColumnStretch(0, 1)
         self.layout.setColumnStretch(1, 3)
 
@@ -97,8 +97,8 @@ class WizardWindow(QMainWindow):
 
         self.setGeometry(0, 0, 800, 600)
 
-        Logger.info(__name__, 'Wizard window ready')    
-        
+        Logger.info(__name__, 'Wizard window ready')
+
     def toggle_recogniser(self):
         """
         Toggle the visibility of the recogniser
@@ -537,7 +537,9 @@ class MenuBar(QMenuBar):
             raise KeyError(
                 'Unknown option: "%s"' % text).with_traceback(tb)
 
-        option.method(checked)
+        response = option.method(checked)
+        if response is False:
+            self.sender().setChecked(not self.sender().isChecked())
 
     @Slot(bool)
     def _on_option_single_choice_toggled(self, checked):

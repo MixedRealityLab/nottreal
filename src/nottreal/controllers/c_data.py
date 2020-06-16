@@ -1,5 +1,6 @@
 
 from ..utils.log import Logger
+from ..models.m_mvc import WizardOption
 from .c_abstract import AbstractController
 
 from datetime import datetime
@@ -15,10 +16,12 @@ class DataRecorderController(AbstractController):
         AbstractController
 
     Variables:
+        DEFAULT_DIRECTORY {str} -- Default directory
         TIMESTAMP_FORMAT {str} -- Timestamp for files and inside the log
         FILE_PREFIX {str} -- Filename prefix
         FILE_EXT {str} -- Filename suffix
     """
+    DEFAULT_DIRECTORY = 'data'
     TIMESTAMP_FORMAT = '%Y-%m-%d %H.%M.%S'
     FILE_PREFIX = 'log-'
     FILE_EXT = '.txt'
@@ -33,35 +36,103 @@ class DataRecorderController(AbstractController):
         """
         super().__init__(nottreal, args)
 
-        if args.output_dir:
-            self._dir = args.output_dir
-            timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
-            path = '%s%s%s' % (self.FILE_PREFIX, timestamp, self.FILE_EXT)
-            self._filepath = os.path.join(self._dir, path)
+        self._dir = args.output_dir
+        if self._dir is None:
+            self._dir = self.DEFAULT_DIRECTORY
 
-            try:
-                self._file = open(self._filepath, mode='a')
-                if self._file:
-                    self._enable = True
-                    Logger.info(
-                        __name__,
-                        'Messages will be recorded to "%s"' % self._filepath)
-            except IOError:
-                self._enable = False
-                Logger.critical(
-                    __name__,
-                    'Failed to open "%s" to record messages' % self._filepath)
+        self._enablable = False
+        self._enabled = False
+
+    def ready_order(self, responder=None):
+        """
+        We should be readied late
+
+        Arguments:
+            responder {str} -- Will only work for the {voice_root}
+                               responder
+        """
+        return 50
+
+    def ready(self, responder=None):
+        """
+        Setup and select the default data directory if it exists
+
+        Arguments:
+            responder {str} -- Ignored
+        """
+        Logger.info(__name__, 'Setting up data logging')
+        self._set_directory(self._dir)
+
+        self.nottreal.router(
+            'wizard',
+            'register_option',
+            label='Enable logging',
+            method=self.enable_data_output,
+            opt_cat=WizardOption.CAT_WIZARD,
+            opt_type=WizardOption.BOOLEAN,
+            default=self._enabled,
+            order=0,
+            group='data')
+
+        self.nottreal.router(
+            'wizard',
+            'register_option',
+            label='Log data directory',
+            method=self._set_directory,
+            opt_cat=WizardOption.CAT_WIZARD,
+            opt_type=WizardOption.DIRECTORY,
+            default=self.DATA_DIRECTORY,
+            order=1,
+            group='data')
+
+    def enable_data_output(self, state):
+        """
+        Enable/disable data recording (if possible)
+
+        Arguments:
+            state {bool} -- New requested state
+        """
+        if self._enablable:
+            if state:
+                Logger.info(__name__, 'Enabled recording of data')
+                self._enabled = True
+            else:
+                Logger.info(__name__, 'Disabled recording of data')
+                self._enabled = False
+
+            return True
         else:
-            self._enable = False
-            Logger.info(
+            Logger.error(
                 __name__,
-                'Disable recording of messages to the data log')
+                'Could not enable data recording, see earlier error message')
+            return False
+
+    def _set_directory(self, new_dir):
+        self._dir = new_dir
+        timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
+        path = '%s%s%s' % (self.FILE_PREFIX, timestamp, self.FILE_EXT)
+        self._filepath = os.path.join(self._dir, path)
+
+        try:
+            self._file = open(self._filepath, mode='a')
+            if self._file:
+                self._enablable = True
+                self._enabled = True
+                Logger.info(
+                    __name__,
+                    'Data will be recorded to "%s"' % self._filepath)
+        except IOError:
+            self._enablable = False
+            self._enabled = False
+            Logger.warning(
+                __name__,
+                'Failed to open "%s" to record data' % self._filepath)
 
     def quit(self):
         """
         Close and quit the data recorder if it still exists
         """
-        if self._enable and self._file:
+        if self._enabled and self._file:
             self._file.close()
 
     def respond_to(self):
@@ -80,16 +151,18 @@ class DataRecorderController(AbstractController):
         Arguments:
             text {str} -- Text spoken
         """
-        if self._enable:
-            Logger.debug(
-                __name__,
-                'Log event for "%s" with message "%s"' % (id, text))
+        if not self._enabled:
+            return
 
-            timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
-            print(
-                '%s\t_Event\t%s\t\t%s' % (timestamp, id, text),
-                file=self._file,
-                flush=True)
+        Logger.debug(
+            __name__,
+            'Log event for "%s" with message "%s"' % (id, text))
+
+        timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
+        print(
+            '%s\t_Event\t%s\t\t%s' % (timestamp, id, text),
+            file=self._file,
+            flush=True)
 
     def transcribed_text(self, text):
         """
@@ -98,12 +171,14 @@ class DataRecorderController(AbstractController):
         Arguments:
             text {str} -- Text spoken
         """
-        if self._enable:
-            timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
-            print(
-                '%s\t_Transcribed\t\t\t\t%s' % (timestamp, text),
-                file=self._file,
-                flush=True)
+        if not self._enabled:
+            return
+
+        timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
+        print(
+            '%s\t_Transcribed\t\t\t\t%s' % (timestamp, text),
+            file=self._file,
+            flush=True)
 
     def sent_raw_message(self, text):
         """
@@ -112,12 +187,14 @@ class DataRecorderController(AbstractController):
         Arguments:
             text {str} -- Text spoken
         """
-        if self._enable:
-            timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
-            print(
-                '%s\t\t\t\t%s' % (timestamp, text),
-                file=self._file,
-                flush=True)
+        if not self._enabled:
+            return
+
+        timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
+        print(
+            '%s\t\t\t\t%s' % (timestamp, text),
+            file=self._file,
+            flush=True)
 
     def sent_prepared_message(self, text, cat, id, slots):
         """
@@ -130,9 +207,11 @@ class DataRecorderController(AbstractController):
             id {int} -- ID of the prepared message
             slots {dict(str,str)} -- Slots changed by the user
         """
-        if self._enable:
-            timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
-            print(
-                '%s\t%s\t%s\t%s\t%s' % (timestamp, cat, id, slots, text),
-                file=self._file,
-                flush=True)
+        if not self._enabled:
+            return
+
+        timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
+        print(
+            '%s\t%s\t%s\t%s\t%s' % (timestamp, cat, id, slots, text),
+            file=self._file,
+            flush=True)

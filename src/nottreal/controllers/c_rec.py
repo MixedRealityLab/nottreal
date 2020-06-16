@@ -48,7 +48,7 @@ class RecognitionController(AbstractController):
             return
 
         Logger.debug(__name__, 'Setting up voice recognition')
-        
+
         recogniser = self._recogniser[0].title() + self._recogniser[1:]
 
         if recogniser == 'None':
@@ -59,7 +59,7 @@ class RecognitionController(AbstractController):
         self._available_recognisers = self.available_recognisers()
         if not self.args.dev and recogniser != 'RecognitionGoogleSpeech':
             del self._available_recognisers['RecognitionGoogleSpeech']
-            
+
         self._set_recogniser(recogniser)
         self.nottreal.router(
             'wizard',
@@ -227,7 +227,7 @@ class AbstractRecognitionController(AbstractController):
             default=self._recognition_during_listening,
             order=2,
             group='recognition')
-        
+
     def ready(self, responder=None):
         """
         Ensure the recognised words list is in the UI
@@ -367,7 +367,7 @@ class RecognitionNone(AbstractRecognitionController):
 
     def name(self):
         return 'None'
-        
+
     def ready(self, responder=None):
         """
         Ensure the recognised words list isn't in the UI

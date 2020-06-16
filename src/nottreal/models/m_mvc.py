@@ -5,8 +5,11 @@ class WizardOption:
 
     Variables:
         CHECKBOX {int}     -- Identifier for an option that's boolean
-        SINGLE_CHOICE {int}-- Identifier for an option that's the user
+        BOOLEAN {int}      -- Identifier for an option that's boolean
+        SINGLE_CHOICE {int}-- Identifier for an option that the user
                               has to choose one item from a list
+        DIRECTORY {int}    -- Identifier for an option that the user
+                              has to choose a directory
         CAT_WIZARD {int}   -- Identifier for options relating to the
                               Wizard
         CAT_VOICE {int}    -- Identifier for options relating to the
@@ -16,7 +19,8 @@ class WizardOption:
         CAT_OUTPUT {int}   -- Identifier for options relating to the
                               visual output
     """
-    CHECKBOX, SINGLE_CHOICE = range(2)
+    CHECKBOX = 0
+    BOOLEAN, SINGLE_CHOICE, DIRECTORY = range(3)
     CAT_WIZARD, CAT_VOICE, CAT_INPUT, CAT_OUTPUT = range(4)
 
     def __init__(self,
