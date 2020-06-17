@@ -69,7 +69,7 @@ class DataRecorderController(AbstractController):
             'wizard',
             'register_option',
             option=self._opt_enabled)
-        
+
         if self.args.output_dir is None:
             directory = self.DEFAULT_DIRECTORY
             restore = True
@@ -151,7 +151,7 @@ class DataRecorderController(AbstractController):
 
         Arguments:
             new_dir {str} -- Path to new directory
-            
+
         Keyword arguments:
             override {bool} -- Enable/disable data output
         """
@@ -168,7 +168,7 @@ class DataRecorderController(AbstractController):
                     'Set data directory to "%s"' % filepath)
 
                 self._enablable = True
-                
+
                 if override is None:
                     self.enable_data_output(True)
                     self.router(

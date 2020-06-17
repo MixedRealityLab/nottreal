@@ -1,6 +1,4 @@
 
-import base64
-
 
 class WizardOption:
     """
@@ -23,7 +21,7 @@ class WizardOption:
                               audible input to NottReal
         CAT_OUTPUT {int}   -- Identifier for options relating to the
                               visual output
-    
+
         appstate {instance}-- App state controller
     """
     CHECKBOX = 0
@@ -31,7 +29,7 @@ class WizardOption:
     CAT_CORE, CAT_WIZARD, CAT_VOICE, CAT_INPUT, CAT_OUTPUT = range(5)
 
     appstate = None
-        
+
     def __init__(self,
                  label,
                  method=None,
@@ -97,7 +95,7 @@ class WizardOption:
             value {mixed} -- New value (depends on type)
         """
         self.value = value
-        
+
         if self.restorable:
             WizardOption.appstate.save_option(self)
 
@@ -106,9 +104,9 @@ class WizardOption:
         """
         Sets the application state responder. This is used for
         retrieving saved values from the app state.
-        
+
         Arguments:
-            responder {AppStateController} 
+            responder {AppStateController}
         """
         WizardOption.appstate = responder
 

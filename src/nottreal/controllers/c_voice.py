@@ -67,7 +67,7 @@ class VoiceController(AbstractController):
             restore = False
 
         self._available_voices = self.available_voices()
-            
+
         self._opt_voice = WizardOption(
             label='Voice subsystem',
             method=self._set_voice,
@@ -83,7 +83,7 @@ class VoiceController(AbstractController):
             'wizard',
             'register_option',
             option=self._opt_voice)
-            
+
         self._set_voice(self._opt_voice.value)
 
     def respond_to(self):
@@ -426,7 +426,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
                 method=self._set_clear_queue_on_interrupt,
                 default=True,
                 restorable=True)
-                
+
         self.nottreal.router(
             'wizard',
             'register_option',
@@ -713,7 +713,7 @@ class VoiceOutputToLog(ThreadedBaseVoice):
                 method=self._set_no_waiting,
                 default=False,
                 restorable=True)
-                
+
         self.nottreal.router(
             'wizard',
             'register_option',

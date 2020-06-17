@@ -222,7 +222,7 @@ class AbstractRecognitionController(AbstractController):
         self._callbacks = []
 
         self._is_recognising = False
-        
+
         self._opt_rec_during_listening = WizardOption(
             opt_cat=WizardOption.CAT_INPUT,
             label='Recognition during listening state only',
@@ -235,7 +235,7 @@ class AbstractRecognitionController(AbstractController):
             'wizard',
             'register_option',
             option=self._opt_rec_during_listening)
-            
+
         self._set_recognition_during_listening(
             self._opt_rec_during_listening.value)
 
@@ -247,7 +247,7 @@ class AbstractRecognitionController(AbstractController):
             'wizard',
             'recognition_enabled',
             state=True)
-                
+
     def packdown(self, on_complete=None):
         """
         Packdown the current voice recognition system and
@@ -298,7 +298,7 @@ class AbstractRecognitionController(AbstractController):
         self._opt_rec_during_listening.change(value)
 
         if not self._opt_rec_during_listening.value \
-            and not self.is_recognising():
+                and not self.is_recognising():
             self.router('recognition', 'start_recognising')
         elif self._opt_rec_during_listening.value \
                 and self.is_recognising() \

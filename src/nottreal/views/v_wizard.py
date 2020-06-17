@@ -617,7 +617,6 @@ class MenuBar(QMenuBar):
         data = self.sender().data()
         category = data.split(':')[0]
         label = data.split(':')[1]
-        value_key = data.split(':')[2]
 
         try:
             cat_options = self._options[int(category)]

@@ -88,7 +88,7 @@ class App:
 
         # closing
         Logger.debug(__name__, 'Quitting the application')
-        self.router('_', 'quit')    
+        self.router('_', 'quit')
 
     def quit(self):
         """Gracefully shutdown the application"""
