@@ -61,7 +61,7 @@ Run the code by calling `python3 nottreal.py`. There are various options you can
 
 * Multiple output windows are supported, although only `MVUIWindow` is implemented. This window  looks a bit like a Mobile VUI). Set this to open automatically with the `-o` option, e.g.` -oMVUIWindow`.
 
-* Voice recognition using the `-r` option followed by the chosen library (available: `GoogleCloud`, `Witai` `Bing`, `Azure`,`Lex`,`Houndify`,`IBM`,`Tensorflow`). You need to configure these in `settings.cfg`.
+* Voice recognition using the `-r` option followed by the chosen library (available: `GoogleCloud`, `Witai`, `Bing`, `Azure`,`Lex`,`Houndify`,`IBM`,`Tensorflow`). You need to configure these in `settings.cfg`.
 
 
 ## App layout and configuration
