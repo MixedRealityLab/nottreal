@@ -638,8 +638,6 @@ class MenuBar(QMenuBar):
                   if isinstance(a, QAction) and a.text() == text][0]
         action.setChecked(True)
 
-        option.default = value_key
-
         if not checked:
             return False
         else:

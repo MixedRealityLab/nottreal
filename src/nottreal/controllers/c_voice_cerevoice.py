@@ -21,9 +21,6 @@ class VoiceCerevoice(VoiceShellCmd):
         """
         super().__init__(nottreal, args)
 
-        self._calm_voice = False
-        self._cerevoice_spurts = True
-
     def init(self, args):
 
         """
@@ -40,22 +37,27 @@ class VoiceCerevoice(VoiceShellCmd):
             'VoiceCerevoice',
             'command_interrupt')
 
-        self._opt_calm_voice = self.router(
-            'wizard',
-            'register_option',
-            option=WizardOption(
+        self._opt_calm_voice = WizardOption(
                 label='Use a calm voice',
                 opt_cat=WizardOption.CAT_OUTPUT,
                 method=self._set_calm,
-                default=self._calm_voice))
-        self._opt_spurts = self.router(
+                default=False,
+                restorable=True)
+        self.router(
             'wizard',
             'register_option',
-            option=WizardOption(
+            option=self._opt_calm_voice)
+
+        self._opt_spurts = WizardOption(
                 label='Use Cerevoice spurts',
                 opt_cat=WizardOption.CAT_OUTPUT,
                 method=self._set_cerevoice_spurts,
-                default=self._cerevoice_spurts))
+                default=True,
+                restorable=True)
+        self.router(
+            'wizard',
+            'register_option',
+            option=self._opt_spurts)
 
     def packdown(self):
         """
@@ -90,7 +92,7 @@ class VoiceCerevoice(VoiceShellCmd):
         else:
             Logger.debug(__name__, 'Cerevoice spurts disabled')
 
-        self._cerevoice_spurts = value
+        self._opt_spurts.change(value)
 
     def _set_calm(self, value):
         """
@@ -104,7 +106,7 @@ class VoiceCerevoice(VoiceShellCmd):
         else:
             Logger.debug(__name__, 'Calm voice disabled')
 
-        self._calm_voice = value
+        self._opt_calm_voice.change(value)
 
     def _prepare_text(self, text):
         """
@@ -123,7 +125,7 @@ class VoiceCerevoice(VoiceShellCmd):
         if text[-1] != '.' and text[-1] != '!' and text[-1] != '?':
             text = text + '.'
 
-        if self._cerevoice_spurts:
+        if self._opt_spurts.value:
             spurts = {
                 'oh': "<spurt audio='g0001_006'>oh</spurt>",
                 'hm?': "<spurt audio='g0001_012'>hm?</spurt>",
@@ -147,7 +149,7 @@ class VoiceCerevoice(VoiceShellCmd):
             except KeyError:
                 pass
 
-        if self._calm_voice:
+        if self._opt_calm_voice.value:
             text_for_cmd = "<usel genre='calm'>%s</usel>" % text_for_cmd
 
         return (self._command_speak % text_for_cmd, text)

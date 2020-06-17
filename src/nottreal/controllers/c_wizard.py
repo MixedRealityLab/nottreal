@@ -48,15 +48,16 @@ class WizardController(AbstractController):
                 opt_cat=WizardOption.CAT_CORE,
                 opt_type=WizardOption.DIRECTORY,
                 method=self._set_config_directory,
-                default=self._dir))
+                default=self._dir,
+                restorable=False))
 
-        self._clear_slots_on_tab_change = False
-        self.register_option(
+        self._opt_slots_on_tab_change = self.register_option(
             option=WizardOption(
                 label='Clear slot tracking on tab change',
                 opt_cat=WizardOption.CAT_WIZARD,
                 method=self._set_clear_slots_on_tab_change,
-                default=self._clear_slots_on_tab_change))
+                default=False,
+                restorable=True))
 
         Logger.debug(__name__, "Opening the Wizard window…")
         self.nottreal.view.wizard_window.show()
@@ -75,6 +76,11 @@ class WizardController(AbstractController):
             self.nottreal.config.update(directory)
 
         self.data = TSVModel(directory)
+
+        try:
+            self.router('appstate', 'set_dir', directory=directory)
+        except AttributeError:
+            pass
 
         try:
             self.nottreal.view.wizard_window.set_data(self.data)
@@ -224,7 +230,7 @@ class WizardController(AbstractController):
         """
         self.router('voice', 'category_changed', new_cat_id=new_tab)
 
-        if self._clear_slots_on_tab_change:
+        if self._opt_slots_on_tab_change.value:
             Logger.debug(__name__, 'Clear parameter tracking')
             self.nottreal.view.wizard_window.command.clear_saved_slots()
 
@@ -356,4 +362,4 @@ class WizardController(AbstractController):
             value {bool} -- New checked status
         """
         Logger.debug(__name__, 'Slot tracking on tab change: %r' % value)
-        self._clear_slots_on_tab_change = value
+        self._opt_slots_on_tab_change.change(value)

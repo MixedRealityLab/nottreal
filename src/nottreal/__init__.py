@@ -60,6 +60,12 @@ def main():
         default='disabled',
         help='Show an output window on opening')
     parser.add_argument(
+        '-ns',
+        '--nostate',
+        default=False,
+        action='store_true',
+        help='Disable automatic state saving in config directory')
+    parser.add_argument(
         '-dev',
         '--dev',
         action='store_true',

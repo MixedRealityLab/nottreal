@@ -23,68 +23,94 @@ class WizardOption:
                               audible input to NottReal
         CAT_OUTPUT {int}   -- Identifier for options relating to the
                               visual output
+    
+        appstate {instance}-- App state controller
     """
     CHECKBOX = 0
     BOOLEAN, SINGLE_CHOICE, DIRECTORY = range(3)
     CAT_CORE, CAT_WIZARD, CAT_VOICE, CAT_INPUT, CAT_OUTPUT = range(5)
 
+    appstate = None
+        
     def __init__(self,
                  label,
-                 method,
+                 method=None,
                  opt_cat=0,
                  opt_type=0,
                  default=False,
                  added=False,
                  values={},
                  order=99,
-                 group=49):
+                 group=49,
+                 restorable=False,
+                 restore=True):
         """
         Create a runtime Wizard option
 
         Arguments:
-            label {str} -- Label of the option
-            label {method} -- Method to call with the value when its
-                              changed
+            label {str}       -- Label of the option
+            label {method}    -- Method to call with the value when its
+                                 changed
 
         Keyword Arguments:
-            opt_cat {int}  -- The category of the option
-                              (default: {self.CAT_WIZARD})
-            opt_type {int} -- The type of option
-                              (default: {self.BOOLEAN})
-            default {bool} -- Default value (default: {False})
-            added {bool}   -- Has been added to the UI
-                              (default: {False})
-            values {dict}  -- Possible values as a dictionary
-            order {int}    -- Position of the option within a group
-            grouping {int} -- Grouping of options
+            opt_cat {int}     -- The category of the option
+                                 (default: {self.CAT_WIZARD})
+            opt_type {int}    -- The type of option
+                                 (default: {self.BOOLEAN})
+            default {bool}    -- Default value (default: {False})
+            added {bool}      -- Has been added to the UI
+                                 (default: {False})
+            values {dict}     -- Possible values as a dictionary
+            order {int}       -- Position of the option within a group
+            grouping {int}    -- Grouping of options
+            restorable {bool} -- Save/restore value to app state
+            restore {bool}    -- Restore if restorable
         """
         self.label = label
         self.method = method
-        self.opt_cat = opt_cat
+        self.opt_cat = int(opt_cat)
         self.opt_type = opt_type
         self.default = default
         self.added = added
         self.values = values
         self.order = order
         self.group = group
+        self.restorable = restorable
+        self.restore = restore
 
-        self.value = default
         self.ui = None
         self.ui_update = None
 
-        self.base64label = base64.b64encode(self.label.encode())
-
-        self.__internal_tracking_id = None
+        if self.restorable and self.restore:
+            self.value = WizardOption.appstate.get_option(
+                self.opt_cat,
+                self.label,
+                default)
+        else:
+            self.value = default
 
     def change(self, value):
         """
-        Change the value and call the method that wants it.
+        Change the value and update the application state.
 
         Arguments:
             value {mixed} -- New value (depends on type)
         """
         self.value = value
-        self.method(value)
+        
+        if self.restorable:
+            WizardOption.appstate.save_option(self)
+
+    @staticmethod
+    def set_app_state_responder(responder):
+        """
+        Sets the application state responder. This is used for
+        retrieving saved values from the app state.
+        
+        Arguments:
+            responder {AppStateController} 
+        """
+        WizardOption.appstate = responder
 
 
 class Message:

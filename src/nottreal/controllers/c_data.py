@@ -36,17 +36,11 @@ class DataRecorderController(AbstractController):
         """
         super().__init__(nottreal, args)
 
-        self._dir = args.output_dir
-        if self._dir is None:
-            self._dir = self.DEFAULT_DIRECTORY
-
         self._enablable = False
-        self._enabled = False
+        self._file = None
 
     def ready_order(self, responder=None):
         """
-        We should be readied late
-
         Arguments:
             responder {str} -- Will only work for the {voice_root}
                                responder
@@ -61,31 +55,62 @@ class DataRecorderController(AbstractController):
             responder {str} -- Ignored
         """
         Logger.debug(__name__, 'Setting up data logging')
-        self._set_directory(self._dir)
 
-        self._opt_data_recording = self.nottreal.router(
-            'wizard',
-            'register_option',
-            option=WizardOption(
+        self._opt_enabled = WizardOption(
                 label='Enable data recording',
                 method=self.enable_data_output,
-                opt_cat=WizardOption.CAT_WIZARD,
+                opt_cat=WizardOption.CAT_CORE,
                 opt_type=WizardOption.BOOLEAN,
-                default=self._enabled,
+                default=False,
                 order=0,
-                group='data'))
-
+                group='data',
+                restorable=True)
         self.nottreal.router(
             'wizard',
             'register_option',
-            option=WizardOption(
+            option=self._opt_enabled)
+        
+        if self.args.output_dir is None:
+            directory = self.DEFAULT_DIRECTORY
+            restore = True
+        else:
+            directory = self.args.output_dir
+            restore = False
+
+        self._opt_dir = WizardOption(
                 label='Select data directory…',
                 method=self._set_directory,
-                opt_cat=WizardOption.CAT_WIZARD,
+                opt_cat=WizardOption.CAT_CORE,
                 opt_type=WizardOption.DIRECTORY,
-                default=self._dir,
+                default=directory,
                 order=1,
-                group='data'))
+                group='data',
+                restorable=True,
+                restore=restore)
+        self.nottreal.router(
+            'wizard',
+            'register_option',
+            option=self._opt_dir)
+
+        self._set_directory(
+            self._opt_dir.value,
+            override=self._opt_enabled.value)
+
+    def quit(self):
+        """
+        Close and quit the data recorder if it still exists
+        """
+        if self._enabled and self._file is not None:
+            self._file.close()
+
+    def respond_to(self):
+        """
+        This class will handle 'data' commands only.
+
+        Returns:
+            str -- Label for this controller
+        """
+        return 'data'
 
     def enable_data_output(self, state):
         """
@@ -97,7 +122,7 @@ class DataRecorderController(AbstractController):
         if self._enablable:
             if state:
                 Logger.info(__name__, 'Enabled recording of data')
-                self._enabled = True
+                self._opt_enabled.change(True)
 
                 self.router(
                     'wizard',
@@ -105,7 +130,7 @@ class DataRecorderController(AbstractController):
                     state=True)
             else:
                 Logger.info(__name__, 'Disabled recording of data')
-                self._enabled = False
+                self._opt_enabled.change(False)
 
                 self.router(
                     'wizard',
@@ -119,60 +144,56 @@ class DataRecorderController(AbstractController):
                 'Could not enable data recording, see earlier error message')
             return False
 
-    def _set_directory(self, new_dir):
+    def _set_directory(self, new_dir, override=None):
         """
         Set the data recording directory and enable data
         recording
 
         Arguments:
             new_dir {str} -- Path to new directory
+            
+        Keyword arguments:
+            override {bool} -- Enable/disable data output
         """
-        self._dir = new_dir
         timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
         path = '%s%s%s' % (self.FILE_PREFIX, timestamp, self.FILE_EXT)
-        self._filepath = os.path.join(self._dir, path)
+        filepath = os.path.join(new_dir, path)
 
         try:
-            self._file = open(self._filepath, mode='a')
-            if self._file:
+            file_object = open(filepath, mode='a')
+            if file_object:
+                self._file = file_object
                 Logger.info(
                     __name__,
-                    'Set data directory to "%s"' % self._filepath)
+                    'Set data directory to "%s"' % filepath)
 
                 self._enablable = True
-                self.enable_data_output(True)
+                
+                if override is None:
+                    self.enable_data_output(True)
+                    self.router(
+                        'wizard',
+                        'update_option',
+                        option=self._opt_enabled)
+                else:
+                    self.enable_data_output(override)
+                self._opt_dir.change(new_dir)
         except IOError:
             Logger.warning(
                 __name__,
-                'Failed to open "%s" to record data' % self._filepath)
+                'Failed to open "%s" to record data' % filepath)
 
             self._enablable = False
             self.enable_data_output(False)
 
         try:
-            self._opt_data_recording.value = self._enabled
+            self._opt_data_recording.value = self._opt_enabled.value
             self._opt_data_recording = self.nottreal.router(
                 'wizard',
                 'update_option',
                 option=self._opt_data_recording)
         except AttributeError:
             pass
-
-    def quit(self):
-        """
-        Close and quit the data recorder if it still exists
-        """
-        if self._enabled and self._file:
-            self._file.close()
-
-    def respond_to(self):
-        """
-        This class will handle 'data' commands only.
-
-        Returns:
-            str -- Label for this controller
-        """
-        return 'data'
 
     def custom_event(self, id, text):
         """
@@ -181,7 +202,7 @@ class DataRecorderController(AbstractController):
         Arguments:
             text {str} -- Text spoken
         """
-        if not self._enabled:
+        if not self._opt_enabled.value:
             return
 
         Logger.debug(
@@ -201,7 +222,7 @@ class DataRecorderController(AbstractController):
         Arguments:
             text {str} -- Text spoken
         """
-        if not self._enabled:
+        if not self._opt_enabled.value:
             return
 
         timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
@@ -217,7 +238,7 @@ class DataRecorderController(AbstractController):
         Arguments:
             text {str} -- Text spoken
         """
-        if not self._enabled:
+        if not self._opt_enabled.value:
             return
 
         timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
@@ -237,7 +258,7 @@ class DataRecorderController(AbstractController):
             id {int} -- ID of the prepared message
             slots {dict(str,str)} -- Slots changed by the user
         """
-        if not self._enabled:
+        if not self._opt_enabled.value:
             return
 
         timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)

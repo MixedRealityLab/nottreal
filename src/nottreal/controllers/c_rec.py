@@ -51,19 +51,17 @@ class RecognitionController(AbstractController):
 
         if self._recogniser is None:
             recogniser = self.DEFAULT_RECOGNISER
+            restore = True
         else:
             recogniser = 'Recognition' \
                          + self._recogniser[0].title() + self._recogniser[1:]
+            restore = False
 
         self._available_recognisers = self.available_recognisers()
         if not self.args.dev and recogniser != 'RecognitionGoogleSpeech':
             del self._available_recognisers['RecognitionGoogleSpeech']
 
-        self._set_recogniser(recogniser)
-        self.nottreal.router(
-            'wizard',
-            'register_option',
-            option=WizardOption(
+        self._opt_recogniser = WizardOption(
                 label='Recogniser',
                 method=self._set_recogniser,
                 opt_cat=WizardOption.CAT_INPUT,
@@ -71,7 +69,15 @@ class RecognitionController(AbstractController):
                 default=recogniser,
                 values=self._available_recognisers,
                 order=0,
-                group='recognition'))
+                group='recognition',
+                restorable=True,
+                restore=restore)
+        self.nottreal.router(
+            'wizard',
+            'register_option',
+            option=self._opt_recogniser)
+
+        self._set_recogniser(self._opt_recogniser.value)
 
     def quit(self):
         """
@@ -154,10 +160,12 @@ class RecognitionController(AbstractController):
         previous_instance = self.recogniser_instance
         try:
             self.recogniser_instance = self.nottreal.controllers[recogniser]
+            self._opt_recogniser.change(recogniser)
         except KeyError:
             try:
-                self.recogniser_instance = \
-                    self.nottreal.controllers['Recognition' + recogniser]
+                classname = 'Recognition' + recogniser
+                self.recogniser_instance = self.nottreal.controllers[classname]
+                self._opt_recogniser.change(classname)
             except KeyError:
                 tb = sys.exc_info()[2]
                 raise KeyError(
@@ -189,9 +197,6 @@ class RecognitionController(AbstractController):
         self.router('recognition', 'init', args=self.args)
         self.router('recognition', 'ready')
 
-        if restart_recognising:
-            self.router('recognition', 'start_recognising')
-
 
 class AbstractRecognitionController(AbstractController):
     """
@@ -217,17 +222,22 @@ class AbstractRecognitionController(AbstractController):
         self._callbacks = []
 
         self._is_recognising = False
-        self._recognition_during_listening = True
+        
+        self._opt_rec_during_listening = WizardOption(
+            opt_cat=WizardOption.CAT_INPUT,
+            label='Recognition during listening state only',
+            method=self._set_recognition_during_listening,
+            default=True,
+            order=2,
+            group='recognition',
+            restorable=True)
         self.nottreal.router(
             'wizard',
             'register_option',
-            option=WizardOption(
-                opt_cat=WizardOption.CAT_INPUT,
-                label='Recognition during listening state only',
-                method=self._set_recognition_during_listening,
-                default=self._recognition_during_listening,
-                order=2,
-                group='recognition'))
+            option=self._opt_rec_during_listening)
+            
+        self._set_recognition_during_listening(
+            self._opt_rec_during_listening.value)
 
     def ready(self, responder=None):
         """
@@ -237,7 +247,7 @@ class AbstractRecognitionController(AbstractController):
             'wizard',
             'recognition_enabled',
             state=True)
-
+                
     def packdown(self, on_complete=None):
         """
         Packdown the current voice recognition system and
@@ -268,6 +278,9 @@ class AbstractRecognitionController(AbstractController):
         return instance == \
             self.nottreal.responder('recognition_root').recogniser_instance
 
+    def is_recognising(self):
+        return self._is_recognising
+
     def _set_recognition_during_listening(self, value):
         """
         Change whether to voice recognition runs continuously ({False})
@@ -281,15 +294,17 @@ class AbstractRecognitionController(AbstractController):
             value {bool} -- New checked status
         """
         Logger.debug(__name__, 'Recognise only during listening: %r' % value)
-        self._recognition_during_listening = value
 
-        if not value and not self.is_recognising:
-            self.start_recognising()
-        elif value \
-                and self.is_recognising \
+        self._opt_rec_during_listening.change(value)
+
+        if not self._opt_rec_during_listening.value \
+            and not self.is_recognising():
+            self.router('recognition', 'start_recognising')
+        elif self._opt_rec_during_listening.value \
+                and self.is_recognising() \
                 and self.nottreal.controllers['WizardController'].state \
                 is not VUIState.LISTENING:
-            self.stop_recognising()
+            self.router('recognition', 'stop_recognising')
 
     def recognised_words(self, words):
         Logger.debug(
@@ -311,8 +326,8 @@ class AbstractRecognitionController(AbstractController):
         The VUI is in the listening state. Start listening if we're not
         already.
         """
-        if self._recognition_during_listening and \
-                self._is_recognising is False:
+        if self._opt_rec_during_listening.value and \
+                not self.is_recognising():
             self.start_recognising()
 
     def now_not_listening(self):
@@ -320,12 +335,9 @@ class AbstractRecognitionController(AbstractController):
         The VUI is not in the listening state. Stop listening if we're
         listening and we should only listen in the listening state.
         """
-        if self._recognition_during_listening and \
-                self._is_recognising is True:
+        if self._opt_rec_during_listening.value and \
+                self.is_recognising():
             self.stop_recognising()
-
-    def is_recognising(self):
-        return self._is_recognising
 
     def start_recognising(self):
         """

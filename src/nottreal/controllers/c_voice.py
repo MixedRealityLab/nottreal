@@ -60,25 +60,31 @@ class VoiceController(AbstractController):
 
         if self._voice is None:
             voice = self.DEFAULT_VOICE
+            restore = True
         else:
             voice = 'Voice' \
                     + self._voice[0].title() + self._voice[1:]
+            restore = False
 
         self._available_voices = self.available_voices()
-
-        self._set_voice(voice)
+            
+        self._opt_voice = WizardOption(
+            label='Voice subsystem',
+            method=self._set_voice,
+            opt_cat=WizardOption.CAT_OUTPUT,
+            opt_type=WizardOption.SINGLE_CHOICE,
+            default=voice,
+            values=self._available_voices,
+            order=0,
+            group=10,
+            restorable=True,
+            restore=restore)
         self.nottreal.router(
             'wizard',
             'register_option',
-            option=WizardOption(
-                label='Voice subsystem',
-                method=self._set_voice,
-                opt_cat=WizardOption.CAT_OUTPUT,
-                opt_type=WizardOption.SINGLE_CHOICE,
-                default=voice,
-                values=self._available_voices,
-                order=0,
-                group=10))
+            option=self._opt_voice)
+            
+        self._set_voice(self._opt_voice.value)
 
     def respond_to(self):
         """
@@ -145,21 +151,26 @@ class VoiceController(AbstractController):
             voice {str} -- Class name of the subsystem
         """
         if self.voice_instance is not None:
-            self.router('voice', 'packdown')
+            try:
+                self.router('voice', 'packdown')
+            except AttributeError:
+                pass
 
         try:
             self.voice_instance = self.nottreal.controllers[voice]
             name = self.voice_instance.__class__.__name__
+            self._opt_voice.change(voice)
         except KeyError:
             try:
-                self.voice_instance = \
-                    self.nottreal.controllers['Voice' + voice]
+                classname = 'Voice' + voice
+                self.voice_instance = self.nottreal.controllers[classname]
+                self._opt_voice.change(classname)
                 name = self.voice_instance.__class__.__name__
             except KeyError:
                 tb = sys.exc_info()[2]
                 raise KeyError(
                     'Unknown voice ID: "%s"' % voice).with_traceback(tb)
-                return
+                return False
 
         Logger.info(__name__, 'Set voice synthesis to "%s"' % name)
 
@@ -184,9 +195,6 @@ class AbstractVoiceController(AbstractController):
         """
         super().__init__(nottreal, args)
 
-        self.append_text = False
-        self.auto_listening = True
-
     @abc.abstractmethod
     def init(self, args):
         """
@@ -199,14 +207,17 @@ class AbstractVoiceController(AbstractController):
             args {[str]} -- Arguments passed through for the voice
                             subsystem
         """
-        self._opt_listen_after = self.router(
-            'wizard',
-            'register_option',
-            option=WizardOption(
+        self._opt_listen_after = WizardOption(
                 label='Listening state after speech',
                 opt_cat=WizardOption.CAT_OUTPUT,
                 method=self._set_auto_listening,
-                default=self.auto_listening))
+                default=True,
+                restorable=True)
+
+        self.router(
+            'wizard',
+            'register_option',
+            option=self._opt_listen_after)
 
     def ready_order(self, responder=None):
         """
@@ -290,9 +301,9 @@ class AbstractVoiceController(AbstractController):
         if new_value:
             Logger.debug(__name__, 'Will default to LISTENING state')
         else:
-            Logger.debug(__name__, 'Will default to VUIState.BUSY state')
+            Logger.debug(__name__, 'Will default to BUSY state')
 
-        self.auto_listening = new_value
+        self._opt_listen_after.value.change(new_value)
 
     @abc.abstractmethod
     def _produce_voice(self,
@@ -408,16 +419,18 @@ class ThreadedBaseVoice(AbstractVoiceController):
 
         self.append_override = Message.NO_OVERRIDE
         self._dont_append_cat_change = True
-        self._clear_queue_on_interrupt = True
 
-        self._opt_clear_queue = self.nottreal.router(
-            'wizard',
-            'register_option',
-            option=WizardOption(
+        self._opt_clear_queue = WizardOption(
                 label='Clear queue on interrupt',
                 opt_cat=WizardOption.CAT_WIZARD,
                 method=self._set_clear_queue_on_interrupt,
-                default=self._clear_queue_on_interrupt))
+                default=True,
+                restorable=True)
+                
+        self.nottreal.router(
+            'wizard',
+            'register_option',
+            option=self._opt_clear_queue)
 
         self._voice_thread = threading.Thread(
                 target=self._speak,
@@ -461,7 +474,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
             value {bool} -- New checked status
         """
         Logger.debug(__name__, 'Clear queue on interrupt: %r' % value)
-        self._clear_queue_on_interrupt = value
+        self._opt_clear_queue.change(value)
 
     def category_changed(self, new_cat_id):
         """
@@ -592,7 +605,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
             {bool} -- True
         """
         if clear_all is None:
-            clear_all = self._clear_queue_on_interrupt
+            clear_all = self._opt_clear_queue.value
 
         if clear_all:
             self.router('wizard', 'clear_queue')
@@ -633,7 +646,7 @@ class ThreadedBaseVoice(AbstractVoiceController):
         self._is_speaking = False
 
         if not loading:
-            if (state is None and self.auto_listening) \
+            if (state is None and self._opt_listen_after.value) \
                     or (state == VUIState.LISTENING):
                 self.router(
                     'wizard',
@@ -692,18 +705,19 @@ class VoiceOutputToLog(ThreadedBaseVoice):
         """
         super().__init__(nottreal, args)
 
-        self._no_waiting = False
-
     def init(self, args):
         super().init(args)
-        self._opt_dont_simulate = self.nottreal.router(
-            'wizard',
-            'register_option',
-            option=WizardOption(
+        self._opt_dont_simulate = WizardOption(
                 opt_cat=WizardOption.CAT_OUTPUT,
                 label='Don\'t simulate talk time',
                 method=self._set_no_waiting,
-                default=self._no_waiting))
+                default=False,
+                restorable=True)
+                
+        self.nottreal.router(
+            'wizard',
+            'register_option',
+            option=self._opt_dont_simulate)
 
     def packdown(self):
         """
@@ -729,7 +743,7 @@ class VoiceOutputToLog(ThreadedBaseVoice):
             value {bool} -- New checked status
         """
         Logger.debug(__name__, 'Instant printing: %r' % value)
-        self._no_waiting = value
+        self._opt_dont_simulate.change(value)
 
     def _produce_voice(self,
                        text,
@@ -754,7 +768,7 @@ class VoiceOutputToLog(ThreadedBaseVoice):
         self.send_to_recorder(text, cat, id, slots)
         Logger.info(__name__, 'Now saying "%s"' % text)
 
-        if not self._no_waiting:
+        if not self._opt_dont_simulate.value:
             timeout = len(text)/10
             super().wait(timeout)
 

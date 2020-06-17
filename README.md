@@ -2,9 +2,11 @@
 	NottReal
 </h1>
 
+
 A Python application for running Wizard of Oz studies with a voice-based  user interface.
 
 ## Dependencies
+
 You will need `python3` and `portaudio` on your computer.
 
 ### macOS
@@ -24,15 +26,9 @@ In addition to this, NottReal requires some Python dependencies, which can be in
  $ pip3 install -r requirements.txt
 ```
 
-### Optional voice recognition
+### Voice recognition
 
-NottReal also supports automated/machine voice transcription. Outputs from this _only_ displayed in the Wizard window—nothing else happens with them at the moment. This requires the Python package [SpeechRecognition](https://pypi.org/project/SpeechRecognition/). This can be installed using `pip3`
-
-```bash
-$ pip3 install SpeechRecognition
-```
-
-NottReal supports the following services, although note that these haven't been fully tested yet:
+NottReal also supports automated/machine voice transcription. Outputs from this _only_ displayed in the Wizard window—nothing else happens with them at the moment. The following services are supported:
 
 * [Google Cloud Speech API](https://cloud.google.com/speech/)
 * [Wit.ai](https://wit.ai/)
@@ -53,6 +49,8 @@ Run the code by calling `python3 nottreal.py`. There are various options you can
 
 * The configuration directory can be set using the `-c` option. A sample configuration directory is in `.cfg-dist`. Create a copy of this directory and use the option to specify the location.
 
+* The application state is saved to `appstate.json` in the configuration directory, and restored on each successive reopening of the application. Disable this with the `-ns` option.
+
   If you put your configuration in a directory called `cfg`, you do not need to set this option. 
 
 * NottReal can log all 'spoken' output to TSV files in a specified directory, where a file is created each time the application is run. Point NottReal to this directory with the `-d` option.
@@ -65,6 +63,7 @@ Run the code by calling `python3 nottreal.py`. There are various options you can
 
 
 ## App layout and configuration
+
 Copy the contents of the `.cfg_dist` directory to a new directory (e.g. `cfg`).  The application doesn't load configuration files from `cfg_dist`---these are only accessed if no configuration is specified.
 
 In summary, the NottReal *Wizard Window* UI has the following features:

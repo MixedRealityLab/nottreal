@@ -27,18 +27,12 @@ class SRRecognition(AbstractRecognitionController):
         """
         super(SRRecognition, self).__init__(nottreal, args)
 
+        self._stop_thread = None
+        self._lock = True
         self.config = nottreal.config.cfg()
-
-    def init(self, args):
-        """
-        Set up the speech to text library
-        """
-        super().init(args)
 
         Logger.debug(__name__, 'Loading "speech_recognition" module')
         self.sr = importlib.import_module('speech_recognition')
-
-        self._stop_thread = None
 
     def name(self):
         return 'Unimplemented recogniser'

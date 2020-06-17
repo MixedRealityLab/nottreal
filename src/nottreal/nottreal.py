@@ -86,7 +86,9 @@ class App:
         Logger.info(__name__, self.appname + ' is running')
         self.view.run_loop()
 
-        Logger.debug(__name__, 'Exiting the GUI application')
+        # closing
+        Logger.debug(__name__, 'Quitting the application')
+        self.router('_', 'quit')    
 
     def quit(self):
         """Gracefully shutdown the application"""
