@@ -496,7 +496,7 @@ class MenuBar(QMenuBar):
                     option.label,
                     data=str(category),
                     checkable=True,
-                    value=option.default,
+                    value=option.value,
                     callback=self._on_option_boolean_toggled)
 
                 option.ui = action
@@ -508,7 +508,7 @@ class MenuBar(QMenuBar):
                     option.label,
                     data=str(category),
                     checkable=False,
-                    value=option.default,
+                    value=option.value,
                     callback=self._on_option_directory_triggered)
 
                 option.ui = action
@@ -532,7 +532,7 @@ class MenuBar(QMenuBar):
                               + ":"
                               + str(key)),
                         checkable=True,
-                        value=True if key == option.default else False,
+                        value=True if key == option.value else False,
                         callback=self._on_option_single_choice_toggled))
 
                 option.ui = ui_elements
@@ -603,7 +603,7 @@ class MenuBar(QMenuBar):
 
         self.parent.disable_enter_press = True
 
-        dialog = QFileDialog(self, option.label, option.default)
+        dialog = QFileDialog(self, option.label, option.value)
         dialog.setFileMode(QFileDialog.Directory)
         if dialog.exec_():
             directory = dialog.selectedFiles()
