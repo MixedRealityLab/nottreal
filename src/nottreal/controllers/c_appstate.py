@@ -43,6 +43,7 @@ class AppStateController(AbstractController):
         self._opt_enabled = None
         self._enablable = False
         self._state_data = {}
+        self._options = {}
 
         WizardOption.set_app_state_responder(self)
 
@@ -144,7 +145,12 @@ class AppStateController(AbstractController):
         try:
             if os.path.exists(self._filepath):
                 with open(self._filepath, 'rt') as state_file:
-                    self._state_data = json.load(state_file)
+                    if not is_initial_load:
+                        self._state_data = self._merge_states(
+                                            self._state_data,
+                                            state_data)  
+                    else:
+                        self._state_data = state_data
         except json.decoder.JSONDecodeError:
             Logger.critical(
                 __name__,
@@ -184,6 +190,47 @@ class AppStateController(AbstractController):
                     option=self._opt_enabled)
         except AttributeError:
             pass
+        
+        if not is_initial_load:
+            self._update_options()
+
+    def _merge_states(self, current_state, new_state): 
+        """
+        Merge a new state with an old one, replacing the values if
+        they exist
+        
+        Arguments:
+            current_state {dict} -- Current application state
+            new_state {dict} -- New application state
+        
+        Returns:
+            {dict} -- New state dictionary
+        """
+        for k, v in current_state.items():
+            if k in new_state:
+                if type(v) == dict:
+                    self._merge_states(current_state[k], new_state[k])
+                else:
+                    current_state[k] = new_state[k]
+        return current_state
+        
+    def _update_options(self):
+        """
+        Run through the application state and update the 
+        {WizardOption}'s based on the application state
+        """
+        for label, value in self._state_data['options'].items():
+            if label in self._options:
+                option = self._options[label]
+                if option.value != value:
+                    option.change(value, dont_save=True)
+                    try:
+                        option.ui_update(option)
+                    except TypeError:
+                        Logger.warning(
+                            __name__,
+                            'Cannot update UI for option "%s"'
+                            % option.label)
 
     def _write_state(self):
         """
@@ -192,31 +239,32 @@ class AppStateController(AbstractController):
         if self._force_off or not self._opt_enabled.value:
             return
 
-        Logger.debug(__name__, 'Saving application state')
+        Logger.debug(
+            __name__,
+            'Saving application state to "%s"' % self._filepath)
         with open(self._filepath, mode='w') as statefile:
             json.dump(self._state_data, statefile)
 
-    def get_option(self, opt_cat, label, default):
+    def get_option(self, option):
         """
         Get an option from the state or the default value
 
         Arguments:
-            opt_cat {str} -- Option category
-            label {WizardOption} -- Option label to fetch
-            default {mixed} -- Default value if option doesn't exist
+            option {WizardOption} -- Option to restore
+        
+        Returns:
+            value {mixed} -- Value restored or the default option
         """
         if self._force_off or not self._opt_enabled:
-            return default
+            return option.default
 
-        cat = str(opt_cat)
+        self._options[option.label] = option
 
         try:
-            value = self._state_data['options'][cat][label]
+            value = self._state_data['options'][option.label]
         except Exception:
-            if cat not in self._state_data['options']:
-                self._state_data['options'][cat] = {}
-            self._state_data['options'][cat][label] = default
-            value = default
+            self._state_data['options'][option.label] = option.default
+            value = option.default
         finally:
             return value
 
@@ -230,18 +278,8 @@ class AppStateController(AbstractController):
         if self._force_off or not self._opt_enabled:
             return
 
-        cat = str(option.opt_cat)
-
-        try:
-            if cat not in self._state_data['options']:
-                self._state_data['options'][cat] = {}
-        except KeyError:
-            self._state_data['options'] = {}
-            if cat not in self._state_data['options']:
-                self._state_data['options'][cat] = {}
-
-        self._state_data['options'][cat][option.label] = \
-            option.value
+        self._options[option.label] = option
+        self._state_data['options'][option.label] = option.value
 
         if self.ITERATIVE_SAVING:
             self._write_state()

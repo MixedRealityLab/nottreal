@@ -80,14 +80,11 @@ class WizardOption:
         self.ui_update = None
 
         if self.restorable and self.restore:
-            self.value = WizardOption.appstate.get_option(
-                self.opt_cat,
-                self.label,
-                default)
+            self.value = WizardOption.appstate.get_option(self)
         else:
             self.value = default
 
-    def change(self, value):
+    def change(self, value, dont_save=False):
         """
         Calls {self.method}, if the response is {True} then
         the value is changed.
@@ -97,10 +94,13 @@ class WizardOption:
 
         Arguments:
             value {mixed} -- New value (depends on type)
+        
+        Keyword arguments:
+            dont_save {bool} -- Force don't save
         """
         if self.method(value):
             self.value = value
-            if self.restorable:
+            if self.restorable and not dont_save:
                 WizardOption.appstate.save_option(self)
 
     @staticmethod
@@ -116,6 +116,12 @@ class WizardOption:
             responder {AppStateController}
         """
         WizardOption.appstate = responder
+        
+    def __str__(self):
+        return '<[Option] %s: %s>' % (self.label, self.value)
+        
+    def __repr__(self):
+        return '<[Option] %s: %s>' % (self.label, self.value)
 
 
 class Message:
@@ -160,6 +166,12 @@ class Message:
         self.id = id
         self.slots = slots
         self.loading = loading
+        
+    def __str__(self):
+        return '<[Message] %s.%s: %s>' % (self.cat, self.id, self.text)
+        
+    def __repr__(self):
+        return '<[Message] %s.%s: %s>' % (self.cat, self.id, self.text)
 
 
 class VUIState:

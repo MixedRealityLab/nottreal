@@ -556,8 +556,9 @@ class MenuBar(QMenuBar):
         Arguments:
             option {WizardOption} -- Option to update
         """
+        value = option.values[option.value]
         for action in iter(option.ui['actions']):
-            action.setChecked(action.text() == option.value)
+            action.setChecked(action.text() == value)
 
     @Slot(bool)
     def _on_option_boolean_toggled(self, checked):
