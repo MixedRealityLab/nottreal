@@ -40,8 +40,6 @@ class AppStateController(AbstractController):
         self._force_off = args.nostate
 
         self._enablable = False
-        self._file = None
-
         self._state_data = {}
 
         WizardOption.set_app_state_responder(self)
@@ -72,7 +70,7 @@ class AppStateController(AbstractController):
                 method=self.enable_app_state_output,
                 opt_cat=WizardOption.CAT_CORE,
                 opt_type=WizardOption.BOOLEAN,
-                default=False,
+                default=True,
                 order=0,
                 group='appstate',
                 restorable=False)
@@ -82,8 +80,6 @@ class AppStateController(AbstractController):
             'register_option',
             option=self._opt_enabled)
 
-        self.set_directory(self._dir)
-
     def quit(self):
         """
         Close and quit the data recorder if it still exists
@@ -91,10 +87,8 @@ class AppStateController(AbstractController):
         if self._force_off:
             return
 
-        if self._opt_enabled.value and self._file is not None:
-            if not self.ITERATIVE_SAVING:
-                self._write_state()
-            self._file.close()
+        if self._opt_enabled.value and not self.ITERATIVE_SAVING:
+            self._write_state()
 
     def respond_to(self):
         """
@@ -144,9 +138,10 @@ class AppStateController(AbstractController):
 
         try:
             if os.path.exists(self._filepath):
-                with open(self._filepath, 'r') as state_file:
+                with open(self._filepath, 'rt') as state_file:
                     self._state_data = json.load(state_file)
-        except json.decoder.JSONDecodeError:
+        except json.decoder.JSONDecodeError as e:
+            print(e)
             Logger.critical(
                 __name__,
                 'App state file is invalid, will be overwritten!')
@@ -154,15 +149,15 @@ class AppStateController(AbstractController):
             self._state_data = {'options': {}}
 
         try:
-            self._file = open(self._filepath, mode='w')
-            if self._file:
+            statefile = open(self._filepath, mode='w')
+            if statefile:
                 Logger.info(
                     __name__,
                     'Set app state file to "%s"' % self._filepath)
 
                 self._enablable = True
                 self.enable_app_state_output(True)
-            self._file.close()
+            statefile.close()
         except IOError:
             Logger.warning(
                 __name__,
