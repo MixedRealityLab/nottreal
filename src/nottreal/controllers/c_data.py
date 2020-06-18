@@ -165,7 +165,7 @@ class DataRecorderController(AbstractController):
                 self._file = file_object
                 Logger.info(
                     __name__,
-                    'Set data directory to "%s"' % filepath)
+                    'Set data file to "%s"' % filepath)
 
                 self._enablable = True
 
