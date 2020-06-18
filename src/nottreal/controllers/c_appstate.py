@@ -124,32 +124,36 @@ class AppStateController(AbstractController):
                 'Could not enable app state saving, see earlier error message')
             return False
 
-    def set_directory(self, directory, override=False):
+    def set_directory(self, directory, is_initial_load=False):
         """
         Set the config recording directory and enable app state
         recording
 
         Arguments:
             directory {str} -- Path to new directory
-            override {bool} - Override auto re-eneable
+            is_initial_load {bool} - Override auto re-enable
         """
         if self._force_off:
             return
 
         self._dir = directory
         self._filepath = os.path.join(self._dir, self.FILENAME)
+        
+        contents_corrupt = False
 
         try:
             if os.path.exists(self._filepath):
                 with open(self._filepath, 'rt') as state_file:
                     self._state_data = json.load(state_file)
         except json.decoder.JSONDecodeError as e:
-            print(e)
             Logger.critical(
                 __name__,
                 'App state file is invalid, will be overwritten!')
 
-            self._state_data = {'options': {}}
+            if not len(self._state_data):
+                self._state_data = {'options': {}}
+                
+            contents_corrupt = True
 
         try:
             statefile = open(self._filepath, mode='w')
@@ -161,6 +165,9 @@ class AppStateController(AbstractController):
                 self._enablable = True
                 self.enable_app_state_output(True)
             statefile.close()
+
+            if contents_corrupt:
+                self._write_state()
         except IOError:
             Logger.warning(
                 __name__,

@@ -84,7 +84,11 @@ class WizardController(AbstractController):
 
         if not skip_config:
             try:
-                self.router('appstate', 'set_directory', directory=directory)
+                self.router(
+                    'appstate',
+                    'set_directory',
+                    directory=directory,
+                    is_initial_load=skip_config)
             except AttributeError:
                 pass
 
