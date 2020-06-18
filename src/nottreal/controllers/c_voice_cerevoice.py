@@ -86,27 +86,27 @@ class VoiceCerevoice(VoiceShellCmd):
 
         Arguments:
             value {bool} -- New checked status
-        """
-        if value:
-            Logger.debug(__name__, 'Cerevoice spurts enabled')
-        else:
-            Logger.debug(__name__, 'Cerevoice spurts disabled')
 
-        self._opt_spurts.change(value)
+        Return:
+            {bool} -- Always {True}
+        """
+        Logger.info(__name__, 'Cerevoice spurts enabled: %r' % value)
+        return True
+#        self._opt_spurts.change(value)
 
     def _set_calm(self, value):
         """
-        Change whether the words are spoken with a calm voice.
+        Change whether the words are spoken with a calm voice
 
         Arguments:
             value {bool} -- New checked status
-        """
-        if value:
-            Logger.debug(__name__, 'Calm voice enabled')
-        else:
-            Logger.debug(__name__, 'Calm voice disabled')
 
-        self._opt_calm_voice.change(value)
+        Return:
+            {bool} -- Always {True}
+        """
+        Logger.info(__name__, 'Cerevoice calm voice enabled: %r' % value)
+        return True
+#        self._opt_calm_voice.change(value)
 
     def _prepare_text(self, text):
         """

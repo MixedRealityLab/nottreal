@@ -578,7 +578,7 @@ class MenuBar(QMenuBar):
             raise KeyError(
                 'Unknown option: "%s"' % text).with_traceback(tb)
 
-        response = option.method(checked)
+        response = option.change(checked)
         if response is False:
             self.sender().setChecked(not self.sender().isChecked())
 
@@ -607,7 +607,7 @@ class MenuBar(QMenuBar):
         dialog.setFileMode(QFileDialog.Directory)
         if dialog.exec_():
             directory = dialog.selectedFiles()
-            option.method(directory[0])
+            option.change(directory[0])
 
         self.parent.disable_enter_press = False
 
@@ -650,7 +650,7 @@ class MenuBar(QMenuBar):
                   in choices.items()
                   if c_label == text][0]
 
-        option.method(choice)
+        option.change(choice)
 
     @Slot()
     def _on_menu_item_selected(self):

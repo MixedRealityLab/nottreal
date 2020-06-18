@@ -112,30 +112,26 @@ class DataRecorderController(AbstractController):
         """
         return 'data'
 
-    def enable_data_output(self, state):
+    def enable_data_output(self, value):
         """
         Enable/disable data recording (if possible)
 
         Arguments:
-            state {bool} -- New requested state
+            value {bool} -- New requested state
+
+        Return:
+            {bool} -- {True} if data recording state waas changed
         """
         if self._enablable:
-            if state:
-                Logger.info(__name__, 'Enabled recording of data')
-                self._opt_enabled.change(True)
+            Logger.info(
+                __name__,
+                'Data recording enabled: %r' % value)
 
-                self.router(
-                    'wizard',
-                    'data_recording_enabled',
-                    state=True)
-            else:
-                Logger.info(__name__, 'Disabled recording of data')
-                self._opt_enabled.change(False)
-
-                self.router(
-                    'wizard',
-                    'data_recording_enabled',
-                    state=False)
+#           self._opt_enabled.change(value)
+            self.router(
+                'wizard',
+                'data_recording_enabled',
+                state=value)
 
             return True
         else:
@@ -154,6 +150,10 @@ class DataRecorderController(AbstractController):
 
         Keyword arguments:
             override {bool} -- Enable/disable data output
+
+        Return:
+            {bool} -- {True} if the data recording directory was
+                      changed
         """
         timestamp = datetime.now().strftime(self.TIMESTAMP_FORMAT)
         path = '%s%s%s' % (self.FILE_PREFIX, timestamp, self.FILE_EXT)
@@ -177,7 +177,7 @@ class DataRecorderController(AbstractController):
                         option=self._opt_enabled)
                 else:
                     self.enable_data_output(override)
-                self._opt_dir.change(new_dir)
+#                self._opt_dir.change(new_dir)
         except IOError:
             Logger.warning(
                 __name__,
@@ -185,6 +185,7 @@ class DataRecorderController(AbstractController):
 
             self._enablable = False
             self.enable_data_output(False)
+            return False
 
         try:
             self._opt_data_recording.value = self._opt_enabled.value
@@ -194,6 +195,8 @@ class DataRecorderController(AbstractController):
                 option=self._opt_data_recording)
         except AttributeError:
             pass
+        finally:
+            return True
 
     def custom_event(self, id, text):
         """

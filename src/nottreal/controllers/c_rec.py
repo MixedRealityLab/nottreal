@@ -152,6 +152,9 @@ class RecognitionController(AbstractController):
 
         Arguments:
             recogniser {str} -- Class name of the subsystem
+
+        Return:
+            {bool} -- {True} if the recogniser was changed
         """
         Logger.info(
             __name__,
@@ -160,17 +163,18 @@ class RecognitionController(AbstractController):
         previous_instance = self.recogniser_instance
         try:
             self.recogniser_instance = self.nottreal.controllers[recogniser]
-            self._opt_recogniser.change(recogniser)
+#            self._opt_recogniser.change(recogniser)
         except KeyError:
             try:
                 classname = 'Recognition' + recogniser
                 self.recogniser_instance = self.nottreal.controllers[classname]
-                self._opt_recogniser.change(classname)
+#                self._opt_recogniser.change(classname)
             except KeyError:
                 tb = sys.exc_info()[2]
                 raise KeyError(
                     'Unknown recognition ID: "%s"' % recogniser) \
                     .with_traceback(tb)
+                return False
 
         if previous_instance is not None:
             was_recognising = previous_instance.is_recognising()
@@ -185,6 +189,8 @@ class RecognitionController(AbstractController):
                 on_complete=self._finish_setting_recogniser)
         else:
             self._finish_setting_recogniser(restart_recognising=False)
+
+        return True
 
     def _finish_setting_recogniser(self, restart_recognising=True):
         """
@@ -295,8 +301,6 @@ class AbstractRecognitionController(AbstractController):
         """
         Logger.debug(__name__, 'Recognise only during listening: %r' % value)
 
-        self._opt_rec_during_listening.change(value)
-
         if not self._opt_rec_during_listening.value \
                 and not self.is_recognising():
             self.router('recognition', 'start_recognising')
@@ -305,6 +309,8 @@ class AbstractRecognitionController(AbstractController):
                 and self.nottreal.controllers['WizardController'].state \
                 is not VUIState.LISTENING:
             self.router('recognition', 'stop_recognising')
+
+        return True
 
     def recognised_words(self, words):
         Logger.debug(

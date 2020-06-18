@@ -364,6 +364,10 @@ class WizardController(AbstractController):
 
         Arguments:
             value {bool} -- New checked status
+
+        Return:
+            {bool} -- Always {True}
         """
-        Logger.debug(__name__, 'Slot tracking on tab change: %r' % value)
-        self._opt_slots_on_tab_change.change(value)
+        Logger.info(__name__, 'Slot tracking on tab change: %r' % value)
+        return True
+#        self._opt_slots_on_tab_change.change(value)

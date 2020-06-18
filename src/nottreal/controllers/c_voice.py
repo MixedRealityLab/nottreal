@@ -149,6 +149,9 @@ class VoiceController(AbstractController):
 
         Arguments:
             voice {str} -- Class name of the subsystem
+
+        Return:
+            {bool} -- {True} if the subsystem was changed
         """
         if self.voice_instance is not None:
             try:
@@ -159,12 +162,12 @@ class VoiceController(AbstractController):
         try:
             self.voice_instance = self.nottreal.controllers[voice]
             name = self.voice_instance.__class__.__name__
-            self._opt_voice.change(voice)
+#            self._opt_voice.change(voice)
         except KeyError:
             try:
                 classname = 'Voice' + voice
                 self.voice_instance = self.nottreal.controllers[classname]
-                self._opt_voice.change(classname)
+#                self._opt_voice.change(classname)
                 name = self.voice_instance.__class__.__name__
             except KeyError:
                 tb = sys.exc_info()[2]
@@ -176,6 +179,7 @@ class VoiceController(AbstractController):
 
         self.responder('voice', self.voice_instance)
         self.router('voice', 'init', args=self.args)
+        return True
 
 
 class AbstractVoiceController(AbstractController):
@@ -290,20 +294,23 @@ class AbstractVoiceController(AbstractController):
         """
         self._produce_voice(text, text, cat, id, slots)
 
-    def _set_auto_listening(self, new_value):
+    def _set_auto_listening(self, value):
         """
         After speaking, should the UI default to the VUIState.BUSY
         state (False) or the LISTENING state (True).
 
         Arguments:
-            new_value {bool} -- New checked status
-        """
-        if new_value:
-            Logger.debug(__name__, 'Will default to LISTENING state')
-        else:
-            Logger.debug(__name__, 'Will default to BUSY state')
+            value {bool} -- New checked status
 
-        self._opt_listen_after.value.change(new_value)
+        Return:
+            {bool} -- Always {True}
+        """
+        Logger.info(
+            __name__,
+            'Change to %s state after speaking'
+            % ('listening' if value else 'busy'))
+        return True
+#        self._opt_listen_after.value.change(new_value)
 
     @abc.abstractmethod
     def _produce_voice(self,
@@ -454,40 +461,28 @@ class ThreadedBaseVoice(AbstractVoiceController):
             'deregister_option',
             option=self._opt_clear_queue)
 
-    def _set_dont_append_cat_change(self, value):
-        """
-        After a category change, should the append option be set
-        to {False} for the first utterance,.
-
-        Arguments:
-            value {bool} -- New checked status
-        """
-        Logger.debug(__name__, 'Don\'t append on first message: %r' % value)
-        self._dont_append_cat_change = value
-        self.append_override = Message.NO_OVERRIDE
-
     def _set_clear_queue_on_interrupt(self, value):
         """
         Clear the queue when the speech output is interrupted
 
         Arguments:
             value {bool} -- New checked status
+
+        Return:
+            {bool} -- Always {True}
         """
-        Logger.debug(__name__, 'Clear queue on interrupt: %r' % value)
-        self._opt_clear_queue.change(value)
+        Logger.info(__name__, 'Clear queue on interrupt: %r' % value)
+        return True
+#        self._opt_clear_queue.change(value)
 
     def category_changed(self, new_cat_id):
         """
-        Report to the voice subsystem that the user has changed
-        the category
+        We don't do anything with this yet
 
         Arguments:
             new_cat_id {str} -- New category ID
         """
-        if self._dont_append_cat_change:
-            self.append_override = Message.FORCE_DONT_APPEND
-        else:
-            self.append_override = Message.NO_OVERRIDE
+        pass
 
     def speak(self,
               text,
@@ -741,9 +736,15 @@ class VoiceOutputToLog(ThreadedBaseVoice):
 
         Arguments:
             value {bool} -- New checked status
+
+        Return:
+            {bool} -- Always {True}
         """
-        Logger.debug(__name__, 'Instant printing: %r' % value)
-        self._opt_dont_simulate.change(value)
+        Logger.info(
+            __name__,
+            'Simulated speaking time disabled: %r' % value)
+        return True
+#        self._opt_dont_simulate.change(value)
 
     def _produce_voice(self,
                        text,

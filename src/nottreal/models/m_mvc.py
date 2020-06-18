@@ -89,21 +89,28 @@ class WizardOption:
 
     def change(self, value):
         """
-        Change the value and update the application state.
+        Calls {self.method}, if the response is {True} then
+        the value is changed.
+
+        If the option is {restorable}, it is saved to the
+        application state.
 
         Arguments:
             value {mixed} -- New value (depends on type)
         """
-        self.value = value
-
-        if self.restorable:
-            WizardOption.appstate.save_option(self)
+        if self.method(value):
+            self.value = value
+            if self.restorable:
+                WizardOption.appstate.save_option(self)
 
     @staticmethod
     def set_app_state_responder(responder):
         """
         Sets the application state responder. This is used for
         retrieving saved values from the app state.
+
+        Don't call this unless you want to change where options
+        are saved to (and why would you want to do that?)
 
         Arguments:
             responder {AppStateController}

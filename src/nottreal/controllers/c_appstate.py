@@ -99,23 +99,23 @@ class AppStateController(AbstractController):
         """
         return 'appstate'
 
-    def enable_app_state_output(self, state):
+    def enable_app_state_output(self, value):
         """
         Enable/disable app state (if possible)
 
         Arguments:
             state {bool} -- New requested state
+
+        Return:
+            {bool} -- {True} if app state saving state was changed
         """
         if self._enablable and not self._force_off:
-            if state:
-                Logger.info(__name__, 'Enabled app state saving')
-            else:
-                Logger.info(__name__, 'Disabled app state saving')
+            Logger.info(__name__, 'App state saving enabled: %r' % value)
 
-            try:
-                self._opt_enabled.change(state)
-            except AttributeError:
-                pass
+            # try:
+            #     self._opt_enabled.change(state)
+            # except AttributeError:
+            #     pass
 
             return True
         else:
@@ -138,21 +138,21 @@ class AppStateController(AbstractController):
 
         self._dir = directory
         self._filepath = os.path.join(self._dir, self.FILENAME)
-        
+
         contents_corrupt = False
 
         try:
             if os.path.exists(self._filepath):
                 with open(self._filepath, 'rt') as state_file:
                     self._state_data = json.load(state_file)
-        except json.decoder.JSONDecodeError as e:
+        except json.decoder.JSONDecodeError:
             Logger.critical(
                 __name__,
                 'App state file is invalid, will be overwritten!')
 
             if not len(self._state_data):
                 self._state_data = {'options': {}}
-                
+
             contents_corrupt = True
 
         try:
