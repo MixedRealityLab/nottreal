@@ -78,16 +78,16 @@ class WizardController(AbstractController):
         self.data = TSVModel(directory)
 
         try:
-            self.router('appstate', 'set_dir', directory=directory)
-        except AttributeError:
-            pass
-
-        try:
             self.nottreal.view.wizard_window.set_data(self.data)
         except AttributeError:
             pass
 
         if not skip_config:
+            try:
+                self.router('appstate', 'set_directory', directory=directory)
+            except AttributeError:
+                pass
+            
             Logger.info(
                 __name__,
                 'Configuration directory set to "%s"' % directory)

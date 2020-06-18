@@ -82,7 +82,7 @@ class AppStateController(AbstractController):
             'register_option',
             option=self._opt_enabled)
 
-        self._set_directory(self._dir)
+        self.set_directory(self._dir)
 
     def quit(self):
         """
@@ -127,19 +127,19 @@ class AppStateController(AbstractController):
                 'Could not enable app state saving, see earlier error message')
             return False
 
-    def _set_directory(self, new_dir, override=False):
+    def set_directory(self, directory, override=False):
         """
         Set the config recording directory and enable app state
         recording
 
         Arguments:
-            new_dir {str} -- Path to new directory
+            directory {str} -- Path to new directory
             override {bool} - Override auto re-eneable
         """
         if self._force_off:
             return
 
-        self._dir = new_dir
+        self._dir = directory
         self._filepath = os.path.join(self._dir, self.FILENAME)
 
         try:
