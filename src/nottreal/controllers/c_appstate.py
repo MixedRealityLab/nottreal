@@ -18,10 +18,12 @@ class AppStateController(AbstractController):
         DEFAULT_DIRECTORY {str} -- Default directory
         FILENAME {str} -- Filename
         ITERATIVE_SAVING {bool} -- Save continuously or on close?
+        ALWAYS_SAVE_ON_QUIT {bool} -- Always save on quit too
     """
     DEFAULT_DIRECTORY = 'cfg'
     FILENAME = 'appstate.json'
     ITERATIVE_SAVING = True
+    ALWAYS_SAVE_ON_QUIT = True
 
     def __init__(self, nottreal, args):
         """
@@ -87,7 +89,8 @@ class AppStateController(AbstractController):
         if self._force_off:
             return
 
-        if self._opt_enabled.value and not self.ITERATIVE_SAVING:
+        if self._opt_enabled.value \
+                and (not self.ITERATIVE_SAVING or self.ALWAYS_SAVE_ON_QUIT):
             self._write_state()
 
     def respond_to(self):
@@ -129,7 +132,7 @@ class AppStateController(AbstractController):
         """
         if self._force_off:
             return
-            
+
         if not is_initial_load:
             self._write_state()
 
@@ -210,6 +213,9 @@ class AppStateController(AbstractController):
         try:
             value = self._state_data['options'][cat][label]
         except Exception:
+            if cat not in self._state_data['options']:
+                self._state_data['options'][cat] = {}
+            self._state_data['options'][cat][label] = default
             value = default
         finally:
             return value
