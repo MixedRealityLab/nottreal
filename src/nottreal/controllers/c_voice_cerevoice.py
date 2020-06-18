@@ -94,7 +94,6 @@ class VoiceCerevoice(VoiceShellCmd):
             __name__,
             'Set substitution of available Cerevoice spurts to %r' % value)
         return True
-#        self._opt_spurts.change(value)
 
     def _set_calm(self, value):
         """
@@ -108,7 +107,6 @@ class VoiceCerevoice(VoiceShellCmd):
         """
         Logger.info(__name__, 'Set Cerevoice using a calm voice to %r' % value)
         return True
-#        self._opt_calm_voice.change(value)
 
     def _prepare_text(self, text):
         """

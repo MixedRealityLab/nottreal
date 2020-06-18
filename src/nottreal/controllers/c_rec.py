@@ -163,12 +163,10 @@ class RecognitionController(AbstractController):
         previous_instance = self.recogniser_instance
         try:
             self.recogniser_instance = self.nottreal.controllers[recogniser]
-#            self._opt_recogniser.change(recogniser)
         except KeyError:
             try:
                 classname = 'Recognition' + recogniser
                 self.recogniser_instance = self.nottreal.controllers[classname]
-#                self._opt_recogniser.change(classname)
             except KeyError:
                 tb = sys.exc_info()[2]
                 raise KeyError(

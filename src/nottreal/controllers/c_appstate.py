@@ -111,12 +111,6 @@ class AppStateController(AbstractController):
         """
         if self._enablable and not self._force_off:
             Logger.info(__name__, 'Set app state saving to %r' % value)
-
-            # try:
-            #     self._opt_enabled.change(state)
-            # except AttributeError:
-            #     pass
-
             return True
         else:
             Logger.error(

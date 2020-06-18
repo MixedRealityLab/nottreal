@@ -127,7 +127,6 @@ class DataRecorderController(AbstractController):
                 __name__,
                 'Set data recording to %r' % value)
 
-#           self._opt_enabled.change(value)
             self.router(
                 'wizard',
                 'data_recording_enabled',
@@ -177,7 +176,6 @@ class DataRecorderController(AbstractController):
                         option=self._opt_enabled)
                 else:
                     self.enable_data_output(override)
-#                self._opt_dir.change(new_dir)
         except IOError:
             Logger.warning(
                 __name__,

@@ -370,4 +370,3 @@ class WizardController(AbstractController):
             __name__,
             'Set resetting of slot tracking on tab change to %r' % value)
         return True
-#        self._opt_slots_on_tab_change.change(value)

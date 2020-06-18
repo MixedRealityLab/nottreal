@@ -162,12 +162,10 @@ class VoiceController(AbstractController):
         try:
             self.voice_instance = self.nottreal.controllers[voice]
             name = self.voice_instance.__class__.__name__
-#            self._opt_voice.change(voice)
         except KeyError:
             try:
                 classname = 'Voice' + voice
                 self.voice_instance = self.nottreal.controllers[classname]
-#                self._opt_voice.change(classname)
                 name = self.voice_instance.__class__.__name__
             except KeyError:
                 tb = sys.exc_info()[2]
@@ -310,7 +308,6 @@ class AbstractVoiceController(AbstractController):
             'Change to %s state after speaking'
             % ('listening' if value else 'busy'))
         return True
-#        self._opt_listen_after.value.change(new_value)
 
     @abc.abstractmethod
     def _produce_voice(self,
@@ -475,7 +472,6 @@ class ThreadedBaseVoice(AbstractVoiceController):
             __name__,
             'Set clearing of the queue on interrupt to %r' % value)
         return True
-#        self._opt_clear_queue.change(value)
 
     def category_changed(self, new_cat_id):
         """
@@ -746,7 +742,6 @@ class VoiceOutputToLog(ThreadedBaseVoice):
             __name__,
             'Set no simulated speaking time to %r' % value)
         return True
-#        self._opt_dont_simulate.change(value)
 
     def _produce_voice(self,
                        text,
