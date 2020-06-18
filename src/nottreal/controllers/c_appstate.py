@@ -135,6 +135,9 @@ class AppStateController(AbstractController):
         """
         if self._force_off:
             return
+            
+        if not is_initial_load:
+            self._write_state()
 
         self._dir = directory
         self._filepath = os.path.join(self._dir, self.FILENAME)

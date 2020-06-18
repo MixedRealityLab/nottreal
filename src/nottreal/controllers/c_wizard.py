@@ -28,7 +28,7 @@ class WizardController(AbstractController):
         if self._dir is None:
             self._dir = self.DEFAULT_DIRECTORY
 
-        self._set_config_directory(self._dir)
+        self._set_config_directory(self._dir, is_initial_load=True)
 
         self.state = VUIState.BUSY
         self.recogniser_state = False
@@ -62,7 +62,7 @@ class WizardController(AbstractController):
         Logger.debug(__name__, "Opening the Wizard window…")
         self.nottreal.view.wizard_window.show()
 
-    def _set_config_directory(self, directory, skip_config=False):
+    def _set_config_directory(self, directory, is_initial_load=False):
         """
         Load some data from the directory and update the UI
 
@@ -70,10 +70,9 @@ class WizardController(AbstractController):
             directory {str} -- New configuration directory
 
         Keyword arguments:
-            skip_config {bool} -- Don't propagate to the output
+            is_initial_load {bool} -- Is the initial load of the app
         """
-        if not skip_config:
-            self.nottreal.config.update(directory)
+        self.nottreal.config.update(directory)
 
         self.data = TSVModel(directory)
 
@@ -82,13 +81,13 @@ class WizardController(AbstractController):
         except AttributeError:
             pass
 
-        if not skip_config:
+        if not is_initial_load:
             try:
                 self.router(
                     'appstate',
                     'set_directory',
                     directory=directory,
-                    is_initial_load=skip_config)
+                    is_initial_load=is_initial_load)
             except AttributeError:
                 pass
 
