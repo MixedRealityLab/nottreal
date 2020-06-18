@@ -62,10 +62,11 @@ class RecognitionController(AbstractController):
             del self._available_recognisers['RecognitionGoogleSpeech']
 
         self._opt_recogniser = WizardOption(
+                key=__name__ + '.recogniser',
                 label='Recogniser',
                 method=self._set_recogniser,
-                opt_cat=WizardOption.CAT_INPUT,
-                opt_type=WizardOption.SINGLE_CHOICE,
+                category=WizardOption.CAT_INPUT,
+                choose=WizardOption.CHOOSE_SINGLE_CHOICE,
                 default=recogniser,
                 values=self._available_recognisers,
                 order=0,
@@ -228,9 +229,10 @@ class AbstractRecognitionController(AbstractController):
         self._is_recognising = False
 
         self._opt_rec_during_listening = WizardOption(
-            opt_cat=WizardOption.CAT_INPUT,
+            key=__name__ + '.during_listening',
             label='Recognition during listening state only',
             method=self._set_recognition_during_listening,
+            category=WizardOption.CAT_INPUT,
             default=True,
             order=2,
             group='recognition',

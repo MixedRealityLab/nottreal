@@ -69,10 +69,11 @@ class VoiceController(AbstractController):
         self._available_voices = self.available_voices()
 
         self._opt_voice = WizardOption(
+            key=__name__ + '.voice',
             label='Voice subsystem',
             method=self._set_voice,
-            opt_cat=WizardOption.CAT_OUTPUT,
-            opt_type=WizardOption.SINGLE_CHOICE,
+            category=WizardOption.CAT_OUTPUT,
+            choose=WizardOption.CHOOSE_SINGLE_CHOICE,
             default=voice,
             values=self._available_voices,
             order=0,
@@ -210,8 +211,9 @@ class AbstractVoiceController(AbstractController):
                             subsystem
         """
         self._opt_listen_after = WizardOption(
+                key=__name__ + '.after_speech',
                 label='Listening state after speech',
-                opt_cat=WizardOption.CAT_OUTPUT,
+                category=WizardOption.CAT_OUTPUT,
                 method=self._set_auto_listening,
                 default=True,
                 restorable=True)
@@ -425,8 +427,9 @@ class ThreadedBaseVoice(AbstractVoiceController):
         self._dont_append_cat_change = True
 
         self._opt_clear_queue = WizardOption(
+                key=__name__ + '.queue_interrupt',
                 label='Clear queue on interrupt',
-                opt_cat=WizardOption.CAT_WIZARD,
+                category=WizardOption.CAT_WIZARD,
                 method=self._set_clear_queue_on_interrupt,
                 default=True,
                 restorable=True)
@@ -701,7 +704,8 @@ class VoiceOutputToLog(ThreadedBaseVoice):
     def init(self, args):
         super().init(args)
         self._opt_dont_simulate = WizardOption(
-                opt_cat=WizardOption.CAT_OUTPUT,
+                key=__name__ + '.dont_simulate_time',
+                category=WizardOption.CAT_OUTPUT,
                 label='Don\'t simulate talk time',
                 method=self._set_no_waiting,
                 default=False,

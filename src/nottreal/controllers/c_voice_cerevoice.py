@@ -38,8 +38,9 @@ class VoiceCerevoice(VoiceShellCmd):
             'command_interrupt')
 
         self._opt_calm_voice = WizardOption(
+                key=__name__ + '.calm',
                 label='Use a calm voice',
-                opt_cat=WizardOption.CAT_OUTPUT,
+                category=WizardOption.CAT_OUTPUT,
                 method=self._set_calm,
                 default=False,
                 restorable=True)
@@ -49,8 +50,9 @@ class VoiceCerevoice(VoiceShellCmd):
             option=self._opt_calm_voice)
 
         self._opt_spurts = WizardOption(
+                key=__name__ + '.spurts',
                 label='Use Cerevoice spurts',
-                opt_cat=WizardOption.CAT_OUTPUT,
+                category=WizardOption.CAT_OUTPUT,
                 method=self._set_cerevoice_spurts,
                 default=True,
                 restorable=True)

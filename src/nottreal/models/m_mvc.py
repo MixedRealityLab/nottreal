@@ -5,11 +5,13 @@ class WizardOption:
     An option for the wizard to use at runtime
 
     Variables:
-        CHECKBOX {int}     -- Identifier for an option that's boolean
-        BOOLEAN {int}      -- Identifier for an option that's boolean
-        SINGLE_CHOICE {int}-- Identifier for an option that the user
+        CHOOSE_BOOLEAN
+                     {int} -- Identifier for an option that's boolean
+        CHOOSE_SINGLE_CHOICE
+                     {int} -- Identifier for an option that the user
                               has to choose one item from a list
-        DIRECTORY {int}    -- Identifier for an option that the user
+        CHOOSE_DIRECTORY
+                     {int} -- Identifier for an option that the user
                               has to choose a directory
         CAT_CORE {int}     -- Identifier for options relating to the
                               application overall
@@ -24,17 +26,17 @@ class WizardOption:
 
         appstate {instance}-- App state controller
     """
-    CHECKBOX = 0
-    BOOLEAN, SINGLE_CHOICE, DIRECTORY = range(3)
+    CHOOSE_BOOLEAN, CHOOSE_SINGLE_CHOICE, CHOOSE_DIRECTORY = range(3)
     CAT_CORE, CAT_WIZARD, CAT_VOICE, CAT_INPUT, CAT_OUTPUT = range(5)
 
     appstate = None
 
     def __init__(self,
+                 key,
                  label,
                  method=None,
-                 opt_cat=0,
-                 opt_type=0,
+                 category=0,
+                 choose=0,
                  default=False,
                  added=False,
                  values={},
@@ -46,15 +48,17 @@ class WizardOption:
         Create a runtime Wizard option
 
         Arguments:
-            label {str}       -- Label of the option
-            label {method}    -- Method to call with the value when its
+            key {str}         -- String to identify the option
+            label {str}       -- Label of the option (for the UI)
+            method {method}   -- Method to call with the value when its
                                  changed
 
         Keyword Arguments:
-            opt_cat {int}     -- The category of the option
+            category {int}    -- The category of the option
                                  (default: {self.CAT_WIZARD})
-            opt_type {int}    -- The type of option
-                                 (default: {self.BOOLEAN})
+            choose {int}      -- The type of option/what the user
+                                 must choose
+                                 (default: {self.CHOOSE_BOOLEAN})
             default {bool}    -- Default value (default: {False})
             added {bool}      -- Has been added to the UI
                                  (default: {False})
@@ -64,10 +68,11 @@ class WizardOption:
             restorable {bool} -- Save/restore value to app state
             restore {bool}    -- Restore if restorable
         """
+        self.key = key
         self.label = label
         self.method = method
-        self.opt_cat = int(opt_cat)
-        self.opt_type = opt_type
+        self.category = category
+        self.choose = choose
         self.default = default
         self.added = added
         self.values = values
@@ -94,7 +99,7 @@ class WizardOption:
 
         Arguments:
             value {mixed} -- New value (depends on type)
-        
+
         Keyword arguments:
             dont_save {bool} -- Force don't save
         """
@@ -116,10 +121,10 @@ class WizardOption:
             responder {AppStateController}
         """
         WizardOption.appstate = responder
-        
+
     def __str__(self):
         return '<[Option] %s: %s>' % (self.label, self.value)
-        
+
     def __repr__(self):
         return '<[Option] %s: %s>' % (self.label, self.value)
 
@@ -166,10 +171,10 @@ class Message:
         self.id = id
         self.slots = slots
         self.loading = loading
-        
+
     def __str__(self):
         return '<[Message] %s.%s: %s>' % (self.cat, self.id, self.text)
-        
+
     def __repr__(self):
         return '<[Message] %s.%s: %s>' % (self.cat, self.id, self.text)
 

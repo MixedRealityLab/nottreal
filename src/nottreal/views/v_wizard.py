@@ -190,15 +190,15 @@ class MenuBar(QMenuBar):
             option {WizardOption} -- Constructed option object
         """
         try:
-            self._options[option.opt_cat].append(option)
+            self._options[option.category].append(option)
         except KeyError:
-            self._options[option.opt_cat] = []
+            self._options[option.category] = []
             return self.add_option(option)
 
         if self._generated_menu:
             try:
                 self._generate_menu(
-                    self.option_category_to_menu[option.opt_cat])
+                    self.option_category_to_menu[option.category])
             except KeyError:
                 pass
 
@@ -210,14 +210,14 @@ class MenuBar(QMenuBar):
             option {WizardOption} -- Option to remove
         """
         try:
-            cat_options = self._options[option.opt_cat]
+            cat_options = self._options[option.category]
 
             option_idx = [idx
                           for idx, c
                           in enumerate(cat_options)
                           if c.label == option.label][0]
 
-            del self._options[option.opt_cat][option_idx]
+            del self._options[option.category][option_idx]
         except KeyError:
             return
         except IndexError:
@@ -226,7 +226,7 @@ class MenuBar(QMenuBar):
         if self._generated_menu:
             try:
                 self._generate_menu(
-                    self.option_category_to_menu[option.opt_cat])
+                    self.option_category_to_menu[option.category])
             except KeyError:
                 pass
 
@@ -245,9 +245,9 @@ class MenuBar(QMenuBar):
                 'No menu found with id "%d"' % menu).with_traceback(tb)
 
         try:
-            opt_cat = self.menu_to_option_category[menu]
+            category = self.menu_to_option_category[menu]
         except KeyError:
-            opt_cat = None
+            category = None
 
         try:
             menu_object = self._instantiated_menus[menu]
@@ -255,7 +255,7 @@ class MenuBar(QMenuBar):
             menu_object = self.addMenu(self.MENUS[menu])
             self._instantiated_menus[menu] = menu_object
 
-        function(menu_object, self._options, opt_cat)
+        function(menu_object, self._options, category)
 
     def _create_file_menu(self, menu, options, category):
         """
@@ -490,7 +490,7 @@ class MenuBar(QMenuBar):
                 menu.addSeparator()
                 current_group = option.group
 
-            if option.opt_type == WizardOption.BOOLEAN:
+            if option.choose == WizardOption.CHOOSE_BOOLEAN:
                 action = self._add_action_to_menu(
                     menu,
                     option.label,
@@ -502,7 +502,7 @@ class MenuBar(QMenuBar):
                 option.ui = action
                 option.ui_update = self.update_option_boolean
 
-            elif option.opt_type == WizardOption.DIRECTORY:
+            elif option.choose == WizardOption.CHOOSE_DIRECTORY:
                 action = self._add_action_to_menu(
                     menu,
                     option.label,
@@ -513,7 +513,7 @@ class MenuBar(QMenuBar):
 
                 option.ui = action
 
-            elif option.opt_type == WizardOption.SINGLE_CHOICE:
+            elif option.choose == WizardOption.CHOOSE_SINGLE_CHOICE:
                 actions = menu.actions()
                 for action in iter(actions):
                     if action.text() == option.label:

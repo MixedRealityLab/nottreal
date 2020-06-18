@@ -69,10 +69,11 @@ class AppStateController(AbstractController):
         Logger.debug(__name__, 'Setting up app state saving')
 
         self._opt_enabled = WizardOption(
+                key=__name__ + '.save',
                 label='Save application state',
                 method=self.enable_app_state_output,
-                opt_cat=WizardOption.CAT_CORE,
-                opt_type=WizardOption.BOOLEAN,
+                category=WizardOption.CAT_CORE,
+                choose=WizardOption.CHOOSE_BOOLEAN,
                 default=True,
                 order=0,
                 group='appstate',
@@ -145,10 +146,11 @@ class AppStateController(AbstractController):
         try:
             if os.path.exists(self._filepath):
                 with open(self._filepath, 'rt') as state_file:
+                    state_data = json.load(state_file)
                     if not is_initial_load:
                         self._state_data = self._merge_states(
                                             self._state_data,
-                                            state_data)  
+                                            state_data)
                     else:
                         self._state_data = state_data
         except json.decoder.JSONDecodeError:
@@ -190,19 +192,19 @@ class AppStateController(AbstractController):
                     option=self._opt_enabled)
         except AttributeError:
             pass
-        
+
         if not is_initial_load:
             self._update_options()
 
-    def _merge_states(self, current_state, new_state): 
+    def _merge_states(self, current_state, new_state):
         """
         Merge a new state with an old one, replacing the values if
         they exist
-        
+
         Arguments:
             current_state {dict} -- Current application state
             new_state {dict} -- New application state
-        
+
         Returns:
             {dict} -- New state dictionary
         """
@@ -213,10 +215,10 @@ class AppStateController(AbstractController):
                 else:
                     current_state[k] = new_state[k]
         return current_state
-        
+
     def _update_options(self):
         """
-        Run through the application state and update the 
+        Run through the application state and update the
         {WizardOption}'s based on the application state
         """
         for label, value in self._state_data['options'].items():
@@ -230,7 +232,7 @@ class AppStateController(AbstractController):
                         Logger.warning(
                             __name__,
                             'Cannot update UI for option "%s"'
-                            % option.label)
+                            % option.key)
 
     def _write_state(self):
         """
@@ -251,19 +253,19 @@ class AppStateController(AbstractController):
 
         Arguments:
             option {WizardOption} -- Option to restore
-        
+
         Returns:
             value {mixed} -- Value restored or the default option
         """
         if self._force_off or not self._opt_enabled:
             return option.default
 
-        self._options[option.label] = option
+        self._options[option.key] = option
 
         try:
-            value = self._state_data['options'][option.label]
+            value = self._state_data['options'][option.key]
         except Exception:
-            self._state_data['options'][option.label] = option.default
+            self._state_data['options'][option.key] = option.default
             value = option.default
         finally:
             return value
@@ -278,8 +280,8 @@ class AppStateController(AbstractController):
         if self._force_off or not self._opt_enabled:
             return
 
-        self._options[option.label] = option
-        self._state_data['options'][option.label] = option.value
+        self._options[option.key] = option
+        self._state_data['options'][option.key] = option.value
 
         if self.ITERATIVE_SAVING:
             self._write_state()

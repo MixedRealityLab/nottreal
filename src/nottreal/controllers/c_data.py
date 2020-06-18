@@ -57,10 +57,11 @@ class DataRecorderController(AbstractController):
         Logger.debug(__name__, 'Setting up data logging')
 
         self._opt_enabled = WizardOption(
+                key=__name__ + '.enable',
                 label='Enable data recording',
                 method=self.enable_data_output,
-                opt_cat=WizardOption.CAT_CORE,
-                opt_type=WizardOption.BOOLEAN,
+                category=WizardOption.CAT_CORE,
+                choose=WizardOption.CHOOSE_BOOLEAN,
                 default=False,
                 order=0,
                 group='data',
@@ -78,10 +79,11 @@ class DataRecorderController(AbstractController):
             restore = False
 
         self._opt_dir = WizardOption(
+                key=__name__ + '.dir',
                 label='Select data directory…',
                 method=self._set_directory,
-                opt_cat=WizardOption.CAT_CORE,
-                opt_type=WizardOption.DIRECTORY,
+                category=WizardOption.CAT_CORE,
+                choose=WizardOption.CHOOSE_DIRECTORY,
                 default=directory,
                 order=1,
                 group='data',

@@ -73,10 +73,11 @@ class InputController(AbstractController):
             'wizard',
             'register_option',
             option=WizardOption(
+                key=__name__ + '.source',
                 label='Input source',
                 method=self.set_device,
-                opt_cat=WizardOption.CAT_INPUT,
-                opt_type=WizardOption.SINGLE_CHOICE,
+                category=WizardOption.CAT_INPUT,
+                choose=WizardOption.CHOOSE_SINGLE_CHOICE,
                 default=device,
                 values=self.devices,
                 group=0))
