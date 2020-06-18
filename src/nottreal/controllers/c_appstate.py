@@ -38,7 +38,7 @@ class AppStateController(AbstractController):
             self._dir = self.DEFAULT_DIRECTORY
 
         self._force_off = args.nostate
-
+        self._opt_enabled = None
         self._enablable = False
         self._state_data = {}
 
@@ -109,11 +109,14 @@ class AppStateController(AbstractController):
         if self._enablable and not self._force_off:
             if state:
                 Logger.info(__name__, 'Enabled app state saving')
-                self._opt_enabled.change(True)
             else:
                 Logger.info(__name__, 'Disabled app state saving')
-                self._opt_enabled.change(False)
 
+            try:
+                self._opt_enabled.change(state)
+            except AttributeError:
+                pass
+                    
             return True
         else:
             Logger.error(
