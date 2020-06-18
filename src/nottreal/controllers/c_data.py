@@ -125,7 +125,7 @@ class DataRecorderController(AbstractController):
         if self._enablable:
             Logger.info(
                 __name__,
-                'Data recording enabled: %r' % value)
+                'Set data recording to %r' % value)
 
 #           self._opt_enabled.change(value)
             self.router(

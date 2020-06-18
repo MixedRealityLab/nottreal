@@ -299,7 +299,9 @@ class AbstractRecognitionController(AbstractController):
         Arguments:
             value {bool} -- New checked status
         """
-        Logger.debug(__name__, 'Recognise only during listening: %r' % value)
+        Logger.debug(
+            __name__,
+            'Set recognition only while \'listening\' to %r' % value)
 
         if not self._opt_rec_during_listening.value \
                 and not self.is_recognising():

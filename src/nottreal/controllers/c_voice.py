@@ -471,7 +471,9 @@ class ThreadedBaseVoice(AbstractVoiceController):
         Return:
             {bool} -- Always {True}
         """
-        Logger.info(__name__, 'Clear queue on interrupt: %r' % value)
+        Logger.info(
+            __name__,
+            'Set clearing of the queue on interrupt to %r' % value)
         return True
 #        self._opt_clear_queue.change(value)
 
@@ -742,7 +744,7 @@ class VoiceOutputToLog(ThreadedBaseVoice):
         """
         Logger.info(
             __name__,
-            'Simulated speaking time disabled: %r' % value)
+            'Set no simulated speaking time to %r' % value)
         return True
 #        self._opt_dont_simulate.change(value)
 

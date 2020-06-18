@@ -90,7 +90,9 @@ class VoiceCerevoice(VoiceShellCmd):
         Return:
             {bool} -- Always {True}
         """
-        Logger.info(__name__, 'Cerevoice spurts enabled: %r' % value)
+        Logger.info(
+            __name__,
+            'Set substitution of available Cerevoice spurts to %r' % value)
         return True
 #        self._opt_spurts.change(value)
 
@@ -104,7 +106,7 @@ class VoiceCerevoice(VoiceShellCmd):
         Return:
             {bool} -- Always {True}
         """
-        Logger.info(__name__, 'Cerevoice calm voice enabled: %r' % value)
+        Logger.info(__name__, 'Set Cerevoice using a calm voice to %r' % value)
         return True
 #        self._opt_calm_voice.change(value)
 

@@ -110,7 +110,7 @@ class AppStateController(AbstractController):
             {bool} -- {True} if app state saving state was changed
         """
         if self._enablable and not self._force_off:
-            Logger.info(__name__, 'App state saving enabled: %r' % value)
+            Logger.info(__name__, 'Set app state saving to %r' % value)
 
             # try:
             #     self._opt_enabled.change(state)
