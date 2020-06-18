@@ -81,15 +81,14 @@ class WizardController(AbstractController):
         except AttributeError:
             pass
 
-        if not is_initial_load:
-            try:
-                self.router(
-                    'appstate',
-                    'set_directory',
-                    directory=directory,
-                    is_initial_load=is_initial_load)
-            except AttributeError:
-                pass
+        try:
+            self.router(
+                'appstate',
+                'set_directory',
+                directory=directory,
+                is_initial_load=is_initial_load)
+        except AttributeError:
+            pass
 
             Logger.info(
                 __name__,
