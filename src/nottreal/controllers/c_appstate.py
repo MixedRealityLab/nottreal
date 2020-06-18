@@ -116,7 +116,7 @@ class AppStateController(AbstractController):
                 self._opt_enabled.change(state)
             except AttributeError:
                 pass
-                    
+
             return True
         else:
             Logger.error(

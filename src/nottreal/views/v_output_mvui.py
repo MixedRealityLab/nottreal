@@ -75,6 +75,8 @@ class MVUIWindow(AbstractOutputView):
             layout.setColumnStretch(0, 1)
             layout.setColumnStretch(1, 10)
             layout.setColumnStretch(2, 1)
+
+            self._initiated = True
         else:
             self.message.updated_config(config)
             self.state.updated_config(config)

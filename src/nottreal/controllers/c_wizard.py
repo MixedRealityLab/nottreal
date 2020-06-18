@@ -87,7 +87,7 @@ class WizardController(AbstractController):
                 self.router('appstate', 'set_directory', directory=directory)
             except AttributeError:
                 pass
-            
+
             Logger.info(
                 __name__,
                 'Configuration directory set to "%s"' % directory)
