@@ -17,13 +17,17 @@ class App:
         Arguments:
             args {[str]} -- Application arguments
         """
-        Logger.debug(__name__, 'Welcome to the GUI application')
+        Logger.debug(__name__, 'Welcome to NottReal')
 
         self.appname = 'NottReal'
 
         self.args = args
         self._controllers = {}
         self.responders = {'app': self}
+        
+        # crash more willingly?
+        if args.dev:
+            Logger.info(__name__, 'Development mode is active')
 
         # config model (actually loaded by the Wizard controller)
         self.config = ConfigModel(args)
