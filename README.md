@@ -47,7 +47,7 @@ Run the code by calling `python3 nottreal.py`. There are various options you can
 
 * Logging is controlled by using the `-l` option, with the levels `WARNING`, `DEBUG`, `ERROR`, `INFO`, `CRITICAL`. *This option can only be set at call time, all other options are configurable through the application menus.*
 
-* The configuration directory can be set using the `-c` option. A sample configuration directory is in `.cfg-dist`. Create a copy of this directory and use the option to specify the location.
+* The configuration directory can be set using the `-c` option. A sample configuration directory is in `dist.cfg`. Create a copy of this directory and use the option to specify the location.
 
 * The application state is saved to `appstate.json` in the configuration directory, and restored on each successive reopening of the application. Disable this with the `-ns` option.
 

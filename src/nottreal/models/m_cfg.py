@@ -17,14 +17,12 @@ class ConfigModel:
         if self.config_dir == 'cfg':
             self.config_dir = DirUtils.pwd() + '/' + self.config_dir
 
-        Logger.debug(__name__, 'Loading data from the configuration file')
-
         self._listeners = []
         self.config = configparser.ConfigParser()
 
     def update(self, directory):
         self.config.read(directory + '/settings.cfg')
-        Logger.info(__name__, 'Loaded configuration file')
+        Logger.info(__name__, 'Loaded configuration file from %s' % directory)
 
         for listener in iter(self._listeners):
             listener(self)

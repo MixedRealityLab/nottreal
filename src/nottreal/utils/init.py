@@ -18,7 +18,7 @@ class ArgparseUtils:
         are they readable?
 
         If no supplied directory is given (or the default is given), and it
-        is invalid, the distribution configuration (in `.cfg-dist`) is used.
+        is invalid, the distribution configuration (in `dist.cfg`) is used.
 
         Arguments:
             dir {str} -- Directory relative to this directory
@@ -32,16 +32,16 @@ class ArgparseUtils:
         Returns:
             {str} -- Path to the configuration directory
         """
-        if dir == '.cfg-dist':
+        if dir == 'dist.cfg':
             raise ArgumentTypeError(('You cannot use the distribution '
                                     'configuration directory'))
 
-        dist_dir = '.cfg-dist'
+        dist_dir = 'dist.cfg'
         pwd = DirUtils.pwd() + '/'
         requested_dir = pwd + dir
 
         if not os.path.isdir(requested_dir):
-            if dir == 'cfg' and os.path.isdir(pwd + '.cfg-dist'):
+            if dir == 'cfg' and os.path.isdir(pwd + 'dist.cfg'):
                 print(
                     '%s not found' % requested_dir,
                     '∴ falling back to distribution configuration',
@@ -50,13 +50,14 @@ class ArgparseUtils:
                 requested_dir = pwd + dist_dir
             else:
                 raise ArgumentTypeError((
-                        '%s is not a readable directory' % (dir)))
+                        '%s is not a readable directory' % (requested_dir)))
         elif os.access(dir, os.R_OK):
             files = ('settings.cfg', 'categories.tsv', 'messages.tsv')
             for file in files:
                 if not os.access(requested_dir + '/' + file, os.R_OK):
                     raise ArgumentTypeError((
-                        '%s/%s is not a readable file' % (dir, file)))
+                        '%s/%s is not a readable file'
+                        % (requested_dir, file)))
 
         return dir
 
