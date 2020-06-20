@@ -89,6 +89,19 @@ class ArgparseUtils:
 
 class ClassUtils:
     @staticmethod
+    def list_all_modules(package):
+        """
+        List all modules in a package
+
+        Arguments:
+            package {str} -- Package to search
+        """
+
+        return [name
+                for _, name, _
+                in pkgutil.iter_modules([package.replace('.', os.path.sep)])]
+
+    @staticmethod
     def load_all_subclasses(package, subclass):
         """
         Search a directory/package for files and import classes

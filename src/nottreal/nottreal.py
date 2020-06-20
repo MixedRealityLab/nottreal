@@ -36,7 +36,7 @@ class App:
 
         # initialise the controllers
         classes = ClassUtils.load_all_subclasses(
-            src.nottreal.controllers,
+            'src.nottreal.controllers',
             c_abstract.AbstractController)
 
         self.controllers = {}
@@ -61,6 +61,7 @@ class App:
                 self.responder(respond_tos, self.controllers[name])
 
         # initialise the config
+        print(self.controllers)
         self.controllers['WizardController'].init_config()
 
         # initialise the views
