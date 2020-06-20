@@ -154,6 +154,8 @@ class AppStateController(AbstractController):
                 pass
             try:
                 self._opt_enabled.ui_update(self._opt_enabled)
+            except AttributeError:
+                pass
             except TypeError:
                 pass
             return
