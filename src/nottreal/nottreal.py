@@ -7,7 +7,6 @@ from .controllers import c_abstract
 
 from collections import OrderedDict
 
-import src.nottreal.controllers
 import inspect
 import sys
 
