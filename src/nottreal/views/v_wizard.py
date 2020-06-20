@@ -9,7 +9,7 @@ from PySide2.QtWidgets import (QAbstractItemView, QAction, QComboBox,
                                QPlainTextEdit, QPushButton, QVBoxLayout,
                                QTabWidget, QMenuBar, QMenu, QTreeView,
                                QWidget)
-from PySide2.QtGui import (QTextCursor, QStandardItemModel)
+from PySide2.QtGui import (QIcon, QPixmap, QTextCursor, QStandardItemModel)
 from PySide2.QtCore import (Qt, QItemSelectionModel, QTimer,
                             Slot)
 
@@ -92,6 +92,8 @@ class WizardWindow(QMainWindow):
         self.layout.setRowStretch(3, 1)
 
         self.setGeometry(0, 0, 800, 600)
+
+        self.setWindowIcon(QIcon(QPixmap(self.nottreal.view.APP_ICON)))
 
         Logger.info(__name__, 'Loaded Wizard window')
 

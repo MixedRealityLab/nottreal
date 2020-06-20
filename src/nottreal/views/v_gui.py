@@ -5,13 +5,21 @@ from ..utils.log import Logger
 from .v_wizard import WizardWindow
 from .v_output_abstract import AbstractOutputView
 
+from PySide2.QtGui import (QIcon, QPixmap)
 from PySide2.QtWidgets import (QApplication, QStyleFactory)
 
 import sys
 
 
 class Gui:
-    """The primary GUI application class"""
+    """
+    The primary GUI application class
+    
+    Variables:
+        APP_ICON {str} -- Path to the application icon
+    """
+    APP_ICON = 'src/nottreal/resources/icon.png'
+    
     def __init__(self, nottreal, args):
         """
         Initialise the GUI application libraries
@@ -36,6 +44,9 @@ class Gui:
         self.wizard_window = WizardWindow(
             self.nottreal,
             self.args)
+
+        self._qtapp.setApplicationDisplayName(self.nottreal.appname)
+        self._qtapp.setWindowIcon(QIcon(QPixmap(self.APP_ICON)))
 
         self.output = {}
         for name, cls in classes.items():
