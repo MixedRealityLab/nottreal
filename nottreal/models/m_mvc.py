@@ -102,11 +102,16 @@ class WizardOption:
 
         Keyword arguments:
             dont_save {bool} -- Force don't save
+
+        Returns:
+            {bool} -- If the change was successful
         """
-        if self.method(value):
+        result = self.method(value)
+        if result:
             self.value = value
             if self.restorable and not dont_save:
                 WizardOption.appstate.save_option(self)
+        return result
 
     @staticmethod
     def set_app_state_responder(responder):
