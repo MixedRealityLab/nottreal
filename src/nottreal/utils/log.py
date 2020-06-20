@@ -1,6 +1,5 @@
 
 import logging
-import threading
 
 
 class Logger:
@@ -16,6 +15,8 @@ class Logger:
     INFO = logging.INFO
     DEBUG = logging.DEBUG
     NOTSET = logging.NOTSET
+
+    FORMAT = '%(msecs)-4d%(thread)-18d%(levelname)-9s%(name)-25s%(message)s'
 
     chosen_level = logging.INFO
 
@@ -117,11 +118,8 @@ class Logger:
             {Logger}
         """
         Logger.chosen_level = level
-        # logging.basicConfig(
-        #     format='%(asctime)s\t%(levelname)-8s\t%(name)-16s\t%(message)s',
-        #     level=level)
         logging.basicConfig(
-            format='%(asctime)s\t%(levelname)-4s\t%(name)-25s\t%(message)s',
+            format=Logger.FORMAT,
             level=level)
 
     @staticmethod
@@ -136,13 +134,13 @@ class Logger:
         """
         if message is None:
             message = tag
-            tag = "nottreal"
+            tag = ''
 
         message = "%s%s\033[0m" % (Logger.COLOURS[level], message)
 
         logger = Logger._get_logger(level, tag)
         method = getattr(logger, level)
-        method(Logger._message(message))
+        method(message)
 
     @staticmethod
     def _get_logger(level, tag):
@@ -164,16 +162,3 @@ class Logger:
             Logger._loggers[tag] = logging.getLogger(trimmed_tag)
             Logger._loggers[tag].setLevel(Logger.chosen_level)
             return Logger._loggers[tag]
-
-    @staticmethod
-    def _message(message):
-        """
-        Augment a message by including Thread information
-
-        Arguments:
-             message {str} -- message to post
-        Returns:
-            {str}
-        """
-        str_thread = "Thread-%d" % threading.current_thread().ident
-        return "%s\t%s" % (str_thread, message)
