@@ -184,15 +184,14 @@ class AppStateController(AbstractController):
             contents_corrupt = True
 
         try:
-            statefile = open(self._filepath, mode='w')
-            if statefile:
-                Logger.info(
-                    __name__,
-                    'Set app state file to "%s"' % self._filepath)
-
-                self._enablable = True
-                self._opt_enabled.change(True)
-            statefile.close()
+            with open(self._filepath, mode='a') as state_file:
+                if state_file:
+                    Logger.info(
+                        __name__,
+                        'Set app state file to "%s"' % self._filepath)
+                    
+                    self._enablable = True
+                    self._opt_enabled.change(True)
 
             if contents_corrupt:
                 self._write_state()
@@ -264,8 +263,8 @@ class AppStateController(AbstractController):
         Logger.debug(
             __name__,
             'Saving application state to "%s"' % self._filepath)
-        with open(self._filepath, mode='w') as statefile:
-            json.dump(self._state_data, statefile)
+        with open(self._filepath, mode='w') as state_file:
+            json.dump(self._state_data, state_file)
 
     def get_option(self, option):
         """
