@@ -5,7 +5,7 @@ NottReal — An application for running Wizard of Oz studies with a
 simulated voice user interface.
 """
 
-from src import nottreal
+import nottreal
 
 __author__ = 'Martin Porcheron'
 __copyright__ = 'Copyright 2020, Martin Porcheron and Mixed Reality Lab'

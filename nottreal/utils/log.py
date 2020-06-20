@@ -158,7 +158,7 @@ class Logger:
         try:
             return Logger._loggers[tag]
         except KeyError:
-            trimmed_tag = tag.replace('src.nottreal', '')
+            trimmed_tag = tag.replace('nottreal', '')
             Logger._loggers[tag] = logging.getLogger(trimmed_tag)
             Logger._loggers[tag].setLevel(Logger.chosen_level)
             return Logger._loggers[tag]

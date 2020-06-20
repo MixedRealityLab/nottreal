@@ -21,7 +21,7 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3 :: Only'],
     keywords='voice user interfaces vuis wizard of oz woz',
-    package_dir={'': 'src'},
+    package_dir={'': 'nottreal'},
     packages=find_packages(where='src'),
     python_requires='>=3.5, <4',
     install_requires=[

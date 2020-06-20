@@ -17,7 +17,7 @@ class Gui:
     Variables:
         APP_ICON {str} -- Path to the application icon
     """
-    APP_ICON = 'src/nottreal/resources/appicon-512.png'
+    APP_ICON = 'nottreal/resources/appicon-512.png'
 
     def __init__(self, nottreal, args):
         """

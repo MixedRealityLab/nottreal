@@ -35,7 +35,7 @@ class App:
 
         # initialise the controllers
         classes = ClassUtils.load_all_subclasses(
-            'src.nottreal.controllers',
+            'nottreal.controllers',
             c_abstract.AbstractController)
 
         self.controllers = {}
