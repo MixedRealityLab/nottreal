@@ -37,7 +37,7 @@ class WizardWindow(QMainWindow):
         self.router = nottreal.router
 
         super(WizardWindow, self).__init__()
-        
+
         self.set_title(nottreal.config.config_dir)
 
         Logger.debug(__name__, 'Initialising the Wizard window widgets')

@@ -28,17 +28,18 @@ class WizardController(AbstractController):
         if self._dir is None:
             self._dir = self.DEFAULT_DIRECTORY
 
+    def init_config(self):
         self._set_config_directory(self._dir, is_initial_load=True)
-
-        self.state = VUIState.BUSY
-        self.recogniser_state = False
-        self.have_recognised_words = False
 
     def ready(self):
         """
         Called when the framework is established and the controller can
         start controlling.
         """
+        self.state = VUIState.BUSY
+        self.recogniser_state = False
+        self.have_recognised_words = False
+
         self.nottreal.view.wizard_window.init_ui()
 
         self.nottreal.view.wizard_window.set_data(self.data)

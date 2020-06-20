@@ -1,6 +1,5 @@
 
 from ..utils.init import ClassUtils
-from ..utils.dir import DirUtils
 from ..utils.log import Logger
 from .v_wizard import WizardWindow
 from .v_output_abstract import AbstractOutputView
@@ -14,12 +13,12 @@ import sys
 class Gui:
     """
     The primary GUI application class
-    
+
     Variables:
         APP_ICON {str} -- Path to the application icon
     """
     APP_ICON = 'src/nottreal/resources/appicon-512.png'
-    
+
     def __init__(self, nottreal, args):
         """
         Initialise the GUI application libraries
@@ -35,11 +34,9 @@ class Gui:
         self.args = args
 
     def init_ui(self):
-        module_path = DirUtils.pwd() + '/src/nottreal/views'
         classes = ClassUtils.load_all_subclasses(
-            module_path,
-            AbstractOutputView,
-            'views.')
+            __package__,
+            AbstractOutputView)
 
         self.wizard_window = WizardWindow(
             self.nottreal,

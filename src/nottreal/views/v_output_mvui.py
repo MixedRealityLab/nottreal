@@ -32,6 +32,7 @@ class MVUIWindow(AbstractOutputView):
         super(MVUIWindow, self).__init__(nottreal, args)
 
         self._initiated = False
+        self._init_state = VUIState.BUSY
 
     def init_ui(self):
         """Don't do anything until the configuration is loaded"""
@@ -65,7 +66,7 @@ class MVUIWindow(AbstractOutputView):
             layout.setRowStretch(2, .5)
 
             # create the state widget (i.e. the orb)
-            self.state = Orb(self, config, VUIState.BUSY)
+            self.state = Orb(self, config, self._init_state)
             layout.addWidget(self.state, 3, 1)
             layout.setRowStretch(3, 0)
             layout.setRowMinimumHeight(3, self.state.size_max)
@@ -103,7 +104,10 @@ class MVUIWindow(AbstractOutputView):
         Arguments:
             state {models.VUIState} -- New state of the VUI
         """
-        self.state.set(state)
+        try:
+            self.state.set(state)
+        except AttributeError:
+            self._init_state = state
 
     def toggle_visibility(self):
         """

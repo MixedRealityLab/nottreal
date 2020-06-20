@@ -89,19 +89,25 @@ class ArgparseUtils:
 
 class ClassUtils:
     @staticmethod
-    def load_all_subclasses(module_path, subclass, prefix=''):
+    def load_all_subclasses(package, subclass):
         """
-        Search a directory/module for files and import classes
+        Search a directory/package for files and import classes
         that subclass (can be multi-layer) a class.
 
         Arguments:
-            module_path {str} -- Directory to search
+            package {str or module} -- Package to search
             subclass {class} -- Class everthing must inherit from
-            prefix {str} -- Prefix from module above (Default: ``)
         """
-        for (_, name, ispkg) in pkgutil.iter_modules([module_path]):
-            Logger.debug(__name__, 'Loading "%s.py"' % name)
-            importlib.import_module('..' + prefix + name, __package__)
+        if type(package) == str:
+            package = importlib.import_module(package)
+
+        path = package.__path__
+        prefix = package.__name__ + "."
+
+        for importer, name, ispkg in pkgutil.walk_packages(path):
+            if not ispkg:
+                Logger.debug(__name__, 'Loading "%s.py"' % name)
+                importlib.import_module(prefix + name)
 
         return ClassUtils.get_all_subclasses(subclass)
 

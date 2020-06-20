@@ -45,7 +45,7 @@ class AppStateController(AbstractController):
         self._enablable = False
         self._state_data = {}
         self._options = {}
-        
+
         self._init_state = True
 
         WizardOption.set_app_state_responder(self)
@@ -140,7 +140,7 @@ class AppStateController(AbstractController):
 
         if not is_initial_load:
             self._write_state()
-           
+
         dir_name = directory.replace(DirUtils.pwd() + os.path.sep, '')
         if dir_name == 'dist.cfg':
             Logger.critical(
@@ -154,7 +154,7 @@ class AppStateController(AbstractController):
                 pass
             try:
                 self._opt_enabled.ui_update(self._opt_enabled)
-            except AttributeError:
+            except TypeError:
                 pass
             return
 
@@ -189,7 +189,7 @@ class AppStateController(AbstractController):
                     Logger.info(
                         __name__,
                         'Set app state file to "%s"' % self._filepath)
-                    
+
                     self._enablable = True
                     self._opt_enabled.change(True)
 

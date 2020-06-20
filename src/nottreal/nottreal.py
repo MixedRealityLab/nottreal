@@ -1,11 +1,13 @@
 
 from .utils.init import ClassUtils
-from .utils.dir import DirUtils
 from .utils.log import Logger
 from .models.m_cfg import ConfigModel
 from .views.v_gui import Gui
 from .controllers import c_abstract
 
+from collections import OrderedDict
+
+import src.nottreal.controllers
 import inspect
 import sys
 
@@ -23,8 +25,8 @@ class App:
 
         self.args = args
         self._controllers = {}
-        self.responders = {'app': self}
-        
+        self.responders = OrderedDict({'app': self})
+
         # crash more willingly?
         if args.dev:
             Logger.info(__name__, 'Development mode is active')
@@ -33,11 +35,9 @@ class App:
         self.config = ConfigModel(args)
 
         # initialise the controllers
-        module_path = DirUtils.pwd() + '/src/nottreal/controllers'
         classes = ClassUtils.load_all_subclasses(
-            module_path,
-            c_abstract.AbstractController,
-            'controllers.')
+            src.nottreal.controllers,
+            c_abstract.AbstractController)
 
         self.controllers = {}
         for name, cls in classes.items():
@@ -60,6 +60,9 @@ class App:
             elif type(respond_tos) is str:
                 self.responder(respond_tos, self.controllers[name])
 
+        # initialise the config
+        self.controllers['WizardController'].init_config()
+
         # initialise the views
         self.view = Gui(self, args)
         self.view.init_ui()
@@ -73,14 +76,14 @@ class App:
         def sort_func(x):
             return self.router(x, 'ready_order')
 
-        responders = filter(
+        responders_to_ready = filter(
             filter_func,
             self.responders)
-        responders = sorted(
-            responders,
+        responders_to_ready = sorted(
+            responders_to_ready,
             key=sort_func)
 
-        for name in iter(responders):
+        for name in iter(responders_to_ready):
             try:
                 self.router(name, 'ready')
             except AttributeError:
