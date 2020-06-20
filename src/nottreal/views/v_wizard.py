@@ -37,7 +37,8 @@ class WizardWindow(QMainWindow):
         self.router = nottreal.router
 
         super(WizardWindow, self).__init__()
-        self.setWindowTitle(nottreal.appname)
+        
+        self.set_title(nottreal.config.config_dir)
 
         Logger.debug(__name__, 'Initialising the Wizard window widgets')
 
@@ -96,6 +97,15 @@ class WizardWindow(QMainWindow):
         self.setWindowIcon(QIcon(QPixmap(self.nottreal.view.APP_ICON)))
 
         Logger.info(__name__, 'Loaded Wizard window')
+
+    def set_title(self, new_dir):
+        """
+        Update the Window title with the new config dir
+
+        Arguments:
+            new_dir {str} -- New configuration directory
+        """
+        self.setWindowTitle(new_dir + ' — ' + self.nottreal.appname)
 
     def set_data(self, data):
         """

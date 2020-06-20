@@ -79,6 +79,7 @@ class WizardController(AbstractController):
         self.data = TSVModel(directory)
 
         try:
+            self.nottreal.view.wizard_window.set_title(directory)
             self.nottreal.view.wizard_window.set_data(self.data)
         except AttributeError:
             pass

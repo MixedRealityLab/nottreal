@@ -1,4 +1,5 @@
 
+from ..utils.dir import DirUtils
 from ..utils.log import Logger
 
 import configparser
@@ -13,6 +14,8 @@ class ConfigModel:
             args {[arg]} -- Application arguments
         """
         self.config_dir = args.config_dir
+        if self.config_dir == 'cfg':
+            self.config_dir = DirUtils.pwd() + '/' + self.config_dir
 
         Logger.debug(__name__, 'Loading data from the configuration file')
 
