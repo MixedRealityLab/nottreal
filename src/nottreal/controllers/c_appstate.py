@@ -1,4 +1,5 @@
 
+from ..utils.dir import DirUtils
 from ..utils.log import Logger
 from ..models.m_mvc import WizardOption
 from .c_abstract import AbstractController
@@ -44,6 +45,8 @@ class AppStateController(AbstractController):
         self._enablable = False
         self._state_data = {}
         self._options = {}
+        
+        self._init_state = True
 
         WizardOption.set_app_state_responder(self)
 
@@ -74,7 +77,7 @@ class AppStateController(AbstractController):
                 method=self.enable_app_state_output,
                 category=WizardOption.CAT_CORE,
                 choose=WizardOption.CHOOSE_BOOLEAN,
-                default=True,
+                default=self._init_state,
                 order=0,
                 group='appstate',
                 restorable=False)
@@ -114,7 +117,7 @@ class AppStateController(AbstractController):
         Return:
             {bool} -- {True} if app state saving state was changed
         """
-        if self._enablable and not self._force_off:
+        if ((self._enablable and value) or not value) and not self._force_off:
             Logger.info(__name__, 'Set app state saving to %r' % value)
             return True
         else:
@@ -137,6 +140,23 @@ class AppStateController(AbstractController):
 
         if not is_initial_load:
             self._write_state()
+           
+        dir_name = directory.replace(DirUtils.pwd() + os.path.sep, '')
+        if dir_name == 'dist.cfg':
+            Logger.critical(
+                __name__,
+                'Cannot save app state to distribution configuration')
+            self._enablable = False
+            self._init_state = False
+            try:
+                self._opt_enabled.change(False)
+            except AttributeError:
+                pass
+            try:
+                self._opt_enabled.ui_update(self._opt_enabled)
+            except AttributeError:
+                pass
+            return
 
         self._dir = directory
         self._filepath = os.path.join(self._dir, self.FILENAME)
@@ -171,7 +191,7 @@ class AppStateController(AbstractController):
                     'Set app state file to "%s"' % self._filepath)
 
                 self._enablable = True
-                self.enable_app_state_output(True)
+                self._opt_enabled.change(True)
             statefile.close()
 
             if contents_corrupt:
@@ -182,7 +202,7 @@ class AppStateController(AbstractController):
                 'Failed to open "%s" to save app state' % self._filepath)
 
             self._enablable = False
-            self.enable_app_state_output(False)
+            self._opt_enabled.change(False)
 
         try:
             if self._opt_enabled.ui is not None:
@@ -260,11 +280,15 @@ class AppStateController(AbstractController):
         if self._force_off or not self._opt_enabled:
             return option.default
 
-        self._options[option.key] = option
+        try:
+            self._state_data['options']
+        except KeyError:
+            self._state_data = {}
+            self._state_data['options'] = {}
 
         try:
             value = self._state_data['options'][option.key]
-        except Exception:
+        except KeyError:
             self._state_data['options'][option.key] = option.default
             value = option.default
         finally:
