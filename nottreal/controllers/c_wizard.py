@@ -1,7 +1,7 @@
 
 from ..utils.log import Logger
 from ..utils.dir import DirUtils
-from ..models.m_mvc import VUIState, WizardOption
+from ..models.m_mvc import VUIState, WizardAlert, WizardOption
 from ..models.m_tsv import TSVModel
 from .c_abstract import AbstractController
 
@@ -67,6 +67,23 @@ class WizardController(AbstractController):
 
         Logger.debug(__name__, "Opening the Wizard window…")
         self.nottreal.view.wizard_window.show()
+        
+        if self._dir.endswith('dist.cfg'):
+            button_set_config = WizardAlert.Button(
+                'Set config directory',
+                WizardAlert.Button.ROLE_ACCEPT)
+            
+            alert = WizardAlert(
+                'Welcome to NottReal!',
+                'You\'re currently using the default configuration of the '
+                + 'application.\n\nTo customise the list of prepared messages,'
+                + ' you should create a new custom configuration.',
+                WizardAlert.LEVEL_INFO,
+                buttons=[
+#                    ('set_config', button_set_config, None),
+                    ('ok', WizardAlert.DefaultButton.BUTTON_OK, None)])
+
+            self.router('wizard', 'show_alert', alert=alert)
 
     def _set_config_directory(self, directory, is_initial_load=False):
         """

@@ -135,8 +135,8 @@ class AppStateController(AbstractController):
                 reason = '.'
 
             alert = WizardAlert(
-                'Error',
-                'Cannot enable app state saving' + reason,
+                'Cannot save application state',
+                'Sorry, the setting could not be changed' + reason,
                 WizardAlert.LEVEL_ERROR)
 
             self.router('wizard', 'show_alert', alert=alert)

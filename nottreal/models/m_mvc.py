@@ -103,7 +103,7 @@ class WizardAlert:
                  title,
                  text,
                  level=2,
-                 buttons=[('ok', 0x00000400, None)],
+                 buttons=[('ok', 1, None)],
                  default_button='ok'):
         """
         Create an alert for the Wizard
@@ -124,7 +124,7 @@ class WizardAlert:
         self.title = title
         self.text = text
         self.level = level
-        self.button = buttons
+        self.buttons = buttons
         self.default_button = default_button
 
     class Button:
@@ -145,9 +145,9 @@ class WizardAlert:
             ROLE_HELP        -- The button can be clicked to request help
             ROLE_YES         -- The button is a "Yes"-like button
             ROLE_NO          -- The button is a "No"-like button
-            ROLE_RESET       -- The button applies current changes
-            ROLE_APPLY       -- The button resets the dialog's fields
+            ROLE_RESET       -- The button resets the dialog's fields
                                 to default values
+            ROLE_APPLY       -- The button applies current changes
         """
         ROLE_INVALID = -1
         ROLE_ACCEPT = 0
@@ -212,25 +212,25 @@ class WizardAlert:
                                        Accept role
             BUTTON_INVALID          -- An invalid button
         """
-        BUTTON_OK = 0x00000400
-        BUTTON_OPEN = 0x00002000
-        BUTTON_SAVE = 0x00000800
-        BUTTON_CANCEL = 0x00400000
-        BUTTON_CLOSE = 0x00200000
-        BUTTON_DISCARD = 0x00800000
-        BUTTON_APPLY = 0x02000000
-        BUTTON_RESET = 0x04000000
-        BUTTON_RESTORE_DEFAULTS = 0x08000000
-        BUTTON_HELP = 0x01000000
-        BUTTON_SAVE_ALL = 0x00001000
-        BUTTON_YES = 0x00004000
-        BUTTON_YES_TO_ALL = 0x00008000
-        BUTTON_NO = 0x00010000
-        BUTTON_NO_TO_ALL = 0x00020000
-        BUTTON_ABORT = 0x00040000
-        BUTTON_RETRY = 0x00080000
-        BUTTON_IGNORE = 0x00100000
-        BUTTON_INVALID = 0x00000000
+        BUTTON_OK = 1
+        BUTTON_OPEN = 2
+        BUTTON_SAVE = 3
+        BUTTON_CANCEL = 4
+        BUTTON_CLOSE = 5
+        BUTTON_DISCARD = 6
+        BUTTON_APPLY = 7
+        BUTTON_RESET = 8
+        BUTTON_RESTORE_DEFAULTS = 9
+        BUTTON_HELP = 10
+        BUTTON_SAVE_ALL = 11
+        BUTTON_YES = 12
+        BUTTON_YES_TO_ALL = 13
+        BUTTON_NO = 14
+        BUTTON_NO_TO_ALL = 15
+        BUTTON_ABORT = 16
+        BUTTON_RETRY = 17
+        BUTTON_IGNORE = 18
+        BUTTON_INVALID = 0
 
 
 class WizardOption:

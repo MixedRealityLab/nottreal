@@ -110,7 +110,7 @@ class SRRecognition(AbstractRecognitionController):
             message {str} -- Specific error message
         """
         alert = WizardAlert(
-            'Voice Recognition Error',
+            'Error transcribing voice',
             ('An error has occurred with the voice recogniser "%s":\n\n%s\n\n'
                 + 'Ensure you have specified valid credentials in '
                 + '"settings.cfg".')

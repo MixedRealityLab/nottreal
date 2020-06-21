@@ -1,6 +1,6 @@
 
 from ..utils.log import Logger
-from ..models.m_mvc import VUIState, WizardOption
+from ..models.m_mvc import VUIState, WizardAlert, WizardOption
 
 from collections import OrderedDict, deque
 from PySide2.QtWidgets import (QAbstractItemView, QAction, QComboBox,
@@ -15,6 +15,7 @@ from PySide2.QtCore import (Qt, QItemSelectionModel, QTimer,
 
 import re
 import sys
+import platform
 
 
 class WizardWindow(QMainWindow):
@@ -153,10 +154,117 @@ class AlertBox(QMessageBox):
         """
         super(AlertBox, self).__init__(parent)
 
-        self.setWindowTitle(alert.title)
-        self.setText(alert.text)
-        self.setStandardButtons(QMessageBox.Ok)
-        self.setDefaultButton(QMessageBox.Ok)
+        self.setText(alert.title)
+        self.setInformativeText(alert.text + '\n')
+
+        if platform.system() == 'Darwin':
+            self._buttons = reversed(alert.buttons)
+        else:
+            self._buttons = alert.buttons
+            
+        self._custom_buttons = {}
+
+        for key, button, method in iter(self._buttons):
+            if type(button) == WizardAlert.Button:
+                self._custom_buttons[key] = self.addButton(
+                    button.text,
+                    self._get_button_role(button.role))
+            else:
+                self.addButton(self._get_standard_button(button))
+
+        if type(alert.default_button) is str:
+            t = [button
+                 for button
+                 in alert.buttons
+                 if button[0] == alert.default_button]
+                 
+            if len(t):
+                if type(t[0][1]) == WizardAlert.Button:
+                    self.setDefaultButton(self._custom_buttoms[button.key])
+                else:
+                    self.setDefaultButton(self._get_standard_button(t[0][1]))
+    
+    def _get_button_role(self, role):
+        """
+        Get the {QMessageBox.ButtonRole} from a
+        {WizardAlert.Button}'s {role}
+        
+        Arguments: 
+            role {int} {WizardAlert.Button} {role} value
+        
+        Returns:
+            {QMessageBox.ButtonRole}
+        """
+        if role == WizardAlert.Button.ROLE_ACCEPT:
+            return QMessageBox.AcceptRole
+        elif role == WizardAlert.Button.ROLE_REJECT:
+            return QMessageBox.RejectRole
+        elif role == WizardAlert.Button.ROLE_DESTRUCTIVE:
+            return QMessageBox.DestructiveRole
+        elif role == WizardAlert.Button.ROLE_ACTION:
+            return QMessageBox.ActionRole
+        elif role == WizardAlert.Button.ROLE_HELP:
+            return QMessageBox.HelpRole
+        elif role == WizardAlert.Button.ROLE_YES:
+            return QMessageBox.YesRole
+        elif role == WizardAlert.Button.ROLE_NO:
+            return QMessageBox.NoRole
+        elif role == WizardAlert.Button.ROLE_RESET:
+            return QMessageBox.ResetRole
+        elif role == WizardAlert.Button.ROLE_APPLY:
+            return QMessageBox.ApplyRole
+        else:
+            return QMessageBox.InvalidRole
+    
+    def _get_standard_button(self, button):
+        """
+        Get the {QMessageBox.StandardButton} from a
+        {WizardAlert.DefaultButton}
+        
+        Arguments: 
+            button {int} {WizardAlert.DefaultButton} value
+        
+        Returns:
+            {QMessageBox.StandardButton}
+        """
+        if button == WizardAlert.DefaultButton.BUTTON_OK:
+            return QMessageBox.Ok
+        elif button == WizardAlert.DefaultButton.BUTTON_OPEN:
+            return QMessageBox.Open
+        elif button == WizardAlert.DefaultButton.BUTTON_SAVE:
+            return QMessageBox.Save
+        elif button == WizardAlert.DefaultButton.BUTTON_CANCEL:
+            return QMessageBox.Cancel
+        elif button == WizardAlert.DefaultButton.BUTTON_CLOSE:
+            return QMessageBox.Close
+        elif button == WizardAlert.DefaultButton.BUTTON_DISCARD:
+            return QMessageBox.Discard
+        elif button == WizardAlert.DefaultButton.BUTTON_APPLY:
+            return QMessageBox.Apply
+        elif button == WizardAlert.DefaultButton.BUTTON_RESET:
+            return QMessageBox.Reset
+        elif button == WizardAlert.DefaultButton.BUTTON_RESTORE_DEFAULTS:
+            return QMessageBox.RestoreDefaults
+        elif button == WizardAlert.DefaultButton.BUTTON_HELP:
+            return QMessageBox.Help
+        elif button == WizardAlert.DefaultButton.BUTTON_SAVE_ALL:
+            return QMessageBox.SaveAll
+        elif button == WizardAlert.DefaultButton.BUTTON_YES:
+            return QMessageBox.Yes
+        elif button == WizardAlert.DefaultButton.BUTTON_YES_TO_ALL:
+            return QMessageBox.YesToAll
+        elif button == WizardAlert.DefaultButton.BUTTON_NO:
+            return QMessageBox.No
+        elif button == WizardAlert.DefaultButton.BUTTON_NO_TO_ALL:
+            return QMessageBox.NoToAll
+        elif button == WizardAlert.DefaultButton.BUTTON_ABORT:
+            return QMessageBox.Abort
+        elif button == WizardAlert.DefaultButton.BUTTON_RETRY:
+            return QMessageBox.Retry
+        elif button == WizardAlert.DefaultButton.BUTTON_IGNORE:
+            return QMessageBox.Ignore
+        else:
+            return QMessageBox.NoButton
 
 
 class MenuBar(QMenuBar):

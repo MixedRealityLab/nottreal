@@ -144,9 +144,9 @@ class DataRecorderController(AbstractController):
 
             if self._completed_initiation:
                 alert = WizardAlert(
-                    'Error',
-                    'Cannot enable data recording as the data directory'
-                    + ' is not valid.\n\nPlease set a data directory.',
+                    'Cannot enable data recording',
+                    'The data directory currently set is not valid'
+                    + '\n\nPlease set a data directory and try again.',
                     WizardAlert.LEVEL_ERROR)
 
                 self.router('wizard', 'show_alert', alert=alert)
