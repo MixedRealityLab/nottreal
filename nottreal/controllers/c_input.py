@@ -98,6 +98,7 @@ class InputController(AbstractController):
 
         self.selected_device = device
         self._swap_to_device = device
+        return True
 
     def register_volume_callback(self, name, method):
         """

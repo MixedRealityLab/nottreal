@@ -1,7 +1,7 @@
 
 from ..utils.dir import DirUtils
 from ..utils.log import Logger
-from ..models.m_mvc import WizardOption
+from ..models.m_mvc import WizardAlert, WizardOption
 from .c_abstract import AbstractController
 
 import os
@@ -43,6 +43,7 @@ class AppStateController(AbstractController):
         self._force_off = args.nostate
         self._opt_enabled = None
         self._enablable = False
+        self._attempt_distrib_config = False
         self._state_data = {}
         self._options = {}
 
@@ -123,7 +124,23 @@ class AppStateController(AbstractController):
         else:
             Logger.error(
                 __name__,
-                'Could not enable app state saving, see earlier error message')
+                'Could not enable app state saving')
+
+            if self._force_off:
+                reason = ' as this has been disabled when opening NottReal'
+            elif self._attempt_distrib_config:
+                reason = ' as you are using the default configuration.\n\n' \
+                         + 'Create a custom configuration and then try again.'
+            else:
+                reason = '.'
+
+            alert = WizardAlert(
+                'Error',
+                'Cannot enable app state saving' + reason,
+                WizardAlert.LEVEL_ERROR)
+
+            self.router('wizard', 'show_alert', alert=alert)
+
             return False
 
     def set_directory(self, directory, is_initial_load=False):
@@ -147,6 +164,7 @@ class AppStateController(AbstractController):
                 __name__,
                 'Cannot save app state to distribution configuration')
             self._enablable = False
+            self._attempt_distrib_config = True
             self._init_state = False
             try:
                 self._opt_enabled.change(False)
@@ -160,6 +178,7 @@ class AppStateController(AbstractController):
                 pass
             return
 
+        self._attempt_distrib_config = False
         self._dir = directory
         self._filepath = os.path.join(self._dir, self.FILENAME)
 
@@ -209,14 +228,14 @@ class AppStateController(AbstractController):
             self._enablable = False
             self._opt_enabled.change(False)
 
-        try:
-            if self._opt_enabled.ui is not None:
+        if self._opt_enabled.ui is not None:
+            try:
                 self.nottreal.router(
                     'wizard',
                     'update_option',
                     option=self._opt_enabled)
-        except AttributeError:
-            pass
+            except AttributeError:
+                pass
 
         if not is_initial_load:
             self._update_options()

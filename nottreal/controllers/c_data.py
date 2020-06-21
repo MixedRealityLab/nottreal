@@ -1,6 +1,6 @@
 
 from ..utils.log import Logger
-from ..models.m_mvc import WizardOption
+from ..models.m_mvc import WizardAlert, WizardOption
 from .c_abstract import AbstractController
 
 from datetime import datetime
@@ -37,7 +37,9 @@ class DataRecorderController(AbstractController):
         super().__init__(nottreal, args)
 
         self._enablable = False
+        self._init_enabled = False
         self._file = None
+        self._completed_initiation = False
 
     def ready_order(self, responder=None):
         """
@@ -62,7 +64,7 @@ class DataRecorderController(AbstractController):
                 method=self.enable_data_output,
                 category=WizardOption.CAT_CORE,
                 choose=WizardOption.CHOOSE_BOOLEAN,
-                default=False,
+                default=self._init_enabled,
                 order=0,
                 group='data',
                 restorable=True)
@@ -94,9 +96,9 @@ class DataRecorderController(AbstractController):
             'register_option',
             option=self._opt_dir)
 
-        self._set_directory(
-            self._opt_dir.value,
-            override=self._opt_enabled.value)
+        self._set_directory(self._opt_dir.value)
+
+        self._completed_initiation = True
 
     def quit(self):
         """
@@ -138,7 +140,17 @@ class DataRecorderController(AbstractController):
         else:
             Logger.error(
                 __name__,
-                'Could not enable data recording, see earlier error message')
+                'Could not enable data recording')
+
+            if self._completed_initiation:
+                alert = WizardAlert(
+                    'Error',
+                    'Cannot enable data recording as the data directory'
+                    + ' is not valid.\n\nPlease set a data directory.',
+                    WizardAlert.LEVEL_ERROR)
+
+                self.router('wizard', 'show_alert', alert=alert)
+
             return False
 
     def _set_directory(self, new_dir, override=None):
@@ -169,34 +181,29 @@ class DataRecorderController(AbstractController):
                     'Set data file to "%s"' % filepath)
 
                 self._enablable = True
-
-                if override is None:
-                    self.enable_data_output(True)
-                    self.router(
-                        'wizard',
-                        'update_option',
-                        option=self._opt_enabled)
-                else:
-                    self.enable_data_output(override)
+                self._init_enabled = True
+                self._opt_enabled.change(True
+                                         if override is None
+                                         else override)
         except IOError:
             Logger.warning(
                 __name__,
                 'Failed to open "%s" to record data' % filepath)
 
             self._enablable = False
-            self.enable_data_output(False)
+            self._opt_enabled.change(False)
             return False
 
-        try:
-            self._opt_data_recording.value = self._opt_enabled.value
-            self._opt_data_recording = self.nottreal.router(
-                'wizard',
-                'update_option',
-                option=self._opt_data_recording)
-        except AttributeError:
-            pass
-        finally:
-            return True
+        if self._opt_enabled.ui is not None:
+            try:
+                self.nottreal.router(
+                    'wizard',
+                    'update_option',
+                    option=self._opt_enabled)
+            except AttributeError:
+                pass
+            finally:
+                return True
 
     def custom_event(self, id, text):
         """

@@ -308,6 +308,15 @@ class WizardController(AbstractController):
         self.nottreal.view.wizard_window.recognised_words.add(words)
         self.have_recognised_words = True
 
+    def show_alert(self, alert):
+        """
+        Show an alert to the Wizard!
+
+        Argument:
+            alert {WizardAlert} -- Alert to show
+        """
+        self.nottreal.view.wizard_window.show_alert(alert)
+
     def quit(self):
         """
         Close and quit the Wizard window if it still exists.

@@ -1,5 +1,238 @@
 
 
+class Message:
+    """
+    A queued message to send to the user.
+
+    Variables:
+        NO_OVERRIDE {int} -- Type to let the user fully control
+                             appending
+        FORCE_APPEND {int} -- Type to force append a message
+        FORCE_DONT_APPEND {int} -- Type to force no appending of
+                                   messages
+    """
+    NO_OVERRIDE, FORCE_APPEND, FORCE_DONT_APPEND = range(0, 3)
+
+    def __init__(self,
+                 text,
+                 override=NO_OVERRIDE,
+                 cat=None,
+                 id=None,
+                 slots=None,
+                 loading=False):
+        """
+        Create a message queue item.
+
+        Arguments:
+            text {[type]} -- [description]
+
+        Keyword Arguments:
+            override {int} -- Override the append option for this
+                              message (default: {Message.NO_OVERRIDE})
+            cat {str/int} -- Category ID if a prepared message
+                            (default: {None})
+            id {str/int} -- Prepared message ID if a prepared
+                            message (default: {None})
+            slots {dict(str,str)} -- Slots changed by the user
+            loading {bool} -- Is a Loading message (default: {False})
+        """
+        self.text = text
+        self.override = override
+        self.cat = cat
+        self.id = id
+        self.slots = slots
+        self.loading = loading
+
+    def __str__(self):
+        return '<[Message] %s.%s: %s>' % (self.cat, self.id, self.text)
+
+    def __repr__(self):
+        return '<[Message] %s.%s: %s>' % (self.cat, self.id, self.text)
+
+
+class VUIState:
+    """
+    State of the Wizarded VUI.
+
+    Extends:
+        AbstractController
+
+    Variables:
+        RESTING, SPEAKING, LISTENING, BUSY {int} -- States of the VUI
+
+    """
+    RESTING, SPEAKING, LISTENING, BUSY = range(0, 4)
+
+    LABELS = {
+        RESTING: 'resting',
+        SPEAKING: 'speaking',
+        LISTENING: 'listening',
+        BUSY: 'busy'
+    }
+
+    @staticmethod
+    def str(state):
+        """
+        Get the state as a string
+
+        Arguments:
+            state {int} -- State as an integer
+
+        Returns:
+            {str}
+        """
+        return VUIState.LABELS[state]
+
+
+class WizardAlert:
+    """
+    Show an alert to the Wizard. This is a wrapper for the Qt5
+    {QMessageBox}. We reimplement it here so NottReal can mostly
+    remain ambiguous to UI implementations.
+
+    Variables:
+        LEVEL_ERROR -- An error occurred
+        LEVEL_WARN -- An error occurred that is not that problematic
+        LEVEL_INFO -- Something the Wizard should be aware of
+        LEVEL_QUESTION -- A question for the Wizard
+
+    """
+    LEVEL_ERROR, LEVEL_WARN, LEVEL_INFO, LEVEL_QUESTION = range(4)
+
+    def __init__(self,
+                 title,
+                 text,
+                 level=2,
+                 buttons=[('ok', 0x00000400, None)],
+                 default_button='ok'):
+        """
+        Create an alert for the Wizard
+
+        Arguments:
+            title {str} -- Alert title
+            text {str} -- Alert text
+
+        Keyword arguments:
+            level {int} -- Alert level (default: ROLE_INFO)
+            buttons [tuple(str, Button|hex, method)]
+                 -- A list of tuples, where each tuple is a key
+                    ({str}), either an instance of {Button} or hex
+                    value from {DefaultButton}, and a method or
+                    {None} called when the button is selected
+            default_button {str} -- Key of the default button
+        """
+        self.title = title
+        self.text = text
+        self.level = level
+        self.button = buttons
+        self.default_button = default_button
+
+    class Button:
+        """
+        Custom button information
+
+        Variables:
+            ROLE_INVALID     -- The button is invalid
+            ROLE_ACCEPT      -- Clicking the button causes the dialog
+                                to be accepted (e.g. OK)
+            ROLE_REJECT      -- Clicking the button causes the dialog
+                                to be rejected (e.g. Cancel)
+            ROLE_DESTRUCTIVE -- Clicking the button causes a
+                                destructive change (e.g. for Discarding
+                                Changes) and closes the dialog
+            ROLE_ACTION      -- Clicking the button causes changes to
+                                the elements within the dialog
+            ROLE_HELP        -- The button can be clicked to request help
+            ROLE_YES         -- The button is a "Yes"-like button
+            ROLE_NO          -- The button is a "No"-like button
+            ROLE_RESET       -- The button applies current changes
+            ROLE_APPLY       -- The button resets the dialog's fields
+                                to default values
+        """
+        ROLE_INVALID = -1
+        ROLE_ACCEPT = 0
+        ROLE_REJECT = 1
+        ROLE_DESTRUCTIVE = 2
+        ROLE_ACTION = 3
+        ROLE_HELP = 4
+        ROLE_YES = 5
+        ROLE_NO = 6
+        ROLE_RESET = 7
+        ROLE_APPLY = 8
+
+        def __init__(self, text, role):
+            """
+            A custom button
+
+            Argument:
+                text {str} -- Button text
+                role {int} -- Button role
+            """
+            self.text = text
+            self.role = role
+
+    class DefaultButton:
+        """
+        Default alert buttons
+
+        Variables:
+            BUTTON_OK               -- An "OK" button with the Accept
+                                       role
+            BUTTON_OPEN             -- An "Open" button with the Accept
+                                       role
+            BUTTON_SAVE             -- A "Save" button with the Accept
+                                       role
+            BUTTON_CANCEL           -- A "Cancel" button with the
+                                       Reject role
+            BUTTON_CLOSE            -- A "Close" button with the Reject
+                                        role
+            BUTTON_DISCARD          -- A "Discard" or "Don't Save"
+                                       button with the Destructive role
+            BUTTON_APPLY            -- An "Apply" button with the Apple
+                                       role
+            BUTTON_RESET            -- A "Reset" button with the Reset
+                                       role
+            BUTTON_RESTORE_DEFAULTS -- A "Restore Defaults" button with
+                                       the Reset role
+            BUTTON_HELP             -- A "Help" button with the Help
+                                       role
+            BUTTON_SAVE_ALL         -- A "Save All" button with the
+                                       Accept role
+            BUTTON_YES              -- A "Yes" button with the Yes role
+            BUTTON_YES_TO_ALL       -- A "Yes to All" button with the
+                                       Yes role
+            BUTTON_NO               -- A "No" button with the No role
+            BUTTON_NO_TO_ALL        -- A "No to All" button with the No
+                                       role
+            BUTTON_ABORT            -- An "Abort" button with the
+                                       Reject role
+            BUTTON_RETRY            -- A "Retry" button with the Accept
+                                       role
+            BUTTON_IGNORE           -- An "Ignore" button with the
+                                       Accept role
+            BUTTON_INVALID          -- An invalid button
+        """
+        BUTTON_OK = 0x00000400
+        BUTTON_OPEN = 0x00002000
+        BUTTON_SAVE = 0x00000800
+        BUTTON_CANCEL = 0x00400000
+        BUTTON_CLOSE = 0x00200000
+        BUTTON_DISCARD = 0x00800000
+        BUTTON_APPLY = 0x02000000
+        BUTTON_RESET = 0x04000000
+        BUTTON_RESTORE_DEFAULTS = 0x08000000
+        BUTTON_HELP = 0x01000000
+        BUTTON_SAVE_ALL = 0x00001000
+        BUTTON_YES = 0x00004000
+        BUTTON_YES_TO_ALL = 0x00008000
+        BUTTON_NO = 0x00010000
+        BUTTON_NO_TO_ALL = 0x00020000
+        BUTTON_ABORT = 0x00040000
+        BUTTON_RETRY = 0x00080000
+        BUTTON_IGNORE = 0x00100000
+        BUTTON_INVALID = 0x00000000
+
+
 class WizardOption:
     """
     An option for the wizard to use at runtime
@@ -132,87 +365,3 @@ class WizardOption:
 
     def __repr__(self):
         return '<[Option] %s: %s>' % (self.label, self.value)
-
-
-class Message:
-    """
-    A queued message to send to the user.
-
-    Variables:
-        NO_OVERRIDE {int} -- Type to let the user fully control
-                             appending
-        FORCE_APPEND {int} -- Type to force append a message
-        FORCE_DONT_APPEND {int} -- Type to force no appending of
-                                   messages
-    """
-    NO_OVERRIDE, FORCE_APPEND, FORCE_DONT_APPEND = range(0, 3)
-
-    def __init__(self,
-                 text,
-                 override=NO_OVERRIDE,
-                 cat=None,
-                 id=None,
-                 slots=None,
-                 loading=False):
-        """
-        Create a message queue item.
-
-        Arguments:
-            text {[type]} -- [description]
-
-        Keyword Arguments:
-            override {int} -- Override the append option for this
-                              message (default: {Message.NO_OVERRIDE})
-            cat {str/int} -- Category ID if a prepared message
-                            (default: {None})
-            id {str/int} -- Prepared message ID if a prepared
-                            message (default: {None})
-            slots {dict(str,str)} -- Slots changed by the user
-            loading {bool} -- Is a Loading message (default: {False})
-        """
-        self.text = text
-        self.override = override
-        self.cat = cat
-        self.id = id
-        self.slots = slots
-        self.loading = loading
-
-    def __str__(self):
-        return '<[Message] %s.%s: %s>' % (self.cat, self.id, self.text)
-
-    def __repr__(self):
-        return '<[Message] %s.%s: %s>' % (self.cat, self.id, self.text)
-
-
-class VUIState:
-    """
-    State of the Wizarded VUI.
-
-    Extends:
-        AbstractController
-
-    Variables:
-        RESTING, SPEAKING, LISTENING, BUSY {int} -- States of the VUI
-
-    """
-    RESTING, SPEAKING, LISTENING, BUSY = range(0, 4)
-
-    LABELS = {
-        RESTING: 'resting',
-        SPEAKING: 'speaking',
-        LISTENING: 'listening',
-        BUSY: 'busy'
-    }
-
-    @staticmethod
-    def str(state):
-        """
-        Get the state as a string
-
-        Arguments:
-            state {int} -- State as an integer
-
-        Returns:
-            {str}
-        """
-        return VUIState.LABELS[state]

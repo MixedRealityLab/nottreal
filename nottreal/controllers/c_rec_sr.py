@@ -1,5 +1,6 @@
 
 from ..utils.log import Logger
+from ..models.m_mvc import WizardAlert
 from .c_rec import AbstractRecognitionController
 
 import importlib
@@ -101,6 +102,23 @@ class SRRecognition(AbstractRecognitionController):
         except AttributeError:
             Logger.debug(__name__, 'Seemingly not recognising at the moment')
 
+    def alert_recogniser_error(self, message):
+        """
+        Show the Wizard that we have an error with the recogniser.
+
+        Argument:
+            message {str} -- Specific error message
+        """
+        alert = WizardAlert(
+            'Voice Recognition Error',
+            ('An error has occurred with the voice recogniser "%s":\n\n%s\n\n'
+                + 'Ensure you have specified valid credentials in '
+                + '"settings.cfg".')
+            % (self.name(), message),
+            WizardAlert.LEVEL_ERROR)
+
+        self.router('wizard', 'show_alert', alert=alert)
+
 
 class RecognitionGoogleSpeech(SRRecognition):
     """
@@ -157,6 +175,7 @@ class RecognitionGoogleSpeech(SRRecognition):
                 __name__,
                 'Error retrieving results from Google: %s' % str(e)
             )
+            self.alert_recogniser_error(str(e))
 
 
 class RecognitionGoogleCloud(SRRecognition):
@@ -208,6 +227,7 @@ class RecognitionGoogleCloud(SRRecognition):
                 __name__,
                 'Error retrieving results from Google: %s' % str(e)
             )
+            self.alert_recogniser_error(str(e))
 
 
 class RecognitionWitai(SRRecognition):
@@ -255,6 +275,7 @@ class RecognitionWitai(SRRecognition):
                 __name__,
                 'Error retrieving results from Wit.ai: %s' % str(e)
             )
+            self.alert_recogniser_error(str(e))
 
 
 class RecognitionBing(SRRecognition):
@@ -306,6 +327,7 @@ class RecognitionBing(SRRecognition):
                 __name__,
                 'Error retrieving results from Microsoft: %s' % str(e)
             )
+            self.alert_recogniser_error(str(e))
 
 
 class RecognitionAzure(SRRecognition):
@@ -357,6 +379,7 @@ class RecognitionAzure(SRRecognition):
                 __name__,
                 'Error retrieving results from Microsoft: %s' % str(e)
             )
+            self.alert_recogniser_error(str(e))
 
 
 class RecognitionLex(SRRecognition):
@@ -431,6 +454,7 @@ class RecognitionLex(SRRecognition):
                 __name__,
                 'Error retrieving results from Amazon: %s' % str(e)
             )
+            self.alert_recogniser_error(str(e))
 
 
 class RecognitionHoundify(SRRecognition):
@@ -482,6 +506,7 @@ class RecognitionHoundify(SRRecognition):
                 __name__,
                 'Error retrieving results from Houndify: %s' % str(e)
             )
+            self.alert_recogniser_error(str(e))
 
 
 class RecognitionIBM(SRRecognition):
@@ -537,6 +562,7 @@ class RecognitionIBM(SRRecognition):
                 __name__,
                 'Error retrieving results from IBM: %s' % str(e)
             )
+            self.alert_recogniser_error(str(e))
 
 
 class RecognitionTensorflow(SRRecognition):
@@ -588,3 +614,4 @@ class RecognitionTensorflow(SRRecognition):
                 __name__,
                 'Error retrieving results from Tensorflow: %s' % str(e)
             )
+            self.alert_recogniser_error(str(e))

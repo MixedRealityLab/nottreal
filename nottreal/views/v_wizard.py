@@ -7,8 +7,8 @@ from PySide2.QtWidgets import (QAbstractItemView, QAction, QComboBox,
                                QDialogButtonBox, QFileDialog, QGridLayout,
                                QGroupBox, QHBoxLayout, QMainWindow,
                                QPlainTextEdit, QPushButton, QVBoxLayout,
-                               QTabWidget, QMenuBar, QMenu, QTreeView,
-                               QWidget)
+                               QTabWidget, QMenuBar, QMenu, QMessageBox,
+                               QTreeView, QWidget)
 from PySide2.QtGui import (QIcon, QPixmap, QTextCursor, QStandardItemModel)
 from PySide2.QtCore import (Qt, QItemSelectionModel, QTimer,
                             Slot)
@@ -117,6 +117,16 @@ class WizardWindow(QMainWindow):
         self.prepared_msgs.set_data(data.cats)
         self.command.set_data(data.log_msgs, data.loading_msgs)
 
+    def show_alert(self, alert):
+        """
+        Create an alert for the Wizard
+
+        Arguments:
+            alert {WizardAlert} -- Alert to show
+        """
+        alert = AlertBox(self, alert)
+        alert.exec()
+
     def toggle_recogniser(self):
         """
         Toggle the visibility of the recogniser
@@ -129,6 +139,24 @@ class WizardWindow(QMainWindow):
             self.layout.addWidget(self.recognised_words, 0, 0)
             self.layout.addWidget(self.prepared_msgs, 0, 1)
             self.recognised_words.show()
+
+
+class AlertBox(QMessageBox):
+
+    def __init__(self, parent, alert):
+        """
+        Create an alert for the Wizard
+
+        Arguments:
+            parent {QWidget} -- Parent widget
+            alert {WizardAlert} -- Alert to show
+        """
+        super(AlertBox, self).__init__(parent)
+
+        self.setWindowTitle(alert.title)
+        self.setText(alert.text)
+        self.setStandardButtons(QMessageBox.Ok)
+        self.setDefaultButton(QMessageBox.Ok)
 
 
 class MenuBar(QMenuBar):

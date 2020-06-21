@@ -1,6 +1,6 @@
 
 from ..utils.log import Logger
-from ..models.m_mvc import VUIState
+from ..models.m_mvc import VUIState, WizardAlert
 from .c_voice import NonBlockingThreadedBaseVoice
 
 from collections import deque
@@ -87,11 +87,27 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
                 destination=self._receive_queue,
                 id=self.RECEIVE_QUEUE,
                 ack='auto')
-        except stomp.exception.ConnectFailedException as e:
+        except stomp.exception.ConnectFailedException:
             self._conn = False
             Logger.critical(
                 __name__,
-                'Failed to connect to ActiveMQ/STOMP server: %s' % str(e))
+                'Failed to connect to ActiveMQ/STOMP server')
+
+            self._alert_not_connected()
+
+    def _alert_not_connected(self):
+        """
+        Show the Wizard that we aren't connected to an
+        ActiveMQ server
+        """
+        alert = WizardAlert(
+            'ActiveMQ/STOMP Connection Error',
+            ('Could not connect to the ActiveMQ/STOMP server "%s:%s".\n\n'
+                + 'Ensure ActiveMQ/STOMP is running and try again.')
+            % (self._host, self._port),
+            WizardAlert.LEVEL_ERROR)
+
+        self.router('wizard', 'show_alert', alert=alert)
 
     def packdown(self):
         """
@@ -179,6 +195,7 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
         """
         if not self._conn:
             Logger.critical(__name__, 'Not connected to ActiveMQ/STOMP server')
+            self.parent._alert_not_connected()
             return ('', '')
 
         return (self._message % text, text)
@@ -203,6 +220,7 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
         """
         if not self._conn:
             Logger.critical(__name__, 'Not connected to ActiveMQ/STOMP server')
+            self.parent._alert_not_connected()
             return
 
         Logger.debug(__name__, 'Sending message: %s' % prepared_text)
@@ -216,6 +234,7 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
         """
         if not self._conn:
             Logger.critical(__name__, 'Not connected to ActiveMQ/STOMP server')
+            self.parent._alert_not_connected()
             return
 
         self._conn.send(
