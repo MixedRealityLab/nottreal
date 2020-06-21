@@ -60,7 +60,6 @@ class App:
                 self.responder(respond_tos, self.controllers[name])
 
         # initialise the config
-        # print(self.controllers)
         self.controllers['WizardController'].init_config()
 
         # initialise the views

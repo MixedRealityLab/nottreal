@@ -130,8 +130,6 @@ class ClassUtils:
             if name.startswith(prefix):
                 modules.append(name)
 
-        print(modules)
-
         for name in modules:
             Logger.debug(__name__, 'Loading "%s.py"' % name)
             try:

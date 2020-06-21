@@ -193,7 +193,11 @@ class AppStateController(AbstractController):
                         'Set app state file to "%s"' % self._filepath)
 
                     self._enablable = True
-                    self._opt_enabled.change(True)
+
+                    try:
+                        self._opt_enabled.change(True)
+                    except AttributeError:
+                        pass
 
             if contents_corrupt:
                 self._write_state()
