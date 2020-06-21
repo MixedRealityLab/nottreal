@@ -673,25 +673,25 @@ class MenuBar(QMenuBar):
             raise KeyError(
                 'Unknown option: "%s"' % label).with_traceback(tb)
 
-        action = [a
-                  for a in option.ui['actions']
-                  if isinstance(a, QAction) and a.text() == text][0]
-        action.setChecked(True)
-
-        if not checked:
-            return False
-        else:
-            actions = [a for a in option.ui['actions'] if a.text() != text]
-            for action in iter(actions):
-                action.setChecked(False)
-
         choices = option.values
         choice = [c_id
                   for c_id, c_label
                   in choices.items()
                   if c_label == text][0]
 
-        option.change(choice)
+        result = option.change(choice)
+        if result:
+            action = [a
+                      for a in option.ui['actions']
+                      if isinstance(a, QAction) and a.text() == text][0]
+            action.setChecked(True)
+
+            if not checked:
+                return False
+            else:
+                actions = [a for a in option.ui['actions'] if a.text() != text]
+                for action in iter(actions):
+                    action.setChecked(False)
 
     @Slot()
     def _on_menu_item_selected(self):
