@@ -15,6 +15,7 @@ modules = glob.glob(os.path.join(os.path.dirname(__file__), '*.py'))
 __all__ = [os.path.basename(f)[:-3]
            for f in modules if not f.endswith('__init__.py')]
 
+
 def main():
     """
     Entry point for the application. Checks the command line arguments,
@@ -77,6 +78,7 @@ def main():
 
     Logger.info(__name__, "Goodbye, World")
     sys.exit(0)
+
 
 if __name__ == '__main__':
     main()

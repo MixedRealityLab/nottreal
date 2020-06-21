@@ -4,8 +4,6 @@ from ..utils.log import Logger
 
 import configparser
 
-import os
-
 
 class ConfigModel:
     def __init__(self, args):
@@ -22,7 +20,7 @@ class ConfigModel:
         self._listeners = []
         self.config = configparser.ConfigParser()
 
-    def update(self, directory):    
+    def update(self, directory):
         self.config.read(directory + '/settings.cfg')
         Logger.info(__name__, 'Loaded configuration file from %s' % directory)
 

@@ -129,7 +129,7 @@ class ClassUtils:
         for name in toc:
             if name.startswith(prefix):
                 modules.append(name)
-        
+
         print(modules)
 
         for name in modules:
@@ -138,7 +138,7 @@ class ClassUtils:
                 importlib.import_module(name)
             except ImportError as e:
                 Logger.critical(
-                    __name__, 
+                    __name__,
                     'Could not import "%s": %s' % (name, e))
 
         return ClassUtils.get_all_subclasses(subclass)
