@@ -25,6 +25,7 @@ class App:
         self.args = args
         self._controllers = {}
         self.responders = OrderedDict({'app': self})
+        self._quit_it = False
 
         # crash more willingly?
         if args.dev:
@@ -89,8 +90,9 @@ class App:
                 pass
 
         # boom!
-        Logger.info(__name__, self.appname + ' is running')
-        self.view.run_loop()
+        if not self._quit_it:
+            Logger.info(__name__, self.appname + ' is running')
+            self.view.run_loop()
 
         # closing
         Logger.debug(__name__, 'Quitting the application')
@@ -99,6 +101,7 @@ class App:
     def quit(self):
         """Gracefully shutdown the application"""
         self.view.quit()
+        self._quit_it = True
 
     def responder(self, name, responder=None):
         """

@@ -8,8 +8,6 @@ from .c_abstract import AbstractController
 from os import path
 from pathlib import Path
 
-import sys
-
 
 class WizardController(AbstractController):
     """
@@ -105,7 +103,7 @@ class WizardController(AbstractController):
                 WizardAlert.Button(
                     'Quit',
                     WizardAlert.Button.ROLE_DESTRUCTIVE),
-                sys.exit)
+                self.quit)
 
             alert = WizardAlert(
                 'Welcome to NottReal!',
@@ -411,7 +409,7 @@ class WizardController(AbstractController):
         """
         Close and quit the Wizard window if it still exists.
         """
-        self.nottreal.view.wizard_window.close()
+        self.router('app', 'quit')
 
     def _set_clear_slots_on_tab_change(self, value):
         """
