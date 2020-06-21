@@ -46,33 +46,33 @@ class WizardController(AbstractController):
         self.nottreal.view.wizard_window.init_ui()
 
         self.nottreal.view.wizard_window.set_data(self.data)
-        self.register_option(
-            option=WizardOption(
+        self._opt_config_dir = WizardOption(
                 key=__name__ + '.config_dir',
                 label='Select config directory…',
                 category=WizardOption.CAT_CORE,
                 choose=WizardOption.CHOOSE_DIRECTORY,
                 method=self._set_config_directory,
                 default=self._dir,
-                restorable=False))
+                restorable=False)
+        self.register_option(self._opt_config_dir)
 
-        self._opt_slots_on_tab_change = self.register_option(
-            option=WizardOption(
+        self._opt_slots_on_tab_change = WizardOption(
                 key=__name__ + '.slots_tab_change',
                 label='Clear slot tracking on tab change',
                 category=WizardOption.CAT_WIZARD,
                 method=self._set_clear_slots_on_tab_change,
                 default=False,
-                restorable=True))
+                restorable=True)
+        self.register_option(self._opt_slots_on_tab_change)
 
         Logger.debug(__name__, "Opening the Wizard window…")
         self.nottreal.view.wizard_window.show()
-        
+
         if self._dir.endswith('dist.cfg'):
             button_set_config = WizardAlert.Button(
                 'Set config directory',
                 WizardAlert.Button.ROLE_ACCEPT)
-            
+
             alert = WizardAlert(
                 'Welcome to NottReal!',
                 'You\'re currently using the default configuration of the '
@@ -80,7 +80,10 @@ class WizardController(AbstractController):
                 + ' you should create a new custom configuration.',
                 WizardAlert.LEVEL_INFO,
                 buttons=[
-#                    ('set_config', button_set_config, None),
+                    (
+                        'set_config',
+                        button_set_config,
+                        self._opt_config_dir.call_ui_action),
                     ('ok', WizardAlert.DefaultButton.BUTTON_OK, None)])
 
             self.router('wizard', 'show_alert', alert=alert)

@@ -125,8 +125,7 @@ class WizardWindow(QMainWindow):
         Arguments:
             alert {WizardAlert} -- Alert to show
         """
-        alert = AlertBox(self, alert)
-        alert.exec()
+        AlertBox(self, alert).show()
 
     def toggle_recogniser(self):
         """
@@ -157,41 +156,53 @@ class AlertBox(QMessageBox):
         self.setText(alert.title)
         self.setInformativeText(alert.text + '\n')
 
-        if platform.system() == 'Darwin':
-            self._buttons = reversed(alert.buttons)
-        else:
-            self._buttons = alert.buttons
-            
-        self._custom_buttons = {}
+        self._alert = alert
 
-        for key, button, method in iter(self._buttons):
+        if platform.system() == 'Darwin':
+            alert.buttons.reverse()
+
+        self._ui_buttons = {}
+
+        for key, button, method in alert.buttons:
             if type(button) == WizardAlert.Button:
-                self._custom_buttons[key] = self.addButton(
+                self._ui_buttons[key] = self.addButton(
                     button.text,
                     self._get_button_role(button.role))
             else:
-                self.addButton(self._get_standard_button(button))
+                self._ui_buttons[key] = self.addButton(
+                    self._get_standard_button(button))
 
         if type(alert.default_button) is str:
             t = [button
                  for button
                  in alert.buttons
                  if button[0] == alert.default_button]
-                 
+
             if len(t):
                 if type(t[0][1]) == WizardAlert.Button:
                     self.setDefaultButton(self._custom_buttoms[button.key])
                 else:
                     self.setDefaultButton(self._get_standard_button(t[0][1]))
-    
+
+    def show(self):
+        """Show the alert"""
+        self.exec()
+        for key, ui_button in self._ui_buttons.items():
+            if ui_button == self.clickedButton():
+                method = [m[2] for m
+                          in self._alert.buttons
+                          if m[0] == key][0]
+                if method is not None:
+                    method()
+
     def _get_button_role(self, role):
         """
         Get the {QMessageBox.ButtonRole} from a
         {WizardAlert.Button}'s {role}
-        
-        Arguments: 
+
+        Arguments:
             role {int} {WizardAlert.Button} {role} value
-        
+
         Returns:
             {QMessageBox.ButtonRole}
         """
@@ -215,15 +226,15 @@ class AlertBox(QMessageBox):
             return QMessageBox.ApplyRole
         else:
             return QMessageBox.InvalidRole
-    
+
     def _get_standard_button(self, button):
         """
         Get the {QMessageBox.StandardButton} from a
         {WizardAlert.DefaultButton}
-        
-        Arguments: 
+
+        Arguments:
             button {int} {WizardAlert.DefaultButton} value
-        
+
         Returns:
             {QMessageBox.StandardButton}
         """
@@ -649,6 +660,7 @@ class MenuBar(QMenuBar):
 
                 option.ui = action
                 option.ui_update = self.update_option_boolean
+                option.ui_action = self.set_option_boolean
 
             elif option.choose == WizardOption.CHOOSE_DIRECTORY:
                 action = self._add_action_to_menu(
@@ -660,6 +672,7 @@ class MenuBar(QMenuBar):
                     callback=self._on_option_directory_triggered)
 
                 option.ui = action
+                option.ui_action = self.set_option_directory
 
             elif option.choose == WizardOption.CHOOSE_SINGLE_CHOICE:
                 actions = menu.actions()
@@ -685,8 +698,46 @@ class MenuBar(QMenuBar):
 
                 option.ui = ui_elements
                 option.ui_update = self.update_option_single_choice
+                option.ui_action = self.set_option_single_choice
 
                 menu.addMenu(submenu)
+
+    def set_option_boolean(self, option):
+        """
+        Trigger an option change as if the Wizard selected it
+        in the UI
+
+        Arguments:
+            option {WizardOption} -- Option to update
+        """
+        option.ui.toggle()
+
+    def set_option_directory(self, option):
+        """
+        Trigger an option change as if the Wizard selected it
+        in the UI
+
+        Arguments:
+            option {WizardOption} -- Option to update
+        """
+        option.ui.trigger()
+
+    def set_option_single_choice(self, option, value):
+        """
+        Trigger an option change as if the Wizard selected it
+        in the UI
+
+        Arguments:
+            option {WizardOption} -- Option to update
+            value {Str} -- New value
+        """
+        actions = [a
+                   for a in option.ui['actions']
+                   if a.text() == value]
+
+        if len(actions) == 1:
+            action = actions[0]
+            action.toggle()
 
     def update_option_boolean(self, option):
         """

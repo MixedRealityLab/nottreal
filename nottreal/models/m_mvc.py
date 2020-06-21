@@ -315,6 +315,7 @@ class WizardOption:
         self.restore = restore
 
         self.ui = None
+        self.ui_action = None
         self.ui_update = None
 
         if self.restorable and self.restore:
@@ -359,6 +360,12 @@ class WizardOption:
             responder {AppStateController}
         """
         WizardOption.appstate = responder
+
+    def call_ui_update(self):
+        self.ui_update(self)
+
+    def call_ui_action(self):
+        self.ui_action(self)
 
     def __str__(self):
         return '<[Option] %s: %s>' % (self.label, self.value)
