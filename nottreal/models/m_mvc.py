@@ -257,10 +257,14 @@ class WizardOption:
         CAT_OUTPUT {int}   -- Identifier for options relating to the
                               visual output
 
+        FILES_SAVE {int}   -- Show a file for saving
+        FILE_OPEN {int}    -- Show a file for opening
+
         appstate {instance}-- App state controller
     """
     CHOOSE_BOOLEAN, CHOOSE_SINGLE_CHOICE, CHOOSE_DIRECTORY = range(3)
     CAT_CORE, CAT_WIZARD, CAT_VOICE, CAT_INPUT, CAT_OUTPUT = range(5)
+    FILES_SAVE, FILES_OPEN = range(10, 12)
 
     appstate = None
 
@@ -276,7 +280,8 @@ class WizardOption:
                  order=99,
                  group=49,
                  restorable=False,
-                 restore=True):
+                 restore=True,
+                 extras=[]):
         """
         Create a runtime Wizard option
 
@@ -300,6 +305,7 @@ class WizardOption:
             grouping {int}    -- Grouping of options
             restorable {bool} -- Save/restore value to app state
             restore {bool}    -- Restore if restorable
+            extras {[mixed]}  -- Extra information
         """
         self.key = key
         self.label = label
@@ -313,6 +319,7 @@ class WizardOption:
         self.group = group
         self.restorable = restorable
         self.restore = restore
+        self.extras = extras
 
         self.ui = None
         self.ui_action = None

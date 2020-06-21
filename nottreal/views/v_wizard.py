@@ -127,6 +127,15 @@ class WizardWindow(QMainWindow):
         """
         AlertBox(self, alert).show()
 
+    def is_visible(self):
+        """
+        Is the window visible?
+
+        Returns:
+            {bool}
+        """
+        return self.isVisible()
+
     def toggle_recogniser(self):
         """
         Toggle the visibility of the recogniser
@@ -177,12 +186,8 @@ class AlertBox(QMessageBox):
                  for button
                  in alert.buttons
                  if button[0] == alert.default_button]
-
             if len(t):
-                if type(t[0][1]) == WizardAlert.Button:
-                    self.setDefaultButton(self._custom_buttoms[button.key])
-                else:
-                    self.setDefaultButton(self._get_standard_button(t[0][1]))
+                self.setDefaultButton(self._ui_buttons[t[0][0]])
 
     def show(self):
         """Show the alert"""
@@ -780,7 +785,7 @@ class MenuBar(QMenuBar):
 
         response = option.change(checked)
         if response is False:
-            self.sender().setChecked(not self.sender().isChecked())
+            self.sender().setChecked(checked)
 
     @Slot()
     def _on_option_directory_triggered(self):
@@ -805,6 +810,13 @@ class MenuBar(QMenuBar):
 
         dialog = QFileDialog(self, option.label, option.value)
         dialog.setFileMode(QFileDialog.Directory)
+
+        for extra in iter(option.extras):
+            if extra == WizardOption.FILES_SAVE:
+                dialog.setAcceptMode(QFileDialog.AcceptSave)
+            elif extra == WizardOption.FILES_OPEN:
+                dialog.setAcceptMode(QFileDialog.AcceptOpen)
+
         if dialog.exec_():
             directory = dialog.selectedFiles()
             option.change(directory[0])
