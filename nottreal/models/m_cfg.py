@@ -3,6 +3,7 @@ from ..utils.dir import DirUtils
 from ..utils.log import Logger
 
 import configparser
+import os
 
 
 class ConfigModel:
@@ -21,11 +22,17 @@ class ConfigModel:
         self.config = configparser.ConfigParser()
 
     def update(self, directory):
-        self.config.read(directory + '/settings.cfg')
-        Logger.info(__name__, 'Loaded configuration file from %s' % directory)
+        filepath = directory + '/settings.cfg'
+        if os.path.isfile(filepath):
+            self.config.read(filepath)
+            Logger.info(
+                __name__,
+                'Loaded configuration file from "%s"' % filepath)
 
-        for listener in iter(self._listeners):
-            listener(self)
+            for listener in iter(self._listeners):
+                listener(self)
+        else:
+            raise FileNotFoundError('No such file "%s"' % filepath)
 
     def add_listener(self, method):
         self._listeners.append(method)

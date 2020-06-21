@@ -81,44 +81,50 @@ class WizardController(AbstractController):
                 restorable=True)
         self.register_option(self._opt_slots_on_tab_change)
 
-        Logger.debug(__name__, "Opening the Wizard window…")
-
         if self._dir.endswith('dist.cfg'):
-            button_new_config = (
-                'new_config',
-                WizardAlert.Button(
-                    'Create new config directory',
-                    WizardAlert.Button.ROLE_REJECT),
-                self._opt_config_dir_new.call_ui_action)
-
-            button_set_config = (
-                'set_config',
-                WizardAlert.Button(
-                    'Select existing config directory',
-                    WizardAlert.Button.ROLE_REJECT),
-                self._opt_config_dir.call_ui_action)
-
-            button_continue = (
-                'quit',
-                WizardAlert.Button(
-                    'Quit',
-                    WizardAlert.Button.ROLE_DESTRUCTIVE),
-                self.quit)
-
-            alert = WizardAlert(
-                'Welcome to NottReal!',
-                'Please choose to create a new configuration directory'
-                + ' or select an existing directory to use.',
-                WizardAlert.LEVEL_INFO,
-                buttons=[
-                    button_new_config,
-                    button_set_config,
-                    button_continue],
-                default_button='set_config')
-
-            self.router('wizard', 'show_alert', alert=alert)
+            Logger.debug(__name__, "No configuration loaded")
+            self.init_prompt()
         else:
+            Logger.debug(__name__, "Opening the Wizard window…")
             self.nottreal.view.wizard_window.show()
+
+    def init_prompt(self):
+        button_new_config = (
+            'new_config',
+            WizardAlert.Button(
+                'Create new config directory',
+                WizardAlert.Button.ROLE_REJECT),
+            self._opt_config_dir_new.call_ui_action)
+
+        button_set_config = (
+            'set_config',
+            WizardAlert.Button(
+                'Select existing config directory',
+                WizardAlert.Button.ROLE_REJECT),
+            self._opt_config_dir.call_ui_action)
+
+        button_continue = (
+            'quit',
+            WizardAlert.Button(
+                'Quit',
+                WizardAlert.Button.ROLE_DESTRUCTIVE),
+            self.quit)
+
+        alert = WizardAlert(
+            'Welcome to NottReal!',
+            'NottReal stores its configuration across a number of files '
+            + 'in a single directory. You can choose to create a new '
+            + 'directory now, in which case NottReal will fill this with '
+            + 'a sample configuration, or select an existing directory '
+            + 'with the correct files that you wish to use.',
+            WizardAlert.LEVEL_INFO,
+            buttons=[
+                button_new_config,
+                button_set_config,
+                button_continue],
+            default_button='set_config')
+
+        self.router('wizard', 'show_alert', alert=alert)
 
     def _new_config_directory(self, directory):
         """
@@ -160,9 +166,23 @@ class WizardController(AbstractController):
         Keyword arguments:
             is_initial_load {bool} -- Is the initial load of the app
         """
-        self.nottreal.config.update(directory)
+        try:
+            self.nottreal.config.update(directory)
+            self.data = TSVModel(directory)
+        except FileNotFoundError:
+            alert = WizardAlert(
+                'Error loading configuration',
+                ('The directory:\n\n\t%s\n\ndoesn\'t contain valid '
+                    + 'configuration files. Please select a valid directory.')
+                % directory,
+                WizardAlert.LEVEL_ERROR,
+                buttons=[(
+                    'ok',
+                    WizardAlert.DefaultButton.BUTTON_RETRY,
+                    self._opt_config_dir.call_ui_action)])
 
-        self.data = TSVModel(directory)
+            self.router('wizard', 'show_alert', alert=alert)
+            return False
 
         try:
             self.nottreal.view.wizard_window.set_title(directory)
