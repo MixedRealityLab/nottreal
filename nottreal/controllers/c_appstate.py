@@ -228,14 +228,14 @@ class AppStateController(AbstractController):
             self._enablable = False
             self._opt_enabled.change(False)
 
-        if self._opt_enabled.ui is not None:
-            try:
+        try:
+            if self._opt_enabled.ui is not None:
                 self.nottreal.router(
                     'wizard',
                     'update_option',
                     option=self._opt_enabled)
-            except AttributeError:
-                pass
+        except AttributeError:
+            pass
 
         if not is_initial_load:
             self._update_options()
