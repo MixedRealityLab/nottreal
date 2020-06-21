@@ -1,6 +1,7 @@
 
 import sys
 import os
+import platform
 
 
 class DirUtils:
@@ -14,6 +15,9 @@ class DirUtils:
             {str}
         """
         if getattr(sys, 'frozen', False):
-            return sys._MEIPASS
+            if platform.system() == 'Darwin':
+                return os.path.join(sys._MEIPASS, '..', 'Resources')
+            else:
+                return sys._MEIPASS
         else:
             return os.getcwd()

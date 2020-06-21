@@ -37,7 +37,7 @@ class ArgparseUtils:
                                     'configuration directory'))
 
         dist_dir = 'dist.cfg'
-        pwd = DirUtils.pwd() + '/'
+        pwd = DirUtils.pwd() + os.path.sep
         requested_dir = pwd + dir
 
         if not os.path.isdir(requested_dir):
@@ -54,12 +54,12 @@ class ArgparseUtils:
         elif os.access(dir, os.R_OK):
             files = ('settings.cfg', 'categories.tsv', 'messages.tsv')
             for file in files:
-                if not os.access(requested_dir + '/' + file, os.R_OK):
+                if not os.access(requested_dir + os.path.sep + file, os.R_OK):
                     raise ArgumentTypeError((
                         '%s/%s is not a readable file'
                         % (requested_dir, file)))
 
-        return dir
+        return requested_dir
 
     @staticmethod
     def dir_is_writeable(dir):
@@ -75,7 +75,7 @@ class ArgparseUtils:
         Raises:
             ArgumentTypeError -- If `dir` is not valid or writeable
         """
-        pwd = DirUtils.pwd() + '/'
+        pwd = DirUtils.pwd() + os.path.sep
 
         if dir and not os.path.isdir(pwd + dir):
             raise ArgumentTypeError(
@@ -84,7 +84,7 @@ class ArgparseUtils:
             raise ArgumentTypeError(
                 ('%s is not a writeable directory' % dir))
 
-        return dir
+        return pwd + dir
 
 
 class ClassUtils:
@@ -115,14 +115,42 @@ class ClassUtils:
             package = importlib.import_module(package)
 
         path = package.__path__
-        prefix = package.__name__ + "."
+        prefix = package.__name__ + '.'
+        modules = [m[1] for m in pkgutil.iter_modules(path, prefix)]
 
-        for importer, name, ispkg in pkgutil.walk_packages(path):
-            if not ispkg:
-                Logger.debug(__name__, 'Loading "%s.py"' % name)
-                importlib.import_module(prefix + name)
+        # pyinstaller workaround from
+        # https://github.com/pyinstaller/pyinstaller/issues/1905
+        #   #issuecomment-525221546
+        toc = set()
+        for importer \
+                in pkgutil.iter_importers(package.__name__.partition('.')[0]):
+            if hasattr(importer, 'toc'):
+                toc |= importer.toc
+        for name in toc:
+            if name.startswith(prefix):
+                modules.append(name)
+        
+        print(modules)
+
+        for name in modules:
+            Logger.debug(__name__, 'Loading "%s.py"' % name)
+            try:
+                importlib.import_module(name)
+            except ImportError as e:
+                Logger.critical(
+                    __name__, 
+                    'Could not import "%s": %s' % (name, e))
 
         return ClassUtils.get_all_subclasses(subclass)
+
+    @staticmethod
+    def _load_all_subclasses_pyinstaller():
+        toc = set()
+        importers = pkgutil.iter_importers(__package__)
+        for i in importers:
+            if hasattr(i, 'toc'):
+                toc |= i.toc
+        return toc
 
     @staticmethod
     def get_all_subclasses(rootclass):

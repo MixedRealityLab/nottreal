@@ -1,8 +1,11 @@
 
 from ..utils.log import Logger
+from ..utils.dir import DirUtils
 from ..models.m_mvc import VUIState, WizardOption
 from ..models.m_tsv import TSVModel
 from .c_abstract import AbstractController
+
+from os import path
 
 
 class WizardController(AbstractController):
@@ -12,7 +15,7 @@ class WizardController(AbstractController):
     Variables:
         DEFAULT_DIRECTORY {str} -- Default configuration directory
     """
-    DEFAULT_DIRECTORY = 'cfg'
+    DEFAULT_DIRECTORY = DirUtils.pwd() + path.sep + 'cfg'
 
     def __init__(self, nottreal, args):
         """

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from .utils.log import Logger
-from .utils.init import ArgparseUtils
-from .nottreal import App
+from nottreal.utils.log import Logger
+from nottreal.utils.init import ArgparseUtils
+from nottreal.app import App
 
 from argparse import ArgumentParser
 
@@ -15,13 +15,11 @@ modules = glob.glob(os.path.join(os.path.dirname(__file__), '*.py'))
 __all__ = [os.path.basename(f)[:-3]
            for f in modules if not f.endswith('__init__.py')]
 
-
 def main():
     """
     Entry point for the application. Checks the command line arguments,
     validates the configuration, and starts the GUI application.
     """
-
     gettext.bindtextdomain('nottreal', 'locale')
     gettext.install('nottreal')
 
@@ -79,3 +77,6 @@ def main():
 
     Logger.info(__name__, "Goodbye, World")
     sys.exit(0)
+
+if __name__ == '__main__':
+    main()
