@@ -3,7 +3,7 @@
 </h1>
 
 
-A Python application for running Wizard of Oz studies with a voice-based  user interface.
+A Python application for running Wizard of Oz studies with a voice-based user interface.
 
 ## Dependencies
 
@@ -41,7 +41,11 @@ NottReal also supports automated/machine voice transcription. Outputs from this 
 
 Configuration options—such as API keys—can be found in the `settings.cfg`.
 
-## Running
+## Running NottReal
+
+If you are running the compiled binary (macOS-only for now), then simply double click the application icon.
+
+### Running source on the command line
 
 Run the code by calling `python3 nottreal.py`. There are various options you can supply at call time:
 
@@ -64,36 +68,22 @@ Run the code by calling `python3 nottreal.py`. There are various options you can
 
 ## App layout and configuration
 
-Copy the contents of the `.cfg_dist` directory to a new directory (e.g. `cfg`).  The application doesn't load configuration files from `cfg_dist`---these are only accessed if no configuration is specified.
+When you run the app it will offer you to select an existing configuration directory, or create a new one. If you choose to create a new one, NottReal copies the source from `dist.cfg` into this new directory. You are then shown the *Wizard Window*.
 
-In summary, the NottReal *Wizard Window* UI has the following features:
-	a) A *textbox* to type messages to send to participant
-	b) A list of queued *messages*
-	c) A list of previously sent *messages*
-	d) A list of categories of *prepared messages*
-	e) A list of *prepared messages*
-	f) A list of previously filled *slots*
-	g) A list of optional *log-only messages*
-	h) A list of *loading messages* to display on the Wizard window
+### Prepared messages
 
-NottReal can store all sent messages in a timestamped log. You can configure this by passing in a directory's path to the `-d` option.
-
-There is a fake mobile voice user interface view that can be enabled from the menu (or opened by default using the `-w` option). The configuration for this is in the `settings.cfg` file.
-
-In more detail, the application includes a *textbox* to type messages to send to the participant. If a previous message is being spoken when another message is sent, it will be queued up. Previously uttered/delivered messages are displayed at the bottom of the UI.
-
-NottReal also includes *prepared messages* that can be quickly sent to the participant through the simulated voice. These messages are categorised and presented as tabs in the UI. The categories can be configured in the file `categorises.tsv` in the configuration directory and consist of a unique category ID and the label in a tab-separated format:
+A list of *prepared messages*, which are pre-scripted messages that can be sent to the participant using the simulated voice. These messages are categorised by and presented across a tabs in the UI. The categories can be configured in the configuration file `categorises.tsv` and consist of a unique category ID and a label in a tab-separated format:
 
 	unique_cat_1	Category 1
 	unique_cat_2	Category 1
 	unique_cat_3	Category 1
 	unique_cat_4	Category 1
 
-You must have at least once category, thus if you do not wish to use this feature, simply leave a placeholder category in `cfg/categorises.tsv`, e.g.:
+You must have at least once category, thus if you do not wish to use this feature, simply leave a placeholder category in `categorises.tsv`, e.g.:
 
 	category	Prepared messages
 
-Prepared messages are words that will be sent to the voice simulator on being double clicked. They are defined in `messages.tsv` in the configuration directory as a unique message ID, a category ID, a title and the text:
+The prepared messages themselves are defined in `messages.tsv` in the configuration directory as: unique message ID, a category ID, a title and the text:
 
 	unique_message_1	unique_cat_1	Title	Prepared message to be sent to the participant 
 
@@ -107,16 +97,24 @@ Slots can use a previously substituted value automatically using the asterisk at
 
 	unique_message_3	unique_cat_1	Title 3	Prepared message to be sent to the participant with a [slot*]
 
-On the first use of this message, the Wizard will have to type a value for the slot. On successive double-clicks of this message, NottReal will automatically substitue the value. There is an option to reset this tracking on a category change. Alternatively, if a particular should cancel tracking for that particular slot, it can use a dollar at the end of its name:
+On the first use of this message, the Wizard will have to type a value for the slot. On successive double-clicks of this message, NottReal will automatically substitute the value. There is an option to reset this tracking on a category change. Alternatively, if a particular should cancel tracking for that particular slot, it can use a dollar at the end of its name:
 
 	unique_message_4	unique_cat_1	Title 4	Prepared message to be sent to the participant with a [slot$]
 
-The window also includes a dropdown list of messages to be sent to the voice simulator. These automatically show the loading animation during and after being sent. They are specified in `loading.tsv`, consisting of a unique ID and the message:
+### Data recording
 
-	unique_loading_message_1	Message text
+NottReal can record all messages sent as well as transcribed words (if transcription is enabled). Each time the app is open, a new file is created, the user specifies the directory where this recording will happen.
 
-The window contains messages that can be added to the log data only (e.g. if you wanted to record certain events occuring without simulating a voice):
+If data recording is enabled (from the *File* menu), the window contains a dropdown of messages that can be added to the log data only (e.g. if you wanted to record certain events occurring without simulating a voice). These are configured in the `log.tsv` file as such:
 
 	unique_log_message_1	Log message
 
-Finally, to interrupt the currently delivered output, press `Ctrl` + `C` (or `Cmd` + `C` on macOS). Optionally (and by default), this clears queued messages too.
+### Fake Mobile VUI interface
+
+There is a fake mobile voice user interface view that can be enabled from the *Output* menu. The configuration for this is in the `settings.cfg` file.
+
+### Loading messages
+
+The window also includes a dropdown list of messages to be sent that are loading/computing messages. These automatically show the 'busy' animation during and after being sent in the Mobile VUI window, as opposed to the typical speaking animation in the output. These messages are specified in `loading.tsv`, consisting of a unique ID and the message:
+
+	unique_loading_message_1	Message text
