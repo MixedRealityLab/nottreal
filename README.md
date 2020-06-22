@@ -123,7 +123,7 @@ The window also includes a dropdown list of messages to be sent that are loading
 
 If you use NottReal in a research study, you can cite it in a publications using the following reference:
 
-> Martin Porcheron, Joel E Fischer, and Michel Valstar. 2020. NottReal: A tool for voice-based Wizard of Oz studies. In 2nd Conference on Conversational User Interfaces (CUI ’20), July 22–24, 2020, Bilbao, Spain*. ACM, New York, NY, USA, 3 pages. https://doi.org/10.1145/3405755.3406168
+> Martin Porcheron, Joel E Fischer, and Michel Valstar. 2020. NottReal: A tool for voice-based Wizard of Oz studies. In *2nd Conference on Conversational User Interfaces (CUI ’20), July 22–24, 2020, Bilbao, Spain*. ACM, New York, NY, USA, 3 pages. https://doi.org/10.1145/3405755.3406168
 
 The following publications have used NottReal in their research:
 
