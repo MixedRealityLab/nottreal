@@ -170,16 +170,35 @@ class WizardController(AbstractController):
             self.nottreal.config.update(directory)
             self.data = TSVModel(directory)
         except FileNotFoundError:
+            button_cancel = (
+                'cancel',
+                WizardAlert.DefaultButton.BUTTON_CANCEL,
+                None)
+            
+            button_new_config = (
+                'new_config',
+                WizardAlert.Button(
+                    'Create new config directory',
+                    WizardAlert.Button.ROLE_REJECT),
+                self._opt_config_dir_new.call_ui_action)
+
+            button_ok = (
+                'ok',
+                WizardAlert.DefaultButton.BUTTON_RETRY,
+                self._opt_config_dir.call_ui_action)
+
+            if self.nottreal.view.wizard_window.is_visible():
+                buttons = [button_cancel, button_new_config, button_ok]
+            else:
+                buttons = [button_new_config, button_ok]
+
             alert = WizardAlert(
                 'Error loading configuration',
-                ('The directory:\n\n\t%s\n\ndoesn\'t contain valid '
+                ('The directory:\n\n\t%s\t\n\ndoesn\'t contain valid '
                     + 'configuration files. Please select a valid directory.')
                 % directory,
                 WizardAlert.LEVEL_ERROR,
-                buttons=[(
-                    'ok',
-                    WizardAlert.DefaultButton.BUTTON_RETRY,
-                    self._opt_config_dir.call_ui_action)])
+                buttons=buttons)
 
             self.router('wizard', 'show_alert', alert=alert)
             return False

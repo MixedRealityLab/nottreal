@@ -369,10 +369,16 @@ class WizardOption:
         WizardOption.appstate = responder
 
     def call_ui_update(self):
-        self.ui_update(self)
+        try:
+            self.ui_update(self)
+        except TypeError:
+            pass
 
     def call_ui_action(self):
-        self.ui_action(self)
+        try:
+            self.ui_action(self)
+        except TypeError:
+            pass
 
     def __str__(self):
         return '<[Option] %s: %s>' % (self.label, self.value)
