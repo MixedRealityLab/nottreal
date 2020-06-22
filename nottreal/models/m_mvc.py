@@ -257,14 +257,25 @@ class WizardOption:
         CAT_OUTPUT {int}   -- Identifier for options relating to the
                               visual output
 
-        FILES_ACTION_SAVE {int}   -- Show a file for saving
-        FILE_ACTION_OPEN {int}    -- Show a file for opening
+        FILES_ACTION_SAVE {int}   -- Show a file for saving, add to
+                                     {extras} with key 'action
+        FILE_ACTION_OPEN {int}    -- Show a file for opening, add to
+                                     {extras} with key 'action
+
+        FILES_IS_CANCELABLE {int}     -- Nothing happens on cancel,
+                                         add to {extras} with key
+                                         'cancel'
+        FILES_IS_NOT_CANCELABLE {int} -- If a file dialog is
+                                         cancelled, reopen it,
+                                         add to {extras} with key
+                                         'cancel'
 
         appstate {instance}-- App state controller
     """
     CHOOSE_BOOLEAN, CHOOSE_SINGLE_CHOICE, CHOOSE_DIRECTORY = range(3)
     CAT_CORE, CAT_WIZARD, CAT_VOICE, CAT_INPUT, CAT_OUTPUT = range(5)
     FILES_ACTION_SAVE, FILES_ACTION_OPEN = range(10, 12)
+    FILES_IS_CANCELABLE, FILES_IS_NOT_CANCELABLE = range(12, 14)
 
     appstate = None
 

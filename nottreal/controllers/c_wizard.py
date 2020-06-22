@@ -69,8 +69,8 @@ class WizardController(AbstractController):
                 choose=WizardOption.CHOOSE_DIRECTORY,
                 method=self._set_config_directory,
                 default=str(Path.home()),
-                extras={'action': WizardOption.FILES_ACTION_OPEN},
-                restorable=False)
+                restorable=False,
+                extras={'action': WizardOption.FILES_ACTION_OPEN})
         self.register_option(self._opt_config_dir)
 
         self._opt_slots_on_tab_change = WizardOption(
@@ -90,6 +90,9 @@ class WizardController(AbstractController):
             self.nottreal.view.wizard_window.show()
 
     def init_prompt(self):
+        self._opt_config_dir_new.extras['on_cancel'] = self.init_prompt
+        self._opt_config_dir.extras['on_cancel'] = self.init_prompt
+
         button_new_config = (
             'new_config',
             WizardAlert.Button(
@@ -126,6 +129,9 @@ class WizardController(AbstractController):
             default_button='set_config')
 
         self.router('wizard', 'show_alert', alert=alert)
+
+        self._opt_config_dir_new.extras['on_cancel'] = None
+        self._opt_config_dir.extras['on_cancel'] = None
 
     def _new_config_directory(self, directory):
         """
@@ -175,7 +181,7 @@ class WizardController(AbstractController):
                 'cancel',
                 WizardAlert.DefaultButton.BUTTON_CANCEL,
                 None)
-            
+
             button_new_config = (
                 'new_config',
                 WizardAlert.Button(

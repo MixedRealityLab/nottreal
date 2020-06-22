@@ -819,10 +819,25 @@ class MenuBar(QMenuBar):
         except AttributeError:
             pass
 
-        response = dialog.exec_()
-        if response:
-            directory = dialog.selectedFiles()
-            option.change(directory[0])
+        try:
+            cancellable = option.extras['cancel'] \
+                                == WizardOption.FILES_IS_CANCELABLE
+        except KeyError:
+            cancellable = True
+
+        while True:
+            response = dialog.exec_()
+            if response:
+                directory = dialog.selectedFiles()
+                option.change(directory[0])
+
+            if cancellable or response != QMessageBox.NoButton:
+                if response == QMessageBox.NoButton:
+                    try:
+                        option.extras['on_cancel']()
+                    except KeyError:
+                        pass
+                break
 
         self.parent.disable_enter_press = False
 
