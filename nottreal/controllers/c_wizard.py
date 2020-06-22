@@ -107,7 +107,7 @@ class WizardController(AbstractController):
                 WizardAlert.Button.ROLE_REJECT),
             self._opt_config_dir.call_ui_action)
 
-        button_continue = (
+        button_quit = (
             'quit',
             WizardAlert.Button(
                 'Quit',
@@ -125,7 +125,7 @@ class WizardController(AbstractController):
             buttons=[
                 button_new_config,
                 button_set_config,
-                button_continue],
+                button_quit],
             default_button='set_config')
 
         self.router('wizard', 'show_alert', alert=alert)

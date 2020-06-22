@@ -1,13 +1,15 @@
 
 from ..utils.log import Logger
-from ..models.m_mvc import WizardOption
+from ..models.m_mvc import WizardAlert, WizardOption
 from .c_abstract import AbstractController
 
 from speech_recognition import Microphone
 
+import importlib
 import audioop
-import pyaudio
 import threading
+import sys
+import webbrowser
 
 
 class InputController(AbstractController):
@@ -32,6 +34,60 @@ class InputController(AbstractController):
         self._num_callbacks = 0
         self._callbacks_volume = {}
 
+    def open_portaudio_installation(self):
+        webbrowser.open_new_tab(
+            'https://people.csail.mit.edu/hubert/pyaudio/#downloads')
+        self.nottreal.quit()
+
+    def respond_to(self):
+        """
+        This class will handle "input" commands
+
+        Returns:
+            str -- Label for this controller
+        """
+        return 'input'
+
+    def ready(self):
+        """Set the default input source"""
+
+        Logger.debug(__name__, 'Loading "pyaudio" module')
+        try:
+            importlib.import_module('pyaudio')
+        except ImportError as e:
+            Logger.critical(
+                __name__,
+                'It seems Portaudio isn\'t installed: "%s"' % str(e))
+
+            button_install_info = (
+                'install_info',
+                WizardAlert.Button(
+                    'PyAudio Installation information',
+                    WizardAlert.Button.ROLE_ACCEPT),
+                self.open_portaudio_installation)
+
+            button_quit = (
+                'quit',
+                WizardAlert.Button(
+                    'Quit',
+                    WizardAlert.Button.ROLE_DESTRUCTIVE),
+                self.nottreal.quit)
+
+            alert = WizardAlert(
+                'Could not open %s' % self.nottreal.appname,
+                ('There was an issue with loading the audio library:'
+                    + '\n\n\t%s\n\nThis is likely because PortAudio is not '
+                    + 'installed on your system. Please install PortAudio and '
+                    + 'try again. The easiest way to do this is to install '
+                    + 'PyAudio.')
+                % (str(e)),
+                WizardAlert.LEVEL_ERROR,
+                buttons=[button_install_info, button_quit],
+                default_button='install_info')
+
+            self.router('wizard', 'show_alert', alert=alert)
+            sys.exit(-1)
+
         self.source = Microphone()
         self._pyaudio = self.source.pyaudio_module
         self._thread = None
@@ -49,18 +105,6 @@ class InputController(AbstractController):
             __name__,
             'Found input sources: %s' % str(self.devices)
             )
-
-    def respond_to(self):
-        """
-        This class will handle "input" commands
-
-        Returns:
-            str -- Label for this controller
-        """
-        return 'input'
-
-    def ready(self):
-        """Set the default input source"""
 
         self._vol_sensitivity = self.nottreal.config.cfg().getint(
             'Input',
@@ -157,7 +201,7 @@ class InputController(AbstractController):
         Logger.info(__name__, 'Listening to the input source')
 
         CHUNK = 1024
-        FORMAT = pyaudio.paInt16
+        FORMAT = self._pyaudio.paInt16
         CHANNELS = 1
         RATE = 44100
 
