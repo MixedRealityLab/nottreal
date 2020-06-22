@@ -811,13 +811,16 @@ class MenuBar(QMenuBar):
         dialog = QFileDialog(self, option.label, option.value)
         dialog.setFileMode(QFileDialog.Directory)
 
-        for extra in iter(option.extras):
-            if extra == WizardOption.FILES_SAVE:
+        try:
+            if option.extras['action'] == WizardOption.FILES_ACTION_SAVE:
                 dialog.setAcceptMode(QFileDialog.AcceptSave)
-            elif extra == WizardOption.FILES_OPEN:
+            elif option.extras['action'] == WizardOption.FILES_ACTION_OPEN:
                 dialog.setAcceptMode(QFileDialog.AcceptOpen)
+        except AttributeError:
+            pass
 
-        if dialog.exec_():
+        response = dialog.exec_()
+        if response:
             directory = dialog.selectedFiles()
             option.change(directory[0])
 

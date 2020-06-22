@@ -59,7 +59,7 @@ class WizardController(AbstractController):
                 method=self._new_config_directory,
                 default=str(Path.home()),
                 restorable=False,
-                extras=[WizardOption.FILES_SAVE])
+                extras={'action': WizardOption.FILES_ACTION_SAVE})
         self.register_option(self._opt_config_dir_new)
 
         self._opt_config_dir = WizardOption(
@@ -69,6 +69,7 @@ class WizardController(AbstractController):
                 choose=WizardOption.CHOOSE_DIRECTORY,
                 method=self._set_config_directory,
                 default=str(Path.home()),
+                extras={'action': WizardOption.FILES_ACTION_OPEN},
                 restorable=False)
         self.register_option(self._opt_config_dir)
 
