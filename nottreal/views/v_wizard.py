@@ -784,8 +784,8 @@ class MenuBar(QMenuBar):
                 'Unknown option: "%s"' % text).with_traceback(tb)
 
         response = option.change(checked)
-        if response is False:
-            self.sender().setChecked(checked)
+        if not response:
+            self.sender().setChecked(not checked)
 
     @Slot()
     def _on_option_directory_triggered(self):

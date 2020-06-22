@@ -167,7 +167,7 @@ class DataRecorderController(AbstractController):
 
                 self.router('wizard', 'show_alert', alert=alert)
 
-            return False
+            return False or self._enablable
 
     def _set_directory(self, new_dir, override=None):
         """
@@ -188,6 +188,7 @@ class DataRecorderController(AbstractController):
         path = '%s%s%s' % (self.FILE_PREFIX, timestamp, self.FILE_EXT)
         filepath = os.path.join(new_dir, path)
 
+        enabled = False
         try:
             file_object = open(filepath, mode='a')
             if file_object:
@@ -198,28 +199,26 @@ class DataRecorderController(AbstractController):
 
                 self._enablable = True
                 self._init_enabled = True
-                self._opt_enabled.change(True
-                                         if override is None
-                                         else override)
+                enabled = True
         except IOError:
             Logger.warning(
                 __name__,
                 'Failed to open "%s" to record data' % filepath)
 
             self._enablable = False
-            self._opt_enabled.change(False)
             return False
 
-        if self._opt_enabled.ui is not None:
-            try:
-                self.nottreal.router(
-                    'wizard',
-                    'update_option',
-                    option=self._opt_enabled)
-            except AttributeError:
-                pass
-            finally:
-                return True
+        try:
+            self._opt_enabled.change(enabled
+                                     if override is None
+                                     else override)
+            self._opt_enabled.call_ui_update()
+        except NameError:
+            pass
+        except AttributeError:
+            pass
+
+        return True
 
     def custom_event(self, id, text):
         """
