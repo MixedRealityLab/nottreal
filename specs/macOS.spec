@@ -3,10 +3,10 @@
 block_cipher = None
 
 
-a = Analysis(['nottreal.py'],
+a = Analysis(['../nottreal.py'],
              pathex=[''],
              binaries=[],
-             datas=[('dist.cfg', 'dist.cfg'), ('nottreal/controllers/', 'controllers/'), ('nottreal/views/', 'views/')],
+             datas=[('../dist.cfg', 'dist.cfg'), ('../nottreal/controllers/', 'controllers/'), ('../nottreal/views/', 'views/')],
              hiddenimports=['nottreal.controllers','nottreal.views','pkg_resources.py2_warn'],
              hookspath=['hooks/'],
              runtime_hooks=[],
