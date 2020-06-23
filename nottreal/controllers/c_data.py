@@ -143,17 +143,16 @@ class DataRecorderController(AbstractController):
                 'Could not enable data recording')
 
             if self._completed_initiation:
-                button_select_dir = (
-                    'select_dir',
-                    WizardAlert.Button(
-                        'Select a data directory',
-                        WizardAlert.Button.ROLE_ACCEPT),
-                    self._opt_dir.call_ui_action)
+                button_select_dir = WizardAlert.Button(
+                        key='select_dir',
+                        label='Select a data directory',
+                        role=WizardAlert.Button.ROLE_ACCEPT,
+                        callback=self._opt_dir.call_ui_action)
 
-                button_ok = (
-                    'ok',
-                    WizardAlert.DefaultButton.BUTTON_OK,
-                    None)
+                button_ok = WizardAlert.Button(
+                    key='ok',
+                    stock_button=WizardAlert.Button.BUTTON_OK,
+                    callback=None)
 
                 alert = WizardAlert(
                     'Cannot enable data recording',
@@ -161,9 +160,9 @@ class DataRecorderController(AbstractController):
                     + '\n\nPlease select a data directory and try again.',
                     WizardAlert.LEVEL_ERROR,
                     buttons=[
-                        button_select_dir,
-                        button_ok],
-                    default_button='ok')
+                        button_ok,
+                        button_select_dir],
+                    default_button=button_ok)
 
                 self.router('wizard', 'show_alert', alert=alert)
 

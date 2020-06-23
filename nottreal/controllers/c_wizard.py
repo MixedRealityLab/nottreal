@@ -93,26 +93,23 @@ class WizardController(AbstractController):
         self._opt_config_dir_new.extras['on_cancel'] = self.init_prompt
         self._opt_config_dir.extras['on_cancel'] = self.init_prompt
 
-        button_new_config = (
-            'new_config',
-            WizardAlert.Button(
-                'Create new config directory',
-                WizardAlert.Button.ROLE_REJECT),
-            self._opt_config_dir_new.call_ui_action)
+        button_new_config = WizardAlert.Button(
+                key='new_config',
+                label='Create new config directory',
+                role=WizardAlert.Button.ROLE_REJECT,
+                callback=self._opt_config_dir_new.call_ui_action)
 
-        button_set_config = (
-            'set_config',
-            WizardAlert.Button(
-                'Select existing config directory',
-                WizardAlert.Button.ROLE_REJECT),
-            self._opt_config_dir.call_ui_action)
+        button_set_config = WizardAlert.Button(
+                key='set_config',
+                label='Select existing config directory',
+                role=WizardAlert.Button.ROLE_REJECT,
+                callback=self._opt_config_dir.call_ui_action)
 
-        button_quit = (
-            'quit',
-            WizardAlert.Button(
-                'Quit',
-                WizardAlert.Button.ROLE_DESTRUCTIVE),
-            self.quit)
+        button_quit = WizardAlert.Button(
+                key='quit',
+                label='Quit',
+                role=WizardAlert.Button.ROLE_DESTRUCTIVE,
+                callback=self.quit)
 
         alert = WizardAlert(
             'Welcome to NottReal!',
@@ -126,7 +123,7 @@ class WizardController(AbstractController):
                 button_new_config,
                 button_set_config,
                 button_quit],
-            default_button='set_config')
+            default_button=button_set_config)
 
         self.router('wizard', 'show_alert', alert=alert)
 
@@ -141,15 +138,15 @@ class WizardController(AbstractController):
             directory {str} -- New configuration directory
         """
         if not DirUtils.is_empty_or_create(directory):
-            retry_button = (
-                'retry',
-                WizardAlert.DefaultButton.BUTTON_RETRY,
-                self._opt_config_dir_new.call_ui_action)
+            retry_button = WizardAlert.Button(
+                key='retry',
+                stock_button=WizardAlert.Button.BUTTON_RETRY,
+                callback=self._opt_config_dir_new.call_ui_action)
 
-            cancel_button = (
-                'cancel',
-                WizardAlert.DefaultButton.BUTTON_CANCEL,
-                None)
+            cancel_button = WizardAlert.Button(
+                key='cancel',
+                stock_button=WizardAlert.Button.BUTTON_CANCEL,
+                callback=None)
 
             alert = WizardAlert(
                 'Directory is not empty!',
@@ -177,22 +174,21 @@ class WizardController(AbstractController):
             self.nottreal.config.update(directory)
             self.data = TSVModel(directory)
         except FileNotFoundError:
-            button_cancel = (
-                'cancel',
-                WizardAlert.DefaultButton.BUTTON_CANCEL,
-                None)
+            button_cancel = WizardAlert.Button(
+                    key='cancel',
+                    stock_button=WizardAlert.Button.BUTTON_CANCEL,
+                    callback=None)
 
-            button_new_config = (
-                'new_config',
-                WizardAlert.Button(
-                    'Create new config directory',
-                    WizardAlert.Button.ROLE_REJECT),
-                self._opt_config_dir_new.call_ui_action)
+            button_new_config = WizardAlert.Button(
+                    key='new_config',
+                    label='Create new config directory',
+                    role=WizardAlert.Button.ROLE_REJECT,
+                    callback=self._opt_config_dir_new.call_ui_action)
 
-            button_ok = (
-                'ok',
-                WizardAlert.DefaultButton.BUTTON_RETRY,
-                self._opt_config_dir.call_ui_action)
+            button_ok = WizardAlert.Button(
+                    key='retry',
+                    stock_button=WizardAlert.Button.BUTTON_RETRY,
+                    callback=self._opt_config_dir.call_ui_action)
 
             if self.nottreal.view.wizard_window.is_visible():
                 buttons = [button_cancel, button_new_config, button_ok]

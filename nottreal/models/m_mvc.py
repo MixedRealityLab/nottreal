@@ -103,7 +103,7 @@ class WizardAlert:
                  title,
                  text,
                  level=2,
-                 buttons=[('ok', 1, None)],
+                 buttons=[],
                  default_button='ok'):
         """
         Create an alert for the Wizard
@@ -114,17 +114,15 @@ class WizardAlert:
 
         Keyword arguments:
             level {int} -- Alert level (default: ROLE_INFO)
-            buttons [tuple(str, Button|hex, method)]
-                 -- A list of tuples, where each tuple is a key
-                    ({str}), either an instance of {Button} or hex
-                    value from {DefaultButton}, and a method or
-                    {None} called when the button is selected
+            buttons [WizardAlert.Button] -- A list of buttons
             default_button {str} -- Key of the default button
         """
         self.title = title
         self.text = text
         self.level = level
-        self.buttons = buttons
+        self.buttons = buttons \
+                       if buttons != None \
+                       else Button(stock_button=Button.BUTTON_OK)
         self.default_button = default_button
 
     class Button:
@@ -148,34 +146,7 @@ class WizardAlert:
             ROLE_RESET       -- The button resets the dialog's fields
                                 to default values
             ROLE_APPLY       -- The button applies current changes
-        """
-        ROLE_INVALID = -1
-        ROLE_ACCEPT = 0
-        ROLE_REJECT = 1
-        ROLE_DESTRUCTIVE = 2
-        ROLE_ACTION = 3
-        ROLE_HELP = 4
-        ROLE_YES = 5
-        ROLE_NO = 6
-        ROLE_RESET = 7
-        ROLE_APPLY = 8
-
-        def __init__(self, text, role):
-            """
-            A custom button
-
-            Argument:
-                text {str} -- Button text
-                role {int} -- Button role
-            """
-            self.text = text
-            self.role = role
-
-    class DefaultButton:
-        """
-        Default alert buttons
-
-        Variables:
+        
             BUTTON_OK               -- An "OK" button with the Accept
                                        role
             BUTTON_OPEN             -- An "Open" button with the Accept
@@ -212,6 +183,17 @@ class WizardAlert:
                                        Accept role
             BUTTON_INVALID          -- An invalid button
         """
+        ROLE_INVALID = -1
+        ROLE_ACCEPT = 0
+        ROLE_REJECT = 1
+        ROLE_DESTRUCTIVE = 2
+        ROLE_ACTION = 3
+        ROLE_HELP = 4
+        ROLE_YES = 5
+        ROLE_NO = 6
+        ROLE_RESET = 7
+        ROLE_APPLY = 8
+
         BUTTON_OK = 1
         BUTTON_OPEN = 2
         BUTTON_SAVE = 3
@@ -231,6 +213,31 @@ class WizardAlert:
         BUTTON_RETRY = 17
         BUTTON_IGNORE = 18
         BUTTON_INVALID = 0
+
+        def __init__(
+            self,
+            key,
+            label=None,
+            role=None,
+            stock_button=None,
+            callback=None):
+            """
+            A custom button
+
+            Argument:
+                key {str}         -- Identifier for the button
+                label {int}       -- Text displayed on the button
+                role {int}        -- Role for the button
+                stock_button {int}-- A {WizardAlert.Button} button
+                callback {method} -- Method to call on press
+            """
+            self.key = key
+            self.label = label
+            self.role = role
+            self.stock_button = stock_button
+            self.callback = callback
+            
+            self.ui = None
 
 
 class WizardOption:

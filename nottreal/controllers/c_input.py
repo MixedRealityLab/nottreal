@@ -59,19 +59,17 @@ class InputController(AbstractController):
                 __name__,
                 'It seems Portaudio isn\'t installed: "%s"' % str(e))
 
-            button_install_info = (
-                'install_info',
-                WizardAlert.Button(
-                    'PyAudio Installation information',
-                    WizardAlert.Button.ROLE_ACCEPT),
-                self.open_portaudio_installation)
+            button_install_info = WizardAlert.Button(
+                    key='pyaudio_install',
+                    label='PyAudio Installation information',
+                    role=WizardAlert.Button.ROLE_ACCEPT,
+                    callback=self.open_portaudio_installation)
 
-            button_quit = (
-                'quit',
-                WizardAlert.Button(
-                    'Quit',
-                    WizardAlert.Button.ROLE_DESTRUCTIVE),
-                self.nottreal.quit)
+            button_quit = WizardAlert.Button(
+                    key='quit',
+                    label='Quit',
+                    role=WizardAlert.Button.ROLE_DESTRUCTIVE,
+                    callback=self.nottreal.quit)
 
             alert = WizardAlert(
                 'Could not open %s' % self.nottreal.appname,
@@ -83,7 +81,7 @@ class InputController(AbstractController):
                 % (str(e)),
                 WizardAlert.LEVEL_ERROR,
                 buttons=[button_install_info, button_quit],
-                default_button='install_info')
+                default_button=button_install_info)
 
             self.router('wizard', 'show_alert', alert=alert)
             sys.exit(-1)
