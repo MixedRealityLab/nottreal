@@ -120,9 +120,10 @@ class WizardAlert:
         self.title = title
         self.text = text
         self.level = level
-        self.buttons = buttons \
-                       if buttons != None \
-                       else Button(stock_button=Button.BUTTON_OK)
+        self.buttons = (buttons
+                        if buttons is not None
+                        else WizardAlert.Button(
+                            stock_button=WizardAlert.Button.BUTTON_OK))
         self.default_button = default_button
 
     class Button:
@@ -146,7 +147,7 @@ class WizardAlert:
             ROLE_RESET       -- The button resets the dialog's fields
                                 to default values
             ROLE_APPLY       -- The button applies current changes
-        
+
             BUTTON_OK               -- An "OK" button with the Accept
                                        role
             BUTTON_OPEN             -- An "Open" button with the Accept
@@ -215,12 +216,12 @@ class WizardAlert:
         BUTTON_INVALID = 0
 
         def __init__(
-            self,
-            key,
-            label=None,
-            role=None,
-            stock_button=None,
-            callback=None):
+                self,
+                key,
+                label=None,
+                role=None,
+                stock_button=None,
+                callback=None):
             """
             A custom button
 
@@ -236,7 +237,7 @@ class WizardAlert:
             self.role = role
             self.stock_button = stock_button
             self.callback = callback
-            
+
             self.ui = None
 
 

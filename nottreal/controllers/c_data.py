@@ -144,10 +144,10 @@ class DataRecorderController(AbstractController):
 
             if self._completed_initiation:
                 button_select_dir = WizardAlert.Button(
-                        key='select_dir',
-                        label='Select a data directory',
-                        role=WizardAlert.Button.ROLE_ACCEPT,
-                        callback=self._opt_dir.call_ui_action)
+                    key='select_dir',
+                    label='Select a data directory',
+                    role=WizardAlert.Button.ROLE_ACCEPT,
+                    callback=self._opt_dir.call_ui_action)
 
                 button_ok = WizardAlert.Button(
                     key='ok',
@@ -160,8 +160,8 @@ class DataRecorderController(AbstractController):
                     + '\n\nPlease select a data directory and try again.',
                     WizardAlert.LEVEL_ERROR,
                     buttons=[
-                        button_ok,
-                        button_select_dir],
+                        button_select_dir,
+                        button_ok],
                     default_button=button_ok)
 
                 self.router('wizard', 'show_alert', alert=alert)

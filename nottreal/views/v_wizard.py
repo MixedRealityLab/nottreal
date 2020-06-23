@@ -171,8 +171,9 @@ class AlertBox(QMessageBox):
             alert.buttons.reverse()
 
         for button in iter(alert.buttons):
-            if button.stock_button != None:
-                ui_button = self.addButton(self._get_standard_button(button))
+            if button.stock_button is not None:
+                ui_button = self.addButton(
+                    self._get_standard_button(button.stock_button))
             else:
                 ui_button = self.addButton(
                     button.label,
