@@ -106,14 +106,14 @@ class WizardController(AbstractController):
 
         if self._dir.endswith('dist.nrc'):
             Logger.debug(__name__, "No configuration loaded")
-            self.welcome_promt()
+            self.welcome_prompt()
         else:
             Logger.debug(__name__, "Opening the Wizard window…")
             self.nottreal.view.wizard_window.show()
 
-    def welcome_promt(self):
-        self._opt_config_new.extras['on_cancel'] = self.welcome_promt
-        self._opt_config.extras['on_cancel'] = self.welcome_promt
+    def welcome_prompt(self):
+        self._opt_config_new.extras['on_cancel'] = self.welcome_prompt
+        self._opt_config.extras['on_cancel'] = self.welcome_prompt
 
         button_new_config = WizardAlert.Button(
                 key='new_config',
