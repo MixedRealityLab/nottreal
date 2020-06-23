@@ -5,8 +5,6 @@ from .c_voice import NonBlockingThreadedBaseVoice
 
 from collections import deque
 
-import stomp
-
 
 class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
     """
@@ -57,6 +55,9 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
         """
         super().init(args)
 
+        Logger.debug(__name__, 'Loading "stomp" module')
+        self.stomp = importlib.import_module('stomp')
+
         self._cfg = self.nottreal.config.cfg()
 
         self._queued_messages = deque()
@@ -78,7 +79,7 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
             'Connecting to ActiveMQ server %s:%d' % (self._host, self._port))
 
         try:
-            self._conn = stomp.Connection([(self._host, self._port)])
+            self._conn = self.stomp.Connection([(self._host, self._port)])
             self._conn.set_listener('', VoiceActiveMQ.Listener(self))
             self._conn.connect(self._username, self._password, wait=True)
 
@@ -87,7 +88,7 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
                 destination=self._receive_queue,
                 id=self.RECEIVE_QUEUE,
                 ack='auto')
-        except stomp.exception.ConnectFailedException:
+        except self.stomp.exception.ConnectFailedException:
             self._conn = False
             Logger.critical(
                 __name__,
@@ -122,9 +123,12 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
     def name(self):
         return 'ActiveMQ'
 
-    class Listener(stomp.ConnectionListener):
+    class Listener():
         """
         Listen to messages from the ActiveMQ/STOMP server
+
+        Extends:
+            stomp.ConnectionListener
 
         Arguments:
             app {App} -- Application instance
