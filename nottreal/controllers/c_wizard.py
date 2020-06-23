@@ -137,8 +137,7 @@ class WizardController(AbstractController):
             'Welcome to NottReal!',
             'NottReal stores its configuration across a number of files '
             + 'in a single directory with the extension nrc. You can choose '
-            + 'to create a new configuration now, in which case NottReal will '
-            + 'fill this with  a sample configuration, or select an '
+            + 'to create a new configuration now, or select an '
             + 'existing configuration with the correct files.',
             WizardAlert.LEVEL_INFO,
             buttons=[
