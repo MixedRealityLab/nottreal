@@ -58,21 +58,6 @@ class DataRecorderController(AbstractController):
         """
         Logger.debug(__name__, 'Setting up data logging')
 
-        self._opt_enabled = WizardOption(
-                key=__name__ + '.enable',
-                label='Enable data recording',
-                method=self.enable_data_output,
-                category=WizardOption.CAT_CORE,
-                choose=WizardOption.CHOOSE_BOOLEAN,
-                default=self._init_enabled,
-                order=0,
-                group='data',
-                restorable=True)
-        self.nottreal.router(
-            'wizard',
-            'register_option',
-            option=self._opt_enabled)
-
         if self.args.output_dir is None:
             directory = self.DEFAULT_DIRECTORY
             restore = True
@@ -96,7 +81,22 @@ class DataRecorderController(AbstractController):
             'register_option',
             option=self._opt_dir)
 
-        self._set_directory(self._opt_dir.value)
+        init_enabled = self._set_directory(self._opt_dir.value)
+        self._opt_enabled = WizardOption(
+                key=__name__ + '.enable',
+                label='Enable data recording',
+                method=self.enable_data_output,
+                category=WizardOption.CAT_CORE,
+                choose=WizardOption.CHOOSE_BOOLEAN,
+                default=init_enabled,
+                order=0,
+                group='data',
+                restorable=True,
+                restore=init_enabled)
+        self.nottreal.router(
+            'wizard',
+            'register_option',
+            option=self._opt_enabled)
 
         self._completed_initiation = True
 
@@ -187,6 +187,7 @@ class DataRecorderController(AbstractController):
         path = '%s%s%s' % (self.FILE_PREFIX, timestamp, self.FILE_EXT)
         filepath = os.path.join(new_dir, path)
 
+        return_val = True
         enabled = False
         try:
             file_object = open(filepath, mode='a')
@@ -205,7 +206,8 @@ class DataRecorderController(AbstractController):
                 'Failed to open "%s" to record data' % filepath)
 
             self._enablable = False
-            return False
+            self._init_enabled = False
+            return_val = False
 
         try:
             self._opt_enabled.change(enabled
@@ -217,7 +219,7 @@ class DataRecorderController(AbstractController):
         except AttributeError:
             pass
 
-        return True
+        return return_val
 
     def custom_event(self, id, text):
         """
