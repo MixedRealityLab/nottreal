@@ -1,9 +1,10 @@
 
 from distutils.dir_util import copy_tree
 
-import sys
 import os
 import platform
+import subprocess
+import sys
 
 
 class DirUtils:
@@ -48,3 +49,39 @@ class DirUtils:
                 return sys._MEIPASS
         else:
             return os.getcwd()
+
+    def open_in_os(path):
+        """
+        Opens in the OS directory explorer/finder
+        
+        Arguments:
+            path {str} -- Path to open
+        """
+        if not os.path.isdir(path):
+            return False
+            
+        if platform.system() == 'Windows':
+            explorer = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
+            subprocess.run([
+                explorer,
+                path])
+        elif platform.system() == 'Darwin': 
+            subprocess.call(['open', '-a', 'Finder', path])
+        elif platform.system() == 'Linux':
+            subprocess.Popen(['xdg-open', path])
+
+    def reveal_file_in_os(path):
+        """
+        Opens in the OS directory explorer/finder to reveal a file.
+        
+        This only works in macOS at the moment.
+        
+        Arguments:
+            path {str} -- Path to open
+        """
+        if not os.path.isfile(path):
+            return False
+            
+        if platform.system() == 'Darwin': 
+            subprocess.run(['open', '-R', path])
+        

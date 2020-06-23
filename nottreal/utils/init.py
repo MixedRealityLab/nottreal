@@ -18,7 +18,7 @@ class ArgparseUtils:
         are they readable?
 
         If no supplied directory is given (or the default is given), and it
-        is invalid, the distribution configuration (in `dist.cfg`) is used.
+        is invalid, the distribution configuration (in `dist.nrc`) is used.
 
         Arguments:
             dir {str} -- Directory relative to this directory
@@ -32,16 +32,20 @@ class ArgparseUtils:
         Returns:
             {str} -- Path to the configuration directory
         """
-        if dir == 'dist.cfg':
+        if dir == 'dist.nrc':
             raise ArgumentTypeError(('You cannot use the distribution '
                                     'configuration directory'))
 
-        dist_dir = 'dist.cfg'
+        dist_dir = 'dist.nrc'
         pwd = DirUtils.pwd() + os.path.sep
-        requested_dir = pwd + dir
+        
+        if dir[0] != os.path.sep:
+            requested_dir = DirUtils.pwd() + dir
+        else:
+            requested_dir = dir
 
         if not os.path.isdir(requested_dir):
-            if dir == 'cfg' and os.path.isdir(pwd + 'dist.cfg'):
+            if dir == 'cfg.nrc' and os.path.isdir(pwd + 'dist.nrc'):
                 print(
                     '%s not found' % requested_dir,
                     '∴ falling back to distribution configuration',

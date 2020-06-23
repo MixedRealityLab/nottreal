@@ -15,7 +15,7 @@ class ConfigModel:
             args {[arg]} -- Application arguments
         """
         self.config_dir = args.config_dir
-        if self.config_dir == 'cfg':
+        if self.config_dir == 'cfg.nrc':
             self.config_dir = DirUtils.pwd() + '/' + self.config_dir
 
         self._listeners = []

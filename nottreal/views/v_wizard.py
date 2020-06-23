@@ -671,6 +671,18 @@ class MenuBar(QMenuBar):
                 option.ui = action
                 option.ui_action = self.set_option_directory
 
+            elif option.choose == WizardOption.CHOOSE_FILE:
+                action = self._add_action_to_menu(
+                    menu,
+                    option.label,
+                    data=str(category),
+                    checkable=False,
+                    value=option.value,
+                    callback=self._on_option_file_triggered)
+
+                option.ui = action
+                option.ui_action = self.set_option_file
+
             elif option.choose == WizardOption.CHOOSE_SINGLE_CHOICE:
                 actions = menu.actions()
                 for action in iter(actions):
@@ -699,6 +711,19 @@ class MenuBar(QMenuBar):
 
                 menu.addMenu(submenu)
 
+            elif option.choose == WizardOption.BUTTON:
+                action = self._add_action_to_menu(
+                    menu,
+                    option.label,
+                    data=str(category),
+                    checkable=False,
+                    value=option.value,
+                    callback=self._on_option_button_triggered)
+
+                option.ui = action
+                option.ui_update = self.update_option_boolean
+                option.ui_action = self.set_option_boolean
+
     def set_option_boolean(self, option):
         """
         Trigger an option change as if the Wizard selected it
@@ -710,6 +735,16 @@ class MenuBar(QMenuBar):
         option.ui.toggle()
 
     def set_option_directory(self, option):
+        """
+        Trigger an option change as if the Wizard selected it
+        in the UI
+
+        Arguments:
+            option {WizardOption} -- Option to update
+        """
+        option.ui.trigger()
+
+    def set_option_file(self, option):
         """
         Trigger an option change as if the Wizard selected it
         in the UI
@@ -755,11 +790,20 @@ class MenuBar(QMenuBar):
         value = option.values[option.value]
         for action in iter(option.ui['actions']):
             action.setChecked(action.text() == value)
-
-    @Slot(bool)
-    def _on_option_boolean_toggled(self, checked):
-        text = self.sender().text()
-        category = self.sender().data()
+            
+    def _get_option_from_sender(self, sender):
+        """
+        Get an option from a Qt Sender object
+        
+        Arguments:
+            sender {Sender}
+        
+        Returns:
+            {WizardOption}
+        """
+        text = sender.text()
+        category = sender.data()
+        option = None
 
         try:
             cat_options = self._options[int(category)]
@@ -774,6 +818,17 @@ class MenuBar(QMenuBar):
             tb = sys.exc_info()[2]
             raise KeyError(
                 'Unknown option: "%s"' % text).with_traceback(tb)
+                
+        return option
+
+    @Slot(bool)
+    def _on_option_button_triggered(self, checked):
+        option = self._get_option_from_sender(self.sender())
+        option.change(None)
+
+    @Slot(bool)
+    def _on_option_boolean_toggled(self, checked):
+        option = self._get_option_from_sender(self.sender())
 
         response = option.change(checked)
         if not response:
@@ -783,20 +838,8 @@ class MenuBar(QMenuBar):
     def _on_option_directory_triggered(self):
         text = self.sender().text()
         category = self.sender().data()
-
-        try:
-            cat_options = self._options[int(category)]
-        except KeyError:
-            tb = sys.exc_info()[2]
-            raise KeyError(
-                'Unknown option category: "%s"' % category).with_traceback(tb)
-
-        try:
-            option = [o for o in iter(cat_options) if o.label == text][0]
-        except IndexError:
-            tb = sys.exc_info()[2]
-            raise KeyError(
-                'Unknown option: "%s"' % text).with_traceback(tb)
+                
+        option = self._get_option_from_sender(self.sender())
 
         self.parent.disable_enter_press = True
 
@@ -828,6 +871,63 @@ class MenuBar(QMenuBar):
                     try:
                         option.extras['on_cancel']()
                     except KeyError:
+                        pass
+                    except TypeError:
+                        pass
+                break
+
+        self.parent.disable_enter_press = False
+
+    @Slot()
+    def _on_option_file_triggered(self):
+        text = self.sender().text()
+        category = self.sender().data()
+                
+        option = self._get_option_from_sender(self.sender())
+
+        self.parent.disable_enter_press = True
+
+        dialog = QFileDialog(self, option.label, option.value)
+        dialog.setFileMode(QFileDialog.ExistingFile)
+
+        try:
+            if option.extras['action'] == WizardOption.FILES_ACTION_SAVE:
+                dialog.setAcceptMode(QFileDialog.AcceptSave)
+            elif option.extras['action'] == WizardOption.FILES_ACTION_OPEN:
+                dialog.setAcceptMode(QFileDialog.AcceptOpen)
+        except KeyError:
+            pass
+
+        try:
+            cancellable = option.extras['cancel'] \
+                                == WizardOption.FILES_IS_CANCELABLE
+        except KeyError:
+            cancellable = True
+
+        try:
+            if len(option.extras['types']):
+                types = option.extras['type_label'] + ' ('
+                for type_ in iter(option.extras['types']):
+                    types += '*.' + type_ + ' '
+                types = types[:-1]
+                types += ')'
+            dialog.setNameFilter(types)
+        except KeyError:
+            pass
+        
+        while True:
+            response = dialog.exec_()
+            if response:
+                file = dialog.selectedFiles()
+                option.change(file[0])
+
+            if cancellable or response != QMessageBox.NoButton:
+                if response == QMessageBox.NoButton:
+                    try:
+                        option.extras['on_cancel']()
+                    except KeyError:
+                        pass
+                    except TypeError:
                         pass
                 break
 

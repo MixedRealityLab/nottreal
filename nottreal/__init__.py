@@ -34,7 +34,7 @@ def main():
     parser.add_argument(
         '-c',
         '--config_dir',
-        default='cfg',
+        default='cfg.nrc',
         type=ArgparseUtils.dir_contains_config,
         help='Directory containing the configuration files')
     parser.add_argument(

@@ -7,6 +7,8 @@ from .c_abstract import AbstractController
 
 from os import path
 from pathlib import Path
+import platform
+import sys
 
 
 class WizardController(AbstractController):
@@ -18,8 +20,8 @@ class WizardController(AbstractController):
         DISTRIBUTION_DIRECTORY {str} -- Distribution configuration
                                         directory
     """
-    DEFAULT_DIRECTORY = DirUtils.pwd() + path.sep + 'cfg'
-    DISTRIBUTION_DIRECTORY = DirUtils.pwd() + path.sep + 'dist.cfg'
+    DEFAULT_DIRECTORY = DirUtils.pwd() + path.sep + 'cfg.nrc'
+    DISTRIBUTION_DIRECTORY = DirUtils.pwd() + path.sep + 'dist.nrc'
 
     def __init__(self, nottreal, args):
         """
@@ -32,11 +34,9 @@ class WizardController(AbstractController):
         super().__init__(nottreal, args)
 
         self._dir = args.config_dir
-        if self._dir is None:
-            self._dir = self.DEFAULT_DIRECTORY
 
     def init_config(self):
-        self._set_config_directory(self._dir, is_initial_load=True)
+        self._set_config(self._dir, is_initial_load=True)
 
     def ready(self):
         """
@@ -51,27 +51,49 @@ class WizardController(AbstractController):
 
         self.nottreal.view.wizard_window.set_data(self.data)
 
-        self._opt_config_dir_new = WizardOption(
-                key=__name__ + '.config_dir_new',
-                label='New config directory…',
-                category=WizardOption.CAT_CORE,
-                choose=WizardOption.CHOOSE_DIRECTORY,
-                method=self._new_config_directory,
-                default=str(Path.home()),
-                restorable=False,
-                extras={'action': WizardOption.FILES_ACTION_SAVE})
-        self.register_option(self._opt_config_dir_new)
+        if self._dir == self.DISTRIBUTION_DIRECTORY and \
+                getattr(sys, 'frozen', False):
+            init_dir = str(Path.home())
+        else:
+            init_dir = self._dir
 
-        self._opt_config_dir = WizardOption(
-                key=__name__ + '.config_dir',
-                label='Select config directory…',
+        # Create options
+        self._opt_config_new = WizardOption(
+                key=__name__ + '.config_dir_new',
+                label='New configuration…',
                 category=WizardOption.CAT_CORE,
-                choose=WizardOption.CHOOSE_DIRECTORY,
-                method=self._set_config_directory,
+                choose=WizardOption.CHOOSE_FILE,
+                method=self._new_config,
                 default=str(Path.home()),
                 restorable=False,
-                extras={'action': WizardOption.FILES_ACTION_OPEN})
-        self.register_option(self._opt_config_dir)
+                extras={
+                    'action': WizardOption.FILES_ACTION_SAVE,
+                    'types': ['nrc'],
+                    'type_label': 'NottReal configuration'})
+        self.register_option(self._opt_config_new)
+
+        self._opt_config_edit = WizardOption(
+                key=__name__ + '.config_dir_edit',
+                label='Edit configuration…',
+                category=WizardOption.CAT_CORE,
+                choose=WizardOption.BUTTON,
+                method=self._edit_config,
+                restorable=False)
+        self.register_option(self._opt_config_edit)
+
+        self._opt_config = WizardOption(
+                key=__name__ + '.config_dir',
+                label='Load configuration…',
+                category=WizardOption.CAT_CORE,
+                choose=WizardOption.CHOOSE_FILE,
+                method=self._set_config,
+                default=init_dir,
+                restorable=False,
+                extras={
+                    'action': WizardOption.FILES_ACTION_OPEN,
+                    'types': ['nrc'],
+                    'type_label': 'NottReal configuration'})
+        self.register_option(self._opt_config)
 
         self._opt_slots_on_tab_change = WizardOption(
                 key=__name__ + '.slots_tab_change',
@@ -82,28 +104,28 @@ class WizardController(AbstractController):
                 restorable=True)
         self.register_option(self._opt_slots_on_tab_change)
 
-        if self._dir.endswith('dist.cfg'):
+        if self._dir.endswith('dist.nrc'):
             Logger.debug(__name__, "No configuration loaded")
-            self.init_prompt()
+            self.welcome_promt()
         else:
             Logger.debug(__name__, "Opening the Wizard window…")
             self.nottreal.view.wizard_window.show()
 
-    def init_prompt(self):
-        self._opt_config_dir_new.extras['on_cancel'] = self.init_prompt
-        self._opt_config_dir.extras['on_cancel'] = self.init_prompt
+    def welcome_promt(self):
+        self._opt_config_new.extras['on_cancel'] = self.welcome_promt
+        self._opt_config.extras['on_cancel'] = self.welcome_promt
 
         button_new_config = WizardAlert.Button(
                 key='new_config',
-                label='Create new config directory',
+                label='Create new configuration',
                 role=WizardAlert.Button.ROLE_REJECT,
-                callback=self._opt_config_dir_new.call_ui_action)
+                callback=self._opt_config_new.call_ui_action)
 
         button_set_config = WizardAlert.Button(
                 key='set_config',
-                label='Select existing config directory',
+                label='Select existing configuration',
                 role=WizardAlert.Button.ROLE_REJECT,
-                callback=self._opt_config_dir.call_ui_action)
+                callback=self._opt_config.call_ui_action)
 
         button_quit = WizardAlert.Button(
                 key='quit',
@@ -114,10 +136,10 @@ class WizardController(AbstractController):
         alert = WizardAlert(
             'Welcome to NottReal!',
             'NottReal stores its configuration across a number of files '
-            + 'in a single directory. You can choose to create a new '
-            + 'directory now, in which case NottReal will fill this with '
-            + 'a sample configuration, or select an existing directory '
-            + 'with the correct files that you wish to use.',
+            + 'in a single directory with the extension nrc. You can choose '
+            + 'to create a new configuration now, in which case NottReal will '
+            + 'fill this with  a sample configuration, or select an '
+            + 'existing configuration with the correct files.',
             WizardAlert.LEVEL_INFO,
             buttons=[
                 button_new_config,
@@ -127,21 +149,27 @@ class WizardController(AbstractController):
 
         self.router('wizard', 'show_alert', alert=alert)
 
-        self._opt_config_dir_new.extras['on_cancel'] = None
-        self._opt_config_dir.extras['on_cancel'] = None
+        self._opt_config_new.extras['on_cancel'] = None
+        self._opt_config.extras['on_cancel'] = None
 
-    def _new_config_directory(self, directory):
+    def _new_config(self, directory):
         """
         Create a new configuration directory
 
         Arguments:
             directory {str} -- New configuration directory
         """
+        while directory.endswith('.'):
+            directory = directory[:-1]
+
+        if not directory.endswith('.nrc'):
+            directory += '.nrc'
+
         if not DirUtils.is_empty_or_create(directory):
             retry_button = WizardAlert.Button(
                 key='retry',
                 stock_button=WizardAlert.Button.BUTTON_RETRY,
-                callback=self._opt_config_dir_new.call_ui_action)
+                callback=self._opt_config_new.call_ui_action)
 
             cancel_button = WizardAlert.Button(
                 key='cancel',
@@ -158,9 +186,17 @@ class WizardController(AbstractController):
             return
 
         DirUtils.cp(self.DISTRIBUTION_DIRECTORY, directory)
-        self._set_config_directory(directory)
+        self._set_config(directory)
+        DirUtils.open_in_os(directory)
 
-    def _set_config_directory(self, directory, is_initial_load=False):
+    def _edit_config(self, _):
+        if platform.system() == 'Darwin':
+            DirUtils.reveal_file_in_os(
+                self._opt_config.value + '/settings.cfg')
+        else:
+            DirUtils.open_in_os(self._opt_config.value)
+
+    def _set_config(self, directory, is_initial_load=False):
         """
         Load some data from the directory and update the UI
 
@@ -183,12 +219,12 @@ class WizardController(AbstractController):
                     key='new_config',
                     label='Create new config directory',
                     role=WizardAlert.Button.ROLE_REJECT,
-                    callback=self._opt_config_dir_new.call_ui_action)
+                    callback=self._opt_config_new.call_ui_action)
 
             button_ok = WizardAlert.Button(
                     key='retry',
                     stock_button=WizardAlert.Button.BUTTON_RETRY,
-                    callback=self._opt_config_dir.call_ui_action)
+                    callback=self._opt_config.call_ui_action)
 
             if self.nottreal.view.wizard_window.is_visible():
                 buttons = [button_cancel, button_new_config, button_ok]
@@ -224,6 +260,8 @@ class WizardController(AbstractController):
         Logger.info(
                 __name__,
                 'Configuration directory set to "%s"' % directory)
+
+        self._dir = directory
 
         try:
             if not self.nottreal.view.wizard_window.is_visible():

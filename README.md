@@ -3,7 +3,7 @@
 </h1>
 
 
-A Python application for running Wizard of Oz studies with a voice-based user interface.
+A Python application for running Wizard of Oz studies with a voice-based user interface. Currently only tested with macOS.
 
 ## Dependencies
 
@@ -68,7 +68,9 @@ Run the code by calling `python3 nottreal.py`. There are various options you can
 
 ## App layout and configuration
 
-When you run the app it will offer you to select an existing configuration directory, or create a new one. If you choose to create a new one, NottReal copies the source from `dist.cfg` into this new directory. You are then shown the *Wizard Window*.
+When you run the app it will offer you to select an existing configuration directory, or create a new one. If you choose to create a new one, NottReal copies the source from `dist.nrc` into this new directory. You are then shown the *Wizard Window*.
+
+You can choose to edit the files in this directory by selecting *File > Edit configuration*. Currently, you must close and re-open NottReal, or reload the configuration using *File > Load configuration*.
 
 ### Prepared messages
 

@@ -6,7 +6,7 @@ block_cipher = None
 a = Analysis(['../nottreal.py'],
              pathex=[''],
              binaries=[],
-             datas=[('../dist.cfg', 'dist.cfg'), ('../nottreal/controllers/', 'controllers/'), ('../nottreal/views/', 'views/')],
+             datas=[('../dist.nrc', 'dist.nrc'), ('../nottreal/controllers/', 'controllers/'), ('../nottreal/views/', 'views/'), ('../nottreal/resources/file.icns', '.'),],
              hiddenimports=['nottreal.controllers','nottreal.views','pkg_resources.py2_warn'],
              hookspath=['hooks/'],
              runtime_hooks=[],
@@ -41,6 +41,24 @@ app = BUNDLE(coll,
              bundle_identifier='uk.ac.nott.mrl.nottreal',
              info_plist={
                 'CFBundleShortVersionString': 'v1.0.0',
-                'NSHighResolutionCapable': 'True',
-                'NSHumanReadableCopyright': 'Martin Porcheron and University of Nottingham'
+                'NSHighResolutionCapable': True,
+                'NSAppleScriptEnabled': False,
+                'NSHumanReadableCopyright': 'Martin Porcheron and University of Nottingham',
+                'CFBundleDocumentTypes': [{
+                    'CFBundleTypeIconFile': 'file.icns',
+                    'CFBundleTypeExtensions': ['nrc'],
+                    'CFBundleTypeName': 'NottReal Configuration',
+                    'CFBundleTypeRole': 'Viewer',
+                    'LSHandlerRank': 'Owner',
+                    'LSItemContentTypes': ['uk.ac.nott.mrl.nottreal.nrc'],
+                    'LSIsAppleDefaultForType': True,
+                    'NSDocumentClass': 'NR.Config'}],
+                'UTExportedTypeDeclarations': [{
+                    'LSTypeIsPackage': True,
+                    'UTTypeConformsTo': ['com.apple.package','public.content'],
+                    'UTTypeDescription': 'NottReal Configuration',
+                    'UTTypeIconFile': 'file.icns',
+                    'UTTypeIdentifier': 'uk.ac.nott.mrl.nottreal.nrc',
+                    'UTTypeTagSpecification': {'public.filename-extension': 'nrc'}
+                    }]
                 })

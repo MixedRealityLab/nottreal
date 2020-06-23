@@ -21,7 +21,7 @@ class AppStateController(AbstractController):
         ITERATIVE_SAVING {bool} -- Save continuously or on close?
         ALWAYS_SAVE_ON_QUIT {bool} -- Always save on quit too
     """
-    DEFAULT_DIRECTORY = 'cfg'
+    DEFAULT_DIRECTORY = 'cfg.nrc'
     FILENAME = 'appstate.json'
     ITERATIVE_SAVING = True
     ALWAYS_SAVE_ON_QUIT = True
@@ -159,7 +159,7 @@ class AppStateController(AbstractController):
             self._write_state()
 
         dir_name = directory.replace(DirUtils.pwd() + os.path.sep, '')
-        if dir_name == 'dist.cfg':
+        if dir_name == 'dist.nrc':
             Logger.critical(
                 __name__,
                 'Cannot save app state to distribution configuration')
