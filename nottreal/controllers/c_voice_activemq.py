@@ -195,7 +195,6 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
         """
         if not self._conn:
             Logger.critical(__name__, 'Not connected to ActiveMQ/STOMP server')
-            self.parent._alert_not_connected()
             return ('', '')
 
         return (self._message % text, text)
@@ -220,7 +219,6 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
         """
         if not self._conn:
             Logger.critical(__name__, 'Not connected to ActiveMQ/STOMP server')
-            self.parent._alert_not_connected()
             return
 
         Logger.debug(__name__, 'Sending message: %s' % prepared_text)
@@ -234,7 +232,6 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
         """
         if not self._conn:
             Logger.critical(__name__, 'Not connected to ActiveMQ/STOMP server')
-            self.parent._alert_not_connected()
             return
 
         self._conn.send(
