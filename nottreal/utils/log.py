@@ -1,5 +1,9 @@
 
+from pathlib import Path
+
 import logging
+import logging.handlers
+import platform
 
 
 class Logger:
@@ -7,6 +11,9 @@ class Logger:
     Python logging wrapper
     from https://github.com/MixedRealityLab/conditional-voice-recorder/
     """
+    TIMESTAMP_FORMAT = '%Y-%m-%d %H.%M.%S'
+    FILE_PREFIX = 'log-'
+
     _loggers = {}
 
     CRITICAL = logging.CRITICAL
@@ -155,10 +162,30 @@ class Logger:
         Returns:
             {Logger}
         """
+        log_format = logging.Formatter(
+            '%(asctime)s [%(threadName)-12.12s] '
+            '[%(levelname)-5.5s]  %(message)s')
+
         try:
             return Logger._loggers[tag]
         except KeyError:
             trimmed_tag = tag.replace('nottreal', '')
             Logger._loggers[tag] = logging.getLogger(trimmed_tag)
             Logger._loggers[tag].setLevel(Logger.chosen_level)
+
+            if platform.system() == 'Darwin':
+                # addr = '/var/run/syslog'
+                # handler = logging.handlers.SysLogHandler(address=addr)
+                # Logger._loggers[tag].addHandler(handler)
+
+                path = str(Path.home()) + '/Library/Logs/NottReal.log'
+
+                file_h = logging.FileHandler(path)
+                file_h.setFormatter(log_format)
+                Logger._loggers[tag].addHandler(file_h)
+            elif platform.system() == 'Linux':
+                addr = '/dev/log'
+                handler = logging.handlers.SysLogHandler(address=addr)
+                Logger._loggers[tag].addHandler(handler)
+
             return Logger._loggers[tag]
