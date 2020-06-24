@@ -7,6 +7,7 @@ from .c_abstract import AbstractController
 
 from os import path
 from pathlib import Path
+
 import platform
 import sys
 
@@ -190,9 +191,11 @@ class WizardController(AbstractController):
 
     def _edit_config(self, _):
         if platform.system() == 'Darwin':
-            DirUtils.reveal_file_in_os(
-                self._opt_config.value + '/settings.cfg')
+            path = self._opt_config.value + '/settings.cfg'
+            Logger.debug(__name__, 'Open "%s"' % path)
+            DirUtils.reveal_file_in_os(path)
         else:
+            Logger.debug(__name__, 'Open "%s"' % self._dir.value)
             DirUtils.open_in_os(self._opt_config.value)
 
     def _set_config(self, directory, is_initial_load=False):
@@ -261,6 +264,11 @@ class WizardController(AbstractController):
                 'Configuration directory set to "%s"' % directory)
 
         self._dir = directory
+
+        try:
+            self._opt_config.value = directory
+        except AttributeError:
+            pass
 
         try:
             if not self.nottreal.view.wizard_window.is_visible():
