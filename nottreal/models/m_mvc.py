@@ -255,7 +255,7 @@ class WizardOption:
                      {int} -- Identifier for an option that the user
                               has to choose a directory
         CHOOSE_FILE {int}  -- Choose a file (add types as list to
-                              to {extras} with key 'types' and type 
+                              to {extras} with key 'types' and type
                               label to 'type_label' as str)
         BUTTON {int}       -- Just call the method on click
 

@@ -790,14 +790,14 @@ class MenuBar(QMenuBar):
         value = option.values[option.value]
         for action in iter(option.ui['actions']):
             action.setChecked(action.text() == value)
-            
+
     def _get_option_from_sender(self, sender):
         """
         Get an option from a Qt Sender object
-        
+
         Arguments:
             sender {Sender}
-        
+
         Returns:
             {WizardOption}
         """
@@ -818,7 +818,7 @@ class MenuBar(QMenuBar):
             tb = sys.exc_info()[2]
             raise KeyError(
                 'Unknown option: "%s"' % text).with_traceback(tb)
-                
+
         return option
 
     @Slot(bool)
@@ -836,9 +836,6 @@ class MenuBar(QMenuBar):
 
     @Slot()
     def _on_option_directory_triggered(self):
-        text = self.sender().text()
-        category = self.sender().data()
-                
         option = self._get_option_from_sender(self.sender())
 
         self.parent.disable_enter_press = True
@@ -880,9 +877,6 @@ class MenuBar(QMenuBar):
 
     @Slot()
     def _on_option_file_triggered(self):
-        text = self.sender().text()
-        category = self.sender().data()
-                
         option = self._get_option_from_sender(self.sender())
 
         self.parent.disable_enter_press = True
@@ -914,7 +908,7 @@ class MenuBar(QMenuBar):
             dialog.setNameFilter(types)
         except KeyError:
             pass
-        
+
         while True:
             response = dialog.exec_()
             if response:

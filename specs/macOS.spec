@@ -25,7 +25,7 @@ exe = EXE(pyz,
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
-		  icon='nottreal/resources/appicon-128.ico',
+		  icon='../nottreal/resources/appicon-128.ico',
           upx=True,
           console=False )
 coll = COLLECT(exe,
@@ -37,7 +37,7 @@ coll = COLLECT(exe,
                name='nottreal')
 app = BUNDLE(coll,
              name='NottReal.app',
-             icon='nottreal/resources/appicon.icns',
+             icon='../nottreal/resources/appicon.icns',
              bundle_identifier='uk.ac.nott.mrl.nottreal',
              info_plist={
                 'CFBundleShortVersionString': 'v1.0.0',

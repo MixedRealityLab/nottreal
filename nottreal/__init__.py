@@ -6,7 +6,6 @@ from nottreal.app import App
 
 from argparse import ArgumentParser
 
-import gettext
 import glob
 import os
 import sys
@@ -21,8 +20,8 @@ def main():
     Entry point for the application. Checks the command line arguments,
     validates the configuration, and starts the GUI application.
     """
-    gettext.bindtextdomain('nottreal', 'locale')
-    gettext.install('nottreal')
+    # n.b. apps frozen with python3.8 get this far when
+    # double clicked (CLI opening is ok)
 
     parser = ArgumentParser(prog='NottReal')
     parser.add_argument(
@@ -73,7 +72,6 @@ def main():
 
     Logger.init(getattr(Logger, args.log))
     Logger.info(__name__, "Hello, World")
-
     App(args)
 
     Logger.info(__name__, "Goodbye, World")

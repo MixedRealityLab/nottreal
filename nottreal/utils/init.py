@@ -38,7 +38,7 @@ class ArgparseUtils:
 
         dist_dir = 'dist.nrc'
         pwd = DirUtils.pwd() + os.path.sep
-        
+
         if dir[0] != os.path.sep:
             requested_dir = DirUtils.pwd() + dir
         else:
