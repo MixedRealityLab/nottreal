@@ -6,10 +6,24 @@ from argparse import ArgumentTypeError
 
 import importlib
 import os
+import platform
 import pkgutil
 
 
 class ArgparseUtils:
+    
+    def init_darwin():
+        """
+        Initiate and register for Apple Event manager
+        From https://github.com/mattneub/appscript/blob/master/
+                py-aemreceive/trunk/lib/aemreceive/main.py
+        """
+#        if platform.system() == 'Darwin':
+#            Logger.info(__name__, 'Hello, Darwin')
+
+#            Logger.debug(__name__, 'Loading "darwin" module')
+#            darwin = importlib.import_module('nottreal.utils.darwin')
+#            ArgparseUtils = darwin.DarwinUtils()
 
     @staticmethod
     def dir_contains_config(dir):

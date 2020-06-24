@@ -72,6 +72,10 @@ def main():
 
     Logger.init(getattr(Logger, args.log))
     Logger.info(__name__, "Hello, World")
+    Logger.info(__name__, str(sys.argv))
+
+    ArgparseUtils.init_darwin()
+
     App(args)
 
     Logger.info(__name__, "Goodbye, World")
