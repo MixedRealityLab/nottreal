@@ -5,6 +5,8 @@ from .c_voice import NonBlockingThreadedBaseVoice
 
 from collections import deque
 
+import importlib
+
 
 class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
     """
