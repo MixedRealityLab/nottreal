@@ -16,13 +16,13 @@ setup(
     author='Martin Porcheron',
     author_email='martin+nottreal@porcheron.uk',
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Developers',
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3 :: Only'],
     keywords='voice user interfaces vuis wizard of oz woz',
     package_dir={'': 'nottreal'},
-    packages=find_packages(where='src'),
+    packages=find_packages(where='nottreal'),
     python_requires='>=3.5, <4',
     install_requires=[
         'numpy',
@@ -31,11 +31,11 @@ setup(
         'PySide2'],
     package_data={
         'sample': [
-            '.cfg_dist/categories.tsv',
-            '.cfg_dist/log.tsv',
-            '.cfg_dist/loading.tsv',
-            '.cfg_dist/messages.tsv',
-            '.cfg_dist/settings.cfg']
+            'cfg.dist/categories.tsv',
+            'cfg.dist/log.tsv',
+            'cfg.dist/loading.tsv',
+            'cfg.dist/messages.tsv',
+            'cfg.dist/settings.cfg']
     },
     entry_points={
         'console_scripts': [

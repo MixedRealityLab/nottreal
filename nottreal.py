@@ -14,6 +14,6 @@ __license__ = 'MIT'
 __version__ = '1.0.0'
 __maintainer__ = 'Martin Porcheron'
 __email__ = 'martin+nottreal@porcheron.uk'
-__status__ = 'Development'
+__status__ = 'Production'
 
 nottreal.main()
