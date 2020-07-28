@@ -88,7 +88,7 @@ NottReal requires some Python dependencies. You should ensure [Python 3.7](http:
 
 If you're on Windows, in addition to installing Python, you need to be able to compile C++ code to install portaudio. Alternatively, follow this answer on [StackOverflow](https://stackoverflow.com/a/55630212) to install a PortAudio binary.
 
-#### 1b. macOS specific instructions
+#### 1b. macOS-specific instructions
 
 If you're on macOS, in addition to installing Python, you also need to install the PortAudio library. The recommended way to install Python and PortAudio on macOS is to use the package manager [Homebrew](https://brew.sh/):
 
