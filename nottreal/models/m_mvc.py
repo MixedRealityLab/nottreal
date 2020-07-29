@@ -257,6 +257,11 @@ class WizardOption:
         CHOOSE_FILE {int}  -- Choose a file (add types as list to
                               to {extras} with key 'types' and type
                               label to 'type_label' as str)
+        CHOOSE_PACKAGE {int} -- Choose a package (add types as list to
+                                to {extras} with key 'types' and type
+                                label to 'type_label' as str). On macOS
+                                this shows as a file selector,
+                                elsewhere it is a directory selector.
         BUTTON {int}       -- Just call the method on click
 
         CAT_CORE {int}     -- Identifier for options relating to the
@@ -285,7 +290,7 @@ class WizardOption:
 
         appstate {instance}-- App state controller
     """
-    CHOOSE_BOOLEAN, CHOOSE_DIRECTORY, CHOOSE_FILE = range(3)
+    CHOOSE_BOOLEAN, CHOOSE_DIRECTORY, CHOOSE_FILE, CHOOSE_PACKAGE = range(4)
     CHOOSE_SINGLE_CHOICE, BUTTON = range(3, 5)
     CAT_CORE, CAT_WIZARD, CAT_VOICE, CAT_INPUT, CAT_OUTPUT = range(5)
     FILES_ACTION_SAVE, FILES_ACTION_OPEN = range(10, 12)
