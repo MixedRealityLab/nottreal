@@ -261,7 +261,7 @@ class WizardOption:
                                 to {extras} with key 'types' and type
                                 label to 'type_label' as str). On macOS
                                 this shows as a file selector,
-                                elsewhere it is a directory selector.
+                                elsewhere it is a directory 
         BUTTON {int}       -- Just call the method on click
 
         CAT_CORE {int}     -- Identifier for options relating to the
@@ -291,7 +291,7 @@ class WizardOption:
         appstate {instance}-- App state controller
     """
     CHOOSE_BOOLEAN, CHOOSE_DIRECTORY, CHOOSE_FILE, CHOOSE_PACKAGE = range(4)
-    CHOOSE_SINGLE_CHOICE, BUTTON = range(3, 5)
+    CHOOSE_SINGLE_CHOICE, BUTTON = range(4, 6)
     CAT_CORE, CAT_WIZARD, CAT_VOICE, CAT_INPUT, CAT_OUTPUT = range(5)
     FILES_ACTION_SAVE, FILES_ACTION_OPEN = range(10, 12)
     FILES_IS_CANCELABLE, FILES_IS_NOT_CANCELABLE = range(12, 14)

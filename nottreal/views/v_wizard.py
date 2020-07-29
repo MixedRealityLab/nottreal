@@ -46,6 +46,7 @@ class WizardWindow(QMainWindow):
         self.disable_enter_press = False
 
         self.menu = MenuBar(self)
+        self.setMenuBar(self.menu)
 
         self.recognised_words = RecognisedWordsWidget(self)
         self.prepared_msgs = PreparedMessagesWidget(self)
