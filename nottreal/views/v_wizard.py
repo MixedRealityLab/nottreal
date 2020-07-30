@@ -646,7 +646,7 @@ class MenuBar(QMenuBar):
             if current_group is not option.group:
                 menu.addSeparator()
                 current_group = option.group
-                
+
             if option.choose == WizardOption.CHOOSE_BOOLEAN:
                 action = self._add_action_to_menu(
                     menu,
@@ -662,7 +662,7 @@ class MenuBar(QMenuBar):
 
             elif option.choose == WizardOption.CHOOSE_DIRECTORY or \
                     (option.choose == WizardOption.CHOOSE_PACKAGE and
-                    platform.system() != 'Darwin'):
+                        platform.system() != 'Darwin'):
                 action = self._add_action_to_menu(
                     menu,
                     option.label,
@@ -676,7 +676,7 @@ class MenuBar(QMenuBar):
 
             elif option.choose == WizardOption.CHOOSE_FILE or \
                     (option.choose == WizardOption.CHOOSE_PACKAGE and
-                    platform.system() == 'Darwin'): 
+                        platform.system() == 'Darwin'):
                 action = self._add_action_to_menu(
                     menu,
                     option.label,
