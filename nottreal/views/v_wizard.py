@@ -697,7 +697,14 @@ class MenuBar(QMenuBar):
                 submenu = QMenu(option.label)
 
                 ui_elements = {'root': submenu, 'actions': []}
+                added_values = []
                 for key, value in option.values.items():
+                    # can't add duplicate menu items on macOS
+                    if value in added_values:
+                        continue
+
+                    # add the menu item
+                    added_values.append(value)
                     ui_elements['actions'].append(self._add_action_to_menu(
                         submenu,
                         value,
