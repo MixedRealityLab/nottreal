@@ -5,7 +5,7 @@ from ..models.m_mvc import Message, VUIState, WizardOption
 from .c_abstract import AbstractController
 
 from collections import deque
-from subprocess import call
+from subprocess import Popen
 
 import abc
 import threading
@@ -67,7 +67,7 @@ class VoiceController(AbstractController):
             restore = False
 
         self._available_voices = self.available_voices()
-        
+
         self._opt_voice = WizardOption(
             key=__name__ + '.voice',
             label='Voice subsystem',
@@ -827,12 +827,11 @@ class VoiceShellCmd(ThreadedBaseVoice):
                 ({None} if should not be written to screen)
         """
         cmd_text = text.replace('"', '')
-
         return (self._command_speak % cmd_text, text)
 
     def _produce_voice(self,
                        text,
-                       prepared_text,
+                       prepared_cmd,
                        cat=None,
                        id=None,
                        slots=None):
@@ -842,7 +841,7 @@ class VoiceShellCmd(ThreadedBaseVoice):
 
         Arguments:
             text {str} -- Text to record as being produced
-            prepared_text {str} -- Command to call through a shell
+            prepared_cmd {str} -- Command to call through a shell
 
         Keyword Arguments:
             cat {str} -- Category ID if a prepared message
@@ -850,14 +849,16 @@ class VoiceShellCmd(ThreadedBaseVoice):
             slots {dict(str,str)} -- Slots changed by the user
         """
         self.send_to_recorder(text, cat, id, slots)
-        Logger.debug(__name__, 'Calling %s' % prepared_text)
-        call(prepared_text, shell=True)
+        Logger.debug(__name__, 'Calling %s' % prepared_cmd)
+
+        proc = Popen(prepared_cmd.split())
+        proc.wait()
 
     def _interrupt_voice(self):
         """
         Immediately cancel waiting (if we are waiting)
         """
         if len(self._command_interrupt) > 0:
-            return call(self._command_interrupt, shell=True)
+            return Popen(self._command_interrupt.split())
         else:
             Logger.error('voice', 'No interrupt command supplied')
