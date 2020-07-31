@@ -2,6 +2,7 @@
 from ..utils.log import Logger
 
 from collections import OrderedDict
+from os import path
 
 import csv
 
@@ -111,7 +112,7 @@ class TSVModel:
         """
         data = OrderedDict()
         try:
-            with open(dir + '/' + file_name) as tsv_file:
+            with open(dir + path.sep + file_name) as tsv_file:
                 reader = csv.DictReader(
                     tsv_file,
                     delimiter='\t',

@@ -261,7 +261,7 @@ class WizardOption:
                                 to {extras} with key 'types' and type
                                 label to 'type_label' as str). On macOS
                                 this shows as a file selector,
-                                elsewhere it is a directory 
+                                elsewhere it is a directory
         BUTTON {int}       -- Just call the method on click
 
         CAT_CORE {int}     -- Identifier for options relating to the

@@ -6,12 +6,11 @@ from argparse import ArgumentTypeError
 
 import importlib
 import os
-import platform
 import pkgutil
 
 
 class ArgparseUtils:
-    
+
     def init_darwin():
         """
         Initiate and register for Apple Event manager

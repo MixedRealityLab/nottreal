@@ -1,30 +1,27 @@
 
 from .log import Logger
-from .dir import DirUtils
 
 from aem import ae, kae
 
-import mactypes
 import aem
-import os
-import platform
-import pkgutil
 import struct
 
 
 class DarwinUtils:
-    
+
     def __init__(self):
         """
         Initiate and register for Apple Event manager
         From https://github.com/mattneub/appscript/blob/master/
                 py-aemreceive/trunk/lib/aemreceive/main.py
         """
-        if struct.pack("h", 1) == '\x00\x01': # host is big-endian
+        # import mactypes, os, platform, pkgutil
+
+        if struct.pack("h", 1) == '\x00\x01':  # host is big-endian
             fourCharCode = lambda code: code
         else: # host is small-endian
             fourCharCode = lambda code: code[::-1]
-        
+
         self._standardCodecs = Codecs()  # default codecs for unpacking incoming events' attribute and parameter data and packing result/error data into reply events
 
         self._eventAttributes = [
@@ -71,7 +68,7 @@ class DarwinUtils:
                     raise
 
         Logger.info(__name__, 'Finished processing Apple Events')
-        
+
     def _processArgDefs(callback, argDefs, eventCode):
         total = callback.func_code.co_argcount
         argNames = callback.func_code.co_varnames[:total]
@@ -86,13 +83,13 @@ class DarwinUtils:
         for (code, argName, datatypes) in argDefs:
             if argName not in argNames:
                 raise TypeError("Can't install event handler %r: function %r has no parameter named %r." % (eventCode, callback.__name__, argName))
-            datatypes = buildDefs(datatypes)        
+            datatypes = buildDefs(datatypes)
             if argName in optionalArgNames:
                 optionalArgDefs[code] = (argName, datatypes)
             else:
                 requiredArgDefs.append((code, argName, datatypes))
         return includeAttributes, requiredArgDefs, optionalArgDefs
-        
+
     def _unpackEventAttributes(event):
         attributes = {}
         for code, name in _eventAttributes:
@@ -142,7 +139,7 @@ class DarwinUtils:
     def _packAppleEvent(desc, parameters, codecs=None):
         if codecs == None:
             codecs = DarwinUtils._standardCodecs
-            
+
         if desc.type == kae.typeAppleEvent: # only pack and return a result/error where event has requested one
             for key, value in parameters.items():
                 desc.setparam(key, codecs.pack(value))
@@ -185,7 +182,7 @@ class DarwinUtils:
     def installeventhandler(callback, eventCode, *parameterDefinitions, **kargs):
         """Install an Apple event handler."""
         codecs = kargs.pop('codecs', _standardCodecs)
-        ae.installeventhandler(eventCode[:4], eventCode[4:], 
+        ae.installeventhandler(eventCode[:4], eventCode[4:],
                 makeCallbackWrapper(callback, eventCode, parameterDefinitions, codecs))
 
     def removeeventhandler(eventCode):
@@ -214,7 +211,7 @@ class DarwinUtils:
 
     def _coerceFileTypes(desc, toType):
         return desc.coerce('furl').coerce('utxt')
-        
+
 class Codecs(aem.Codecs):
     """
     Default Codecs for aemreceive; same as aem.Codecs except that

@@ -191,8 +191,8 @@ class WizardController(AbstractController):
 
     def _edit_config(self, _):
         if platform.system() == 'Darwin':
-            path = self._opt_config.value + '/settings.cfg'
-            Logger.debug(__name__, 'Open "%s"' % path)
+            file_path = self._opt_config.value + path.sep + 'settings.cfg'
+            Logger.debug(__name__, 'Open "%s"' % file_path)
             DirUtils.reveal_file_in_os(path)
         else:
             Logger.debug(__name__, 'Open "%s"' % self._dir.value)

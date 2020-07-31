@@ -16,13 +16,13 @@ class ConfigModel:
         """
         self.config_dir = args.config_dir
         if self.config_dir == 'cfg.nrc':
-            self.config_dir = DirUtils.pwd() + '/' + self.config_dir
+            self.config_dir = DirUtils.pwd() + os.path.sep + self.config_dir
 
         self._listeners = []
         self.config = configparser.ConfigParser()
 
     def update(self, directory):
-        filepath = directory + '/settings.cfg'
+        filepath = directory + os.path.sep + 'settings.cfg'
         if os.path.isfile(filepath):
             self.config.read(filepath)
             Logger.info(
