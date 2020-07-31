@@ -67,7 +67,7 @@ class VoiceController(AbstractController):
             restore = False
 
         self._available_voices = self.available_voices()
-
+        
         self._opt_voice = WizardOption(
             key=__name__ + '.voice',
             label='Voice subsystem',
@@ -116,7 +116,8 @@ class VoiceController(AbstractController):
         return {c: self.nottreal.controllers[c].name()
                 for k, c in enumerate(self.nottreal.controllers)
                 if c.startswith('Voice')
-                and ClassUtils.is_subclass(c, AbstractVoiceController)}
+                and ClassUtils.is_subclass(c, AbstractVoiceController)
+                and self.nottreal.controllers[c].enabled()}
 
     def speak(self, text):
         """
@@ -222,6 +223,9 @@ class AbstractVoiceController(AbstractController):
             'wizard',
             'register_option',
             option=self._opt_listen_after)
+
+    def enabled(self):
+        return True
 
     def ready_order(self, responder=None):
         """

@@ -54,7 +54,7 @@ class ArgparseUtils:
         pwd = DirUtils.pwd() + os.path.sep
 
         if dir[0] != os.path.sep:
-            requested_dir = DirUtils.pwd() + dir
+            requested_dir = pwd + dir
         else:
             requested_dir = dir
 
@@ -74,8 +74,8 @@ class ArgparseUtils:
             for file in files:
                 if not os.access(requested_dir + os.path.sep + file, os.R_OK):
                     raise ArgumentTypeError((
-                        '%s/%s is not a readable file'
-                        % (requested_dir, file)))
+                        '%s%s%s is not a readable file'
+                        % (requested_dir, os.path.sep, file)))
 
         return requested_dir
 
