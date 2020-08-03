@@ -23,7 +23,7 @@ class Logger:
     DEBUG = logging.DEBUG
     NOTSET = logging.NOTSET
 
-    FORMAT = '%(msecs)-4d%(thread)-18d%(levelname)-9s%(name)-25s%(message)s'
+    FORMAT = '%(msecs)-5d%(thread)-13d%(levelname)-10s%(name)-31s%(message)s'
 
     chosen_level = logging.INFO
 
@@ -143,7 +143,8 @@ class Logger:
             message = tag
             tag = ''
 
-        message = "%s%s\033[0m" % (Logger.COLOURS[level], message)
+        if platform.system() != 'Windows':
+            message = "%s%s\033[0m" % (Logger.COLOURS[level], message)
 
         logger = Logger._get_logger(level, tag)
         method = getattr(logger, level)
@@ -163,7 +164,7 @@ class Logger:
             {Logger}
         """
         log_format = logging.Formatter(
-            '%(asctime)s [%(threadName)-12.12s] '
+            '%(asctime)s [%(threadName)-9s] '
             '[%(levelname)-5.5s]  %(message)s')
 
         try:
