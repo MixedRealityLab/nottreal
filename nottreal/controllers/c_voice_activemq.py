@@ -49,6 +49,18 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
             args {[str]} -- Application arguments
         """
         super().__init__(nottreal, args)
+        self._enabled = False
+
+        try:
+            Logger.debug(__name__, 'Loading "stomp" module')
+            self.stomp = importlib.import_module('stomp')
+            self._enabled = True
+        except ModuleNotFoundError:
+            Logger.warning(
+                __name__,
+                '"stomp" module not installed - ' +
+                'disabling ActiveMQ voice')
+            pass
 
     def init(self, args):
         """
@@ -57,8 +69,8 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
         """
         super().init(args)
 
-        Logger.debug(__name__, 'Loading "stomp" module')
-        self.stomp = importlib.import_module('stomp')
+        if not self.enabled():
+            return
 
         self._cfg = self.nottreal.config.cfg()
 
@@ -98,11 +110,18 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
 
             self._alert_not_connected()
 
+    def enabled(self):
+        return self._enabled
+
     def _alert_not_connected(self):
         """
         Show the Wizard that we aren't connected to an
         ActiveMQ server
         """
+
+        if not self.enabled():
+            return
+
         alert = WizardAlert(
             'ActiveMQ/STOMP Connection Error',
             ('Could not connect to the ActiveMQ/STOMP server "%s:%s".\n\n'
@@ -118,6 +137,9 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
         the system used)
         """
         super().packdown()
+
+        if not self.enabled():
+            return
 
         if self._conn:
             self._conn.disconnect()
@@ -199,6 +221,9 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
             {(str, str)} -- Command and the prepared text ({None} if
                 should not be written to screen)
         """
+        if not self.enabled():
+            return
+
         if not self._conn:
             Logger.critical(__name__, 'Not connected to ActiveMQ/STOMP server')
             return ('', '')
@@ -223,6 +248,9 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
             id {str} -- Prepared message ID if a prepared message
             slots {dict(str,str)} -- Slots changed by the user
         """
+        if not self.enabled():
+            return
+
         if not self._conn:
             Logger.critical(__name__, 'Not connected to ActiveMQ/STOMP server')
             return
@@ -236,6 +264,9 @@ class VoiceActiveMQ(NonBlockingThreadedBaseVoice):
         """
         Immediately cancel waiting (if we are waiting)
         """
+        if not self.enabled():
+            return
+
         if not self._conn:
             Logger.critical(__name__, 'Not connected to ActiveMQ/STOMP server')
             return

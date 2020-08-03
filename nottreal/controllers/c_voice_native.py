@@ -101,7 +101,8 @@ class VoiceWindows(ThreadedBaseVoice):
             except ModuleNotFoundError:
                 Logger.warning(
                     __name__,
-                    'win32com module not installed')
+                    '"win32com" module not installed - ' +
+                    'disabling Native TTS on Windows')
                 pass
 
     def init(self, args):
@@ -112,13 +113,14 @@ class VoiceWindows(ThreadedBaseVoice):
 
         if not self.enabled():
             return
+
         self._speaker = self.win32com.Dispatch('SAPI.SpVoice')
 
     def enabled(self):
         return self._enabled
 
     def name(self):
-        return 'Windows voice'
+        return 'Native TTS'
 
     def _produce_voice(self,
                        text,
