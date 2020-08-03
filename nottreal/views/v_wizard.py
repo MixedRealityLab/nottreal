@@ -12,6 +12,7 @@ from PySide2.QtWidgets import (QAbstractItemView, QAction, QComboBox,
 from PySide2.QtGui import (QIcon, QPixmap, QTextCursor, QStandardItemModel)
 from PySide2.QtCore import (Qt, QItemSelectionModel, QTimer,
                             Slot)
+from os import path
 
 import re
 import sys
@@ -873,7 +874,7 @@ class MenuBar(QMenuBar):
             response = dialog.exec_()
             if response:
                 directory = dialog.selectedFiles()
-                option.change(directory[0])
+                option.change(path.normpath(directory[0]))
 
             if cancellable or response != QMessageBox.NoButton:
                 if response == QMessageBox.NoButton:
@@ -925,7 +926,7 @@ class MenuBar(QMenuBar):
             response = dialog.exec_()
             if response:
                 file = dialog.selectedFiles()
-                option.change(file[0])
+                option.change(path.normpath(file[0]))
 
             if cancellable or response != QMessageBox.NoButton:
                 if response == QMessageBox.NoButton:
