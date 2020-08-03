@@ -1,5 +1,5 @@
 numpy>=1.16.5 
 python-gettext>=3.0
 PyAudio>=0.2.11
-PySide2>=5.14
+PySide2>=5.15
 SpeechRecognition>=3.8.1

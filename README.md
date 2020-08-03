@@ -82,7 +82,7 @@ If you wish to install NottReal from source, follow the below steps.
 
 ### 1. Install Python and PortAudio
 
-NottReal requires some Python dependencies. You should ensure [Python 3.7](http://python.org) or higher is installed on your system. If asked during install, install `pip` also.
+NottReal requires some Python dependencies. You should ensure [Python 3.7](http://python.org) or higher is installed on your system. If asked during install, install `pip` also. Note that if you intend to compile NottReal into a binary using PyInstaller, you [must use Python 3.7](https://github.com/pyinstaller/pyinstaller/issues/4311).
 
 #### 1a. Windows-specific instructions
 
@@ -90,7 +90,7 @@ If you're on Windows, in addition to installing Python, you need to be able to c
 
 If you wish to use the native Windows TTS library, you should install the Windows Python library by running the following command in terminal:
 ```bash
-$ pip3 install pywin32
+$ pip install pywin32
 ```
 
 #### 1b. macOS-specific instructions
