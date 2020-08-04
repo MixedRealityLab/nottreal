@@ -92,7 +92,7 @@ If you wish to use the native Windows TTS library, you should install the Window
 ```bash
 $ pip install pywin32
 ```
-If you wish to build an Windows binary, you must also install the requirements listed in `requirements-dev-Windows.txt`. A PyInstaller spec is located in the `specs/` directory. An [NSIS script](http://nsis.sourceforge.io) is in the `specs/` directory to build the installer.
+If you wish to build a Windows binary, you must also install the requirements listed in `requirements-dev-Windows.txt`. A PyInstaller spec is located in the `specs/` directory. A [NSIS script](http://nsis.sourceforge.io) is in the `specs/` directory to build the installer.
 
 NottReal has been tested on Windows 10 only.
 
