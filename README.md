@@ -3,7 +3,7 @@
 </h1>
 
 
-A Python application for running Wizard of Oz studies with a voice-based user interface. Currently only tested with macOS.
+A Python application for running Wizard of Oz studies with a voice-based user interface.
 
 
 ## Configuring NottReal
@@ -92,6 +92,9 @@ If you wish to use the native Windows TTS library, you should install the Window
 ```bash
 $ pip install pywin32
 ```
+If you wish to build an Windows binary, you must also install the requirements listed in `requirements-dev-Windows.txt`. A PyInstaller spec is located in the `specs/` directory.
+
+NottReal has been tested on Windows 10 only.
 
 #### 1b. macOS-specific instructions
 
@@ -102,7 +105,9 @@ $ brew install python
 $ brew install portaudio
 ```
 
-NottReal has only been tested with macOS 10.14 Mojave and 10.15 Catalina.
+If you wish to build an macOS binary, you must also install the requirements listed in `requirements-dev-macOS.txt`. A PyInstaller spec is located in the `specs/` directory.
+
+NottReal has only been tested with macOS 10.14 Mojave and 10.15 Catalina. 
 
 ### 2. Installing NottReal dependencies
 
