@@ -40,7 +40,7 @@ app = BUNDLE(coll,
              icon='../nottreal/resources/appicon.icns',
              bundle_identifier='uk.ac.nott.mrl.nottreal',
              info_plist={
-                'CFBundleShortVersionString': 'v1.0.0',
+                'CFBundleShortVersionString': 'v1.0.1',
                 'NSHighResolutionCapable': True,
                 'NSAppleScriptEnabled': False,
                 'NSHumanReadableCopyright': 'Martin Porcheron and University of Nottingham',
