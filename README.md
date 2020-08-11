@@ -12,7 +12,7 @@ A Python application for running Wizard of Oz studies with a voice-based user in
 
 ## Download and installation
 
-NottReal is currently built for macOS as an app bundle or Windows as an installer. Download either or the source code for the latest release from [https://github.com/MixedRealityLab/nottreal/releases](the repository releases page "NottReal releases").
+NottReal is currently built for macOS as an app bundle or Windows as an installer. Download either or the source code for the latest release from [the repository releases page](https://github.com/MixedRealityLab/nottreal/releases "NottReal releases").
 
 On macOS, you you should copy NottReal.app to your Applications directory.
 
