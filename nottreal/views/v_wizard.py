@@ -4,11 +4,11 @@ from ..models.m_mvc import VUIState, WizardAlert, WizardOption
 
 from collections import OrderedDict, deque
 from PySide2.QtWidgets import (QAbstractItemView, QAction, QComboBox,
-                               QDialogButtonBox, QFileDialog, QGridLayout,
-                               QGroupBox, QHBoxLayout, QMainWindow,
-                               QPlainTextEdit, QPushButton, QVBoxLayout,
-                               QTabWidget, QMenuBar, QMenu, QMessageBox,
-                               QTreeView, QWidget)
+                               QDialogButtonBox, QFileDialog,
+                               QGridLayout, QGroupBox, QHBoxLayout,
+                               QMainWindow, QPlainTextEdit, QPushButton,
+                               QVBoxLayout, QTabWidget, QMenuBar, QMenu,
+                               QMessageBox, QTreeView, QWidget)
 from PySide2.QtGui import (QIcon, QPixmap, QTextCursor, QStandardItemModel)
 from PySide2.QtCore import (Qt, QItemSelectionModel, QTimer,
                             Slot)
@@ -48,6 +48,8 @@ class WizardWindow(QMainWindow):
 
         self.menu = MenuBar(self)
         self.setMenuBar(self.menu)
+
+        self._alerts = []
 
         self.recognised_words = RecognisedWordsWidget(self)
         self.prepared_msgs = PreparedMessagesWidget(self)
@@ -120,6 +122,15 @@ class WizardWindow(QMainWindow):
         self.prepared_msgs.set_data(data.cats)
         self.command.set_data(data.log_msgs, data.loading_msgs)
 
+    def close_alert(self):
+        """
+        Close the current alert from the Wizard
+        """
+        try:
+            self._alert.reject()
+        except AttributeError:
+            pass
+
     def show_alert(self, alert):
         """
         Create an alert for the Wizard
@@ -127,7 +138,8 @@ class WizardWindow(QMainWindow):
         Arguments:
             alert {WizardAlert} -- Alert to show
         """
-        AlertBox(self, alert).show()
+        self._alert = AlertBox(self, alert)
+        self._alert.show()
 
     def is_visible(self):
         """
@@ -164,6 +176,7 @@ class AlertBox(QMessageBox):
         """
         super(AlertBox, self).__init__(parent)
 
+        self.parent = parent
         self.setText(alert.title)
         self.setInformativeText(alert.text + '\n')
 
@@ -189,6 +202,7 @@ class AlertBox(QMessageBox):
     def show(self):
         """Show the alert"""
         self.exec()
+
         for button in iter(self._alert.buttons):
             if button.ui == self.clickedButton():
                 if button.callback is not None:

@@ -126,6 +126,14 @@ class WizardAlert:
                             stock_button=WizardAlert.Button.BUTTON_OK))
         self.default_button = default_button
 
+    def __eq__(self, other):
+        if isinstance(other, WizardAlert):
+            return self.title == other.title \
+                and self.text == other.text \
+                and self.level == other.level
+        else:
+            return False
+
     class Button:
         """
         Custom button information

@@ -134,7 +134,7 @@ class WizardController(AbstractController):
                 role=WizardAlert.Button.ROLE_DESTRUCTIVE,
                 callback=self.quit)
 
-        alert = WizardAlert(
+        self._no_config_alert = WizardAlert(
             'Welcome to NottReal!',
             'NottReal stores its configuration across a number of files '
             + 'in a single directory with the extension nrc. You can choose '
@@ -147,7 +147,7 @@ class WizardController(AbstractController):
                 button_quit],
             default_button=button_set_config)
 
-        self.router('wizard', 'show_alert', alert=alert)
+        self.router('wizard', 'show_alert', alert=self._no_config_alert)
 
         self._opt_config_new.extras['on_cancel'] = None
         self._opt_config.extras['on_cancel'] = None
@@ -197,6 +197,21 @@ class WizardController(AbstractController):
         else:
             Logger.debug(__name__, 'Open "%s"' % self._dir.value)
             DirUtils.open_in_os(self._opt_config.value)
+
+    def set_config(self, directory):
+        """
+        External call to set configuration (closes the GUI alert
+        if it exists
+
+        Arguments:
+            directory {str} -- New configuration directory
+        """
+        try:
+            self.router('wizard', 'close_alert')
+        except AttributeError:
+            pass
+
+        self._set_config(directory)
 
     def _set_config(self, directory, is_initial_load=False):
         """
@@ -482,6 +497,12 @@ class WizardController(AbstractController):
         """
         self.nottreal.view.wizard_window.recognised_words.add(words)
         self.have_recognised_words = True
+
+    def close_alert(self):
+        """
+        Close any open alert to the Wizard!
+        """
+        self.nottreal.view.wizard_window.close_alert()
 
     def show_alert(self, alert):
         """

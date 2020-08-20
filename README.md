@@ -107,6 +107,8 @@ $ brew install portaudio
 
 If you wish to build an macOS binary, you must also install the requirements listed in `requirements-dev-macOS.txt`. A PyInstaller spec is located in the `specs/` directory.
 
+Note, if you're using pyenv, see [this issue](https://github.com/pyenv/pyenv/issues/1095#issuecomment-378166303).
+
 NottReal has only been tested with macOS 10.14 Mojave and 10.15 Catalina. 
 
 ### 2. Installing NottReal dependencies

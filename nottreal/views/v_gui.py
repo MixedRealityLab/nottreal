@@ -4,13 +4,14 @@ from ..utils.log import Logger
 from .v_wizard import WizardWindow
 from .v_output_abstract import AbstractOutputView
 
+from PySide2.QtCore import (QEvent)
 from PySide2.QtGui import (QIcon, QPixmap)
 from PySide2.QtWidgets import (QApplication, QStyleFactory)
 
 import sys
 
 
-class Gui:
+class Gui(QApplication):
     """
     The primary GUI application class
 
@@ -27,7 +28,8 @@ class Gui:
             nottreal {App} -- Main NottReal class
             args {[str]} -- CLI arguments
         """
-        self._qtapp = QApplication(sys.argv)
+        super().__init__(sys.argv)
+
         QApplication.setStyle(QStyleFactory.create('Fusion'))
 
         self.nottreal = nottreal
@@ -42,8 +44,8 @@ class Gui:
             self.nottreal,
             self.args)
 
-        self._qtapp.setApplicationDisplayName(self.nottreal.appname)
-        self._qtapp.setWindowIcon(QIcon(QPixmap(self.APP_ICON)))
+        self.setApplicationDisplayName(self.nottreal.appname)
+        self.setWindowIcon(QIcon(QPixmap(self.APP_ICON)))
 
         self.output = {}
         for name, cls in classes.items():
@@ -80,8 +82,17 @@ class Gui:
 
     def run_loop(self):
         """Show the GUI application by starting the UI loop"""
-        self._qtapp.exec_()
+        self.exec_()
 
-    def quit(self):
-        """Quit the GUI application"""
-        self._qtapp.quit()
+    def event(self, e):
+        if e.type() == QEvent.FileOpen:
+            Logger.debug(
+                __name__,
+                "Received open file event: "
+                + e.file())
+            self.nottreal.router(
+                'wizard',
+                'set_config',
+                directory=e.file())
+
+        return super().event(e)
