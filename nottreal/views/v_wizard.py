@@ -199,6 +199,8 @@ class AlertBox(QMessageBox):
 
             button.ui = ui_button
 
+        self.finished.connect(self._on_result)
+
     def show(self):
         """Show the alert"""
         self.exec()

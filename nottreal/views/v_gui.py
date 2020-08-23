@@ -92,7 +92,7 @@ class Gui(QApplication):
                 + e.file())
             self.nottreal.router(
                 'wizard',
-                'set_config',
+                'delayed_set_config',
                 directory=e.file())
 
         return super().event(e)

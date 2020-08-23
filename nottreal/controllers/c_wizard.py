@@ -35,6 +35,8 @@ class WizardController(AbstractController):
         super().__init__(nottreal, args)
 
         self._dir = args.config_dir
+        self._has_init = False
+        self._delayed_set_dir = False
 
     def init_config(self):
         self._set_config(self._dir, is_initial_load=True)
@@ -105,12 +107,24 @@ class WizardController(AbstractController):
                 restorable=True)
         self.register_option(self._opt_slots_on_tab_change)
 
-        if self._dir.endswith('dist.nrc'):
-            Logger.debug(__name__, "No configuration loaded")
-            self.welcome_prompt()
-        else:
-            Logger.debug(__name__, "Opening the Wizard window…")
-            self.nottreal.view.wizard_window.show()
+        self._trigger_delayed_set_config()
+        self._has_init = True
+
+        # TODO reimplement the welcome prompt as a window
+        # and move all config loading controller stuff into
+        # model class
+        # can't use welcome prompts because if the user
+        # double clicks an nrc package and the Apple Event
+        # fires later than the prompt is constructed, Qt
+        # won't process it until the prompt closes, which
+        # if the user quits NottReal will cause a crash
+
+        # if self._dir.endswith('dist.nrc'):
+        #     Logger.debug(__name__, "No configuration loaded")
+        #    self.welcome_prompt()
+        # else:
+        Logger.debug(__name__, "Opening the Wizard window…")
+        self.nottreal.view.wizard_window.show()
 
     def welcome_prompt(self):
         self._opt_config_new.extras['on_cancel'] = self.welcome_prompt
@@ -198,20 +212,29 @@ class WizardController(AbstractController):
             Logger.debug(__name__, 'Open "%s"' % self._dir.value)
             DirUtils.open_in_os(self._opt_config.value)
 
-    def set_config(self, directory):
+    def delayed_set_config(self, directory):
         """
-        External call to set configuration (closes the GUI alert
-        if it exists
+        External option to set configuration once init
+        has completed
 
         Arguments:
             directory {str} -- New configuration directory
         """
-        try:
-            self.router('wizard', 'close_alert')
-        except AttributeError:
-            pass
+        self._delayed_set_dir = directory
+        if self._has_init:
+            self._trigger_delayed_set_config()
 
-        self._set_config(directory)
+    def _trigger_delayed_set_config(self):
+        Logger.debug(
+            __name__,
+            "Delayed set config triggered: %r" % self._delayed_set_dir)
+
+        if self._delayed_set_dir:
+            self._dir = self._delayed_set_dir
+            self._delayed_set_dir = False
+            self._set_config(
+                self._dir,
+                is_initial_load=True)
 
     def _set_config(self, directory, is_initial_load=False):
         """
@@ -287,6 +310,10 @@ class WizardController(AbstractController):
 
         try:
             if not self.nottreal.view.wizard_window.is_visible():
+                try:
+                    self.router('wizard', 'close_alert')
+                except AttributeError:
+                    pass
                 self.nottreal.view.wizard_window.show()
         except AttributeError:
             pass
