@@ -3,14 +3,26 @@
 </h1>
 
 
-A Python application for running Wizard of Oz studies with a voice-based user interface.
+A Python application for running Wizard of Oz studies with a voice-based user interface. This README includes:
 
+1. [Downloading and installing NottReal](#download-and-installation "Information of where to download NottReal")
+2. [Editing a configuration](#configuration "Configuration file information for NottReal") (including the built-in [voice recognition systems](#voice-recognition "Specific information for configuraing the voice recognition systems"))
+3. [Installing from source](#installation-from-source "How to setup NottReal from the Python source")
+4. [Publications using NottReal](#nottreal-in-publications "A list of publications that have used NottReal") (and how to cite the software)
 
-## Configuring NottReal
+## Download and installation
 
-When you run the app it will offer you to select an existing configuration directory, or create a new one. If you choose to create a new one, NottReal copies the source from `dist.nrc` into this new directory. You are then shown the *Wizard Window*.
+NottReal is currently built for macOS as an app bundle or Windows as an installer. Download either or the source code for the latest release from [the repository releases page](https://github.com/MixedRealityLab/nottreal/releases "NottReal releases").
 
-You can choose to edit the files in this directory by selecting *File > Edit configuration*. Currently, you must close and re-open NottReal, or reload the configuration using *File > Load configuration*.
+On macOS, you you should copy NottReal.app to your Applications directory.
+
+On Windows, the application is automatically installed to your Program Files directory, with shortcuts created on the desktop and in the Start menu.
+
+## Configuration
+
+When you run NottReal, it will first offer you to select an existing configuration or create a new one. If you choose to create a new one, NottReal copies the source from `dist.nrc` in this repository into a new directory with the name you choose. You are then shown the *Wizard Window*. Alternaitvely, select an existing configuration directory. Not that on macOS, configuration directories are *packages* thus appear as files (you can open the package by clicking *Show Package Contents* when right clicking the package in Finder).
+
+NottReal doesn't dynamically reload configuration thus if you edit any of the configuration files, you should use the *Load configuration* option from the file menu to reload the configuration.
 
 ### Prepared messages
 
@@ -76,7 +88,7 @@ NottReal also supports automated/machine voice transcription. Outputs from this 
 
 Configuration options—such as API keys—can be found in the `settings.cfg`.
 
-## Installing from source
+## Installation from source
 
 If you wish to install NottReal from source, follow the below steps.
 
